@@ -1,0 +1,64 @@
+<Project>
+  <PropertyGroup>
+	<!-- Target Framework -->
+	<TargetFramework>net10.0</TargetFramework>
+	<LangVersion>latest</LangVersion>
+
+	<!-- Nullable Reference Types -->
+	<Nullable>enable</Nullable>
+
+	<!-- Implicit Using Statements -->
+	<ImplicitUsings>enable</ImplicitUsings>
+
+	<!-- XML Documentation -->
+	<GenerateDocumentationFile>false</GenerateDocumentationFile>
+	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	<NoWarn>1591;NU1903</NoWarn>
+
+	<!-- Project Metadata -->
+	<Company>ECAP - Enterprise Commerce AI Platform</Company>
+	<Authors>Development Team</Authors>
+	<Description>Enterprise-grade e-commerce platform with AI capabilities following Clean Architecture principles</Description>
+	<Version>1.0.0</Version>
+	<AssemblyVersion>1.0.0</AssemblyVersion>
+	<FileVersion>1.0.0</FileVersion>
+
+	<!-- Code Analysis -->
+	<AnalysisLevel>latest</AnalysisLevel>
+	<EnableNETAnalyzers>true</EnableNETAnalyzers>
+	<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+	<!-- Repository Information -->
+	<RepositoryType>git</RepositoryType>
+	<RepositoryUrl>https://github.com/gadigehussain9/ECAP</RepositoryUrl>
+
+	<!-- Security -->
+	<Deterministic>true</Deterministic>
+	<ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+
+	<!-- Source Link (for debugging) -->
+	<PublishRepositoryUrl>true</PublishRepositoryUrl>
+	<EmbedUntrackedSources>true</EmbedUntrackedSources>
+	<IncludeSymbols>true</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <!-- Roslyn Analyzers Configuration -->
+  <ItemGroup>
+	<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
+	  <PrivateAssets>All</PrivateAssets>
+	</PackageReference>
+  </ItemGroup>
+
+  <!-- Debug Configuration -->
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+	<DebugType>full</DebugType>
+  </PropertyGroup>
+
+  <!-- Release Configuration -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+	<DebugType>embedded</DebugType>
+	<Optimize>true</Optimize>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,61 @@
+name: CD - Production
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://api.ecap.com
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Build and publish
+      run: dotnet publish src/Presentation/ECAP.Api/ECAP.Api.csproj -c Release -o ./publish
+
+    - name: Login to Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+
+    - name: Build and push Docker image
+      run: |
+        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/ecap-api:${{ github.event.release.tag_name }} .
+        docker tag ${{ secrets.ACR_LOGIN_SERVER }}/ecap-api:${{ github.event.release.tag_name }} ${{ secrets.ACR_LOGIN_SERVER }}/ecap-api:latest
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/ecap-api:${{ github.event.release.tag_name }}
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/ecap-api:latest
+
+    - name: Deploy to Azure App Service (Blue slot)
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ secrets.AZURE_WEBAPP_NAME_PRODUCTION }}
+        slot-name: blue
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PRODUCTION }}
+        images: ${{ secrets.ACR_LOGIN_SERVER }}/ecap-api:${{ github.event.release.tag_name }}
+
+    - name: Health check on Blue slot
+      run: |
+        sleep 30
+        curl -f https://${{ secrets.PRODUCTION_BLUE_URL }}/health || exit 1
+
+    - name: Swap Blue to Green (Production)
+      uses: azure/CLI@v1
+      with:
+        inlineScript: |
+          az webapp deployment slot swap --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name ${{ secrets.AZURE_WEBAPP_NAME_PRODUCTION }} --slot blue --target-slot production
+
+    - name: Verify production deployment
+      run: |
+        sleep 30
+        curl -f https://${{ secrets.PRODUCTION_URL }}/health || exit 1

@@ -1,0 +1,5 @@
+environment          = "dev"
+resource_group_name  = "ecap-dev-rg"
+location             = "East US"
+app_service_plan_sku = "B1"
+sql_database_sku     = "S0"

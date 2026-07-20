@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\ECAP.Application\ECAP.Application.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\ECAP.Infrastructure.Persistence\ECAP.Infrastructure.Persistence.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\ECAP.Infrastructure.Identity\ECAP.Infrastructure.Identity.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\ECAP.Infrastructure.ExternalServices\ECAP.Infrastructure.ExternalServices.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\ECAP.Infrastructure.Messaging\ECAP.Infrastructure.Messaging.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+  </ItemGroup>
+
+</Project>

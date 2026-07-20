@@ -1,0 +1,10 @@
+apiVersion: v2
+name: ecap
+description: A Helm chart for ECAP - Enterprise Commerce AI Platform
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+maintainers:
+  - name: ECAP Team
+    email: team@ecap.com

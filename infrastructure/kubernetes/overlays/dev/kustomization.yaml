@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base/namespace.yaml
+  - ../../base/deployment.yaml
+  - ../../base/service.yaml
+
+namespace: ecap
+
+images:
+  - name: ecap-api
+    newName: ecapregistry.azurecr.io/ecap-api
+    newTag: dev
+
+replicas:
+  - name: ecap-api
+    count: 1
+
+patchesStrategicMerge:
+  - |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: ecap-api
+    spec:
+      template:
+        spec:
+          containers:
+          - name: ecap-api
+            env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Development"

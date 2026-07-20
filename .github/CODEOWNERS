@@ -1,0 +1,27 @@
+# Global owners (fallback)
+* @gadigehussain9
+
+# Core domain logic requires architect review
+/src/Core/ECAP.Domain/ @gadigehussain9
+/src/Core/ECAP.SharedKernel/ @gadigehussain9
+
+# Application layer requires lead developer review
+/src/Core/ECAP.Application/ @gadigehussain9
+
+# Infrastructure changes
+/src/Infrastructure/ @gadigehussain9
+
+# API changes
+/src/Presentation/ECAP.Api/ @gadigehussain9
+
+# IaC requires DevOps review
+/infrastructure/ @gadigehussain9
+
+# CI/CD pipelines
+/.github/workflows/ @gadigehussain9
+
+# Documentation
+/docs/ @gadigehussain9
+
+# Architecture Decision Records require architect approval
+/docs/architecture/adr/ @gadigehussain9

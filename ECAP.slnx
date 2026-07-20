@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Core/">
+    <Project Path="src/Core/ECAP.Application/ECAP.Application.csproj" />
+    <Project Path="src/Core/ECAP.Domain/ECAP.Domain.csproj" />
+    <Project Path="src/Core/ECAP.SharedKernel/ECAP.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/ECAP.Infrastructure.ExternalServices/ECAP.Infrastructure.ExternalServices.csproj" />
+    <Project Path="src/Infrastructure/ECAP.Infrastructure.Identity/ECAP.Infrastructure.Identity.csproj" />
+    <Project Path="src/Infrastructure/ECAP.Infrastructure.Messaging/ECAP.Infrastructure.Messaging.csproj" />
+    <Project Path="src/Infrastructure/ECAP.Infrastructure.Persistence/ECAP.Infrastructure.Persistence.csproj" />
+  </Folder>
+  <Folder Name="/src/Presentation/">
+    <Project Path="src/Presentation/ECAP.Api/ECAP.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ECAP.ArchitectureTests/ECAP.ArchitectureTests.csproj" />
+    <Project Path="tests/ECAP.IntegrationTests/ECAP.IntegrationTests.csproj" />
+    <Project Path="tests/ECAP.PerformanceTests/ECAP.PerformanceTests.csproj" />
+    <Project Path="tests/ECAP.UnitTests/ECAP.UnitTests.csproj" />
+  </Folder>
+</Solution>
