@@ -1,6 +1,5 @@
 # Docker Compose override for local development
 # This file is automatically merged with docker-compose.yml when running docker-compose up
-version: '3.8'
 
 services:
   api:
