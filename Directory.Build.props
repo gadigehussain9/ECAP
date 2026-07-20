@@ -13,7 +13,7 @@
 	<!-- XML Documentation -->
 	<GenerateDocumentationFile>false</GenerateDocumentationFile>
 	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	<NoWarn>1591;NU1903</NoWarn>
+	<NoWarn>1591;NU1903;NU1902</NoWarn>
 
 	<!-- Project Metadata -->
 	<Company>ECAP - Enterprise Commerce AI Platform</Company>
