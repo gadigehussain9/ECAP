@@ -8,7 +8,7 @@ namespace ECAP.Domain.Entities.Products;
 /// </summary>
 public sealed class Category : Entity<Guid>
 {
-    public string Name { get; private set; }
+    public string Name { get; private set; } = string.Empty;
     public string? Description { get; private set; }
     public Guid? ParentCategoryId { get; private set; }
     public bool IsActive { get; private set; }

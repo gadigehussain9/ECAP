@@ -8,7 +8,7 @@ namespace ECAP.Domain.Entities.Products;
 public sealed class ProductImage : Entity<Guid>
 {
     public Guid ProductId { get; private set; }
-    public string Url { get; private set; }
+    public string Url { get; private set; } = string.Empty;
     public string? AltText { get; private set; }
     public int DisplayOrder { get; private set; }
     public bool IsMain { get; private set; }

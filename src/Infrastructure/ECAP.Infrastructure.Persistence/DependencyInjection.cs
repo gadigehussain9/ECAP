@@ -1,5 +1,7 @@
+using ECAP.Application.Common.Interfaces;
 using ECAP.Domain.Interfaces;
 using ECAP.Infrastructure.Persistence.DbContexts;
+using ECAP.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -39,8 +41,10 @@ public static class DependencyInjection
         // Register Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        // Register repositories (add specific repository registrations here)
-        // services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
+        // Register Product Catalog repositories
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IBrandRepository, BrandRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
 
         // Add health checks for SQL Server
         services.AddHealthChecks().AddSqlServer(connectionString);

@@ -15,10 +15,16 @@ public sealed record Error
     /// </summary>
     public string Message { get; }
 
-    public Error(string code, string message)
+    /// <summary>
+    /// Gets the error type (Validation, NotFound, Conflict, etc.).
+    /// </summary>
+    public string Type { get; }
+
+    public Error(string code, string message, string type = "Error")
     {
         Code = code;
         Message = message;
+        Type = type;
     }
 
     /// <summary>
@@ -30,4 +36,34 @@ public sealed record Error
     /// Represents a null value error.
     /// </summary>
     public static readonly Error NullValue = new("Error.NullValue", "A null value was provided");
+
+    /// <summary>
+    /// Creates a validation error.
+    /// </summary>
+    public static Error Validation(string code, string message) =>
+        new(code, message, "Validation");
+
+    /// <summary>
+    /// Creates a not found error.
+    /// </summary>
+    public static Error NotFound(string code, string message) =>
+        new(code, message, "NotFound");
+
+    /// <summary>
+    /// Creates a conflict error.
+    /// </summary>
+    public static Error Conflict(string code, string message) =>
+        new(code, message, "Conflict");
+
+    /// <summary>
+    /// Creates an unauthorized error.
+    /// </summary>
+    public static Error Unauthorized(string code, string message) =>
+        new(code, message, "Unauthorized");
+
+    /// <summary>
+    /// Creates a forbidden error.
+    /// </summary>
+    public static Error Forbidden(string code, string message) =>
+        new(code, message, "Forbidden");
 }

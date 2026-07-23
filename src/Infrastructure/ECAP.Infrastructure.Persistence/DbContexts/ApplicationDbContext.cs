@@ -1,3 +1,4 @@
+using ECAP.Domain.Entities.Products;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECAP.Infrastructure.Persistence.DbContexts;
@@ -11,6 +12,11 @@ public class ApplicationDbContext : DbContext
         : base(options)
     {
     }
+
+    // Product Catalog
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<Brand> Brands => Set<Brand>();
+    public DbSet<Category> Categories => Set<Category>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

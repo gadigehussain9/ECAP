@@ -1,26 +1,25 @@
 #pragma warning disable CS8602, CS8604 // Null checks handled by Result pattern
 using ECAP.Application.Common.Interfaces;
 using ECAP.Application.Products.Common;
-using ECAP.Domain.Entities.Products;
 using ECAP.Domain.Interfaces;
 using ECAP.Domain.ValueObjects;
 using ECAP.SharedKernel;
 using Mapster;
 using MediatR;
 
-namespace ECAP.Application.Products.Commands.CreateProduct;
+namespace ECAP.Application.Products.Commands.UpdateProduct;
 
 /// <summary>
-/// Handler for CreateProductCommand
+/// Handler for UpdateProductCommand
 /// </summary>
-public sealed class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, Result<ProductDto>>
+public sealed class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, Result<ProductDto>>
 {
     private readonly IProductRepository _productRepository;
     private readonly IBrandRepository _brandRepository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public CreateProductCommandHandler(
+    public UpdateProductCommandHandler(
         IProductRepository productRepository,
         IBrandRepository brandRepository,
         ICategoryRepository categoryRepository,
@@ -32,13 +31,14 @@ public sealed class CreateProductCommandHandler : IRequestHandler<CreateProductC
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<ProductDto>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
+    public async Task<Result<ProductDto>> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
-        // Check if SKU already exists
-        if (await _productRepository.ExistsBySkuAsync(request.Sku, cancellationToken))
+        // Get product
+        var product = await _productRepository.GetByIdAsync(request.Id, cancellationToken);
+        if (product is null)
         {
             return Result<ProductDto>.Failure(
-                Error.Conflict("Product.Sku.Duplicate", $"A product with SKU '{request.Sku}' already exists"));
+                Error.NotFound("Product.NotFound", $"Product with ID '{request.Id}' was not found"));
         }
 
         // Validate brand exists
@@ -52,7 +52,7 @@ public sealed class CreateProductCommandHandler : IRequestHandler<CreateProductC
         if (!brand.IsActive)
         {
             return Result<ProductDto>.Failure(
-                Error.Validation("Brand.Inactive", "Cannot create product with inactive brand"));
+                Error.Validation("Brand.Inactive", "Cannot update product with inactive brand"));
         }
 
         // Validate category exists
@@ -66,41 +66,21 @@ public sealed class CreateProductCommandHandler : IRequestHandler<CreateProductC
         if (!category.IsActive)
         {
             return Result<ProductDto>.Failure(
-                Error.Validation("Category.Inactive", "Cannot create product with inactive category"));
+                Error.Validation("Category.Inactive", "Cannot update product with inactive category"));
         }
 
-        // Create product
-        var productResult = Product.Create(
-            request.Sku,
+        // Update product
+        var updateResult = product.Update(
             request.Name,
             request.Description,
+            request.ShortDescription,
             request.BrandId,
             request.CategoryId,
-            request.Price,
-            request.Currency);
+            request.Price);
 
-        if (productResult.IsFailure)
+        if (updateResult.IsFailure)
         {
-            return Result<ProductDto>.Failure(productResult.Error);
-        }
-
-        var product = productResult.Value;
-
-        // Set optional fields
-        if (!string.IsNullOrWhiteSpace(request.ShortDescription))
-        {
-            var updateResult = product.Update(
-                request.Name,
-                request.Description,
-                request.ShortDescription,
-                request.BrandId,
-                request.CategoryId,
-                request.Price);
-
-            if (updateResult.IsFailure)
-            {
-                return Result<ProductDto>.Failure(updateResult.Error);
-            }
+            return Result<ProductDto>.Failure(updateResult.Error);
         }
 
         // Set weight if provided
@@ -132,28 +112,10 @@ public sealed class CreateProductCommandHandler : IRequestHandler<CreateProductC
         }
 
         // Set SEO fields
-        if (!string.IsNullOrWhiteSpace(request.MetaTitle) ||
-            !string.IsNullOrWhiteSpace(request.MetaDescription) ||
-            !string.IsNullOrWhiteSpace(request.MetaKeywords))
-        {
-            product.SetSeo(request.MetaTitle, request.MetaDescription, request.MetaKeywords);
-        }
+        product.SetSeo(request.MetaTitle, request.MetaDescription, request.MetaKeywords);
 
-        // Add images
-        if (request.Images is not null && request.Images.Any())
-        {
-            foreach (var image in request.Images)
-            {
-                var imageResult = product.AddImage(image.Url, image.AltText, image.DisplayOrder, image.IsMain);
-                if (imageResult.IsFailure)
-                {
-                    return Result<ProductDto>.Failure(imageResult.Error);
-                }
-            }
-        }
-
-        // Save to repository
-        _productRepository.Add(product);
+        // Save changes
+        _productRepository.Update(product);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Map to DTO

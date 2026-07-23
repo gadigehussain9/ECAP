@@ -1,4 +1,4 @@
-namespace ECAP.Application.Products.Common;
+namespace ECAP.Application.Common.Models;
 
 /// <summary>
 /// Generic paginated response

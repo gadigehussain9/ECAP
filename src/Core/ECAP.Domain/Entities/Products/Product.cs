@@ -89,7 +89,7 @@ public sealed class Product : Entity<Guid>
         var skuResult = SKU.Create(sku);
         if (skuResult.IsFailure)
         {
-            return Result<Product>.Failure(skuResult.Error);
+            return Result<Product>.Failure(skuResult.Error!);
         }
 
         if (string.IsNullOrWhiteSpace(name))
@@ -127,7 +127,7 @@ public sealed class Product : Entity<Guid>
             return Result<Product>.Failure(Error.Validation("Product.Price.Negative", "Price cannot be negative"));
         }
 
-        var product = new Product(Guid.NewGuid(), skuResult.Value, name, description, brandId, categoryId, price, currency)
+        var product = new Product(Guid.NewGuid(), skuResult.Value!, name, description, brandId, categoryId, price, currency)
         {
             CreatedBy = createdBy
         };
@@ -206,7 +206,7 @@ public sealed class Product : Entity<Guid>
         var imageResult = ProductImage.Create(Id, url, altText, displayOrder, isMain);
         if (imageResult.IsFailure)
         {
-            return Result.Failure(imageResult.Error);
+            return Result.Failure(imageResult.Error!);
         }
 
         // If setting as main, unset any existing main image
@@ -218,7 +218,7 @@ public sealed class Product : Entity<Guid>
             }
         }
 
-        _images.Add(imageResult.Value);
+        _images.Add(imageResult.Value!);
         UpdatedDate = DateTime.UtcNow;
 
         return Result.Success();
@@ -227,7 +227,7 @@ public sealed class Product : Entity<Guid>
     public void RemoveImage(Guid imageId)
     {
         var image = _images.FirstOrDefault(i => i.Id == imageId);
-        if (image != null)
+        if (image is not null)
         {
             _images.Remove(image);
             UpdatedDate = DateTime.UtcNow;

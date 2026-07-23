@@ -1,3 +1,4 @@
+using ECAP.Application;
 using ECAP.Infrastructure.Persistence;
 using ECAP.Infrastructure.Identity;
 using ECAP.Infrastructure.ExternalServices;
@@ -25,6 +26,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add Application layer (MediatR, FluentValidation, Mapster)
+builder.Services.AddApplication();
+
 // Add Infrastructure layers
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -33,9 +37,6 @@ builder.Services.AddPersistence(connectionString);
 builder.Services.AddIdentity();
 builder.Services.AddExternalServices();
 builder.Services.AddMessaging();
-
-// Add MediatR (uncomment when ready)
-// builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
 // Add CORS (configure per environment)
 builder.Services.AddCors(options =>
