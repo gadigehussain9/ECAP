@@ -40,20 +40,37 @@ Infrastructure Layer (implements Application interfaces)
 
 ## 🚀 Features
 
+### Architecture & Patterns
 - ✅ **Clean Architecture** with proper dependency direction
 - ✅ **Vertical Slice Architecture** for feature organization
-- ✅ **CQRS** with MediatR (ready to integrate)
-- ✅ **Domain-Driven Design** patterns
+- ✅ **CQRS** with MediatR (implemented)
+- ✅ **Domain-Driven Design** patterns (Aggregates, Value Objects, Domain Events)
 - ✅ **Repository & Unit of Work** patterns
 - ✅ **Result Pattern** for error handling
-- ✅ **Entity Framework Core** with SQL Server
+- ✅ **FluentValidation** for input validation
+
+### Technology Stack
+- ✅ **Entity Framework Core 10** with SQL Server
+- ✅ **MediatR 13.0.1** for CQRS
+- ✅ **Mapster 7.4.0** for object mapping
 - ✅ **Swagger/OpenAPI** documentation
-- ✅ **xUnit** for testing
-- ✅ **Architecture Tests** with NetArchTest
-- ✅ **Docker** support
+- ✅ **xUnit** for testing (ready)
+- ✅ **Architecture Tests** with NetArchTest (ready)
+
+### Infrastructure
+- ✅ **Docker** support with docker-compose
 - ✅ **Kubernetes** manifests
 - ✅ **Terraform** for IaC
 - ✅ **GitHub Actions** CI/CD
+- ✅ **Azure Key Vault** integration
+- ✅ **Health Checks** for SQL Server
+
+### Implemented Modules (Sprint 1)
+- ✅ **Product Catalog** - Complete CRUD, Brand & Category management, SKU validation, Product lifecycle
+  - 8 REST API endpoints
+  - Rich domain model with value objects
+  - Soft delete, audit fields, SEO support
+  - Pagination and filtering
 
 ## 📋 Prerequisites
 
@@ -78,14 +95,26 @@ dotnet ef database update --project src/Infrastructure/ECAP.Infrastructure.Persi
 # Run the API
 dotnet run --project src/Presentation/ECAP.Api
 
-# API will be available at https://localhost:5001
-# Swagger UI: https://localhost:5001/swagger
+# API will be available at https://localhost:7001
+# Swagger UI: https://localhost:7001/swagger
 ```
+
+### Available API Endpoints (Sprint 1)
+
+**Product Catalog**
+- `GET /api/products` - List products (with pagination & filters)
+- `GET /api/products/{id}` - Get product by ID
+- `GET /api/products/sku/{sku}` - Get product by SKU
+- `POST /api/products` - Create product
+- `PUT /api/products/{id}` - Update product
+- `DELETE /api/products/{id}` - Soft delete product
+- `POST /api/products/{id}/activate` - Activate product
+- `POST /api/products/{id}/deactivate` - Deactivate product
 
 ## 🧪 Running Tests
 
 ```bash
-# Run all tests
+# Run all tests (when test projects are implemented)
 dotnet test
 
 # Run with code coverage
@@ -93,8 +122,11 @@ dotnet test --collect:"XPlat Code Coverage"
 
 # Run specific test project
 dotnet test tests/ECAP.UnitTests
+dotnet test tests/ECAP.IntegrationTests
 dotnet test tests/ECAP.ArchitectureTests
 ```
+
+**Note:** Test projects ready for Sprint 2 implementation.
 
 ## 📁 Project Structure
 
@@ -140,6 +172,9 @@ ECAP/
 | **API** | ASP.NET Core Web API |
 | **ORM** | Entity Framework Core 10 |
 | **Database** | SQL Server |
+| **CQRS** | MediatR 13.0.1 |
+| **Validation** | FluentValidation 11.11.1 |
+| **Mapping** | Mapster 7.4.0 |
 | **Testing** | xUnit, Moq, FluentAssertions, Bogus |
 | **Architecture Testing** | NetArchTest |
 | **Performance Testing** | NBomber |
@@ -156,6 +191,10 @@ ECAP/
 - [Architecture Decision Records](docs/architecture/adr/)
 - [API Documentation](docs/api/)
 - [Deployment Guide](docs/deployment/)
+- **Module Documentation**
+  - [Product Catalog](docs/modules/ProductCatalog.md) ✅ Sprint 1
+- **Sprint Summaries**
+  - [Sprint 1 - Product Catalog](docs/sprint-summaries/Sprint-1-ProductCatalog-Summary.md) ✅ Complete
 
 ## 🤝 Contributing
 
