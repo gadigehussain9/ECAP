@@ -1,4 +1,6 @@
 using ECAP.Domain.Entities.Products;
+using ECAP.SharedKernel;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECAP.Infrastructure.Persistence.DbContexts;
@@ -8,9 +10,14 @@ namespace ECAP.Infrastructure.Persistence.DbContexts;
 /// </summary>
 public class ApplicationDbContext : DbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    private readonly IPublisher? _publisher;
+
+    public ApplicationDbContext(
+        DbContextOptions<ApplicationDbContext> options,
+        IPublisher? publisher = null)
         : base(options)
     {
+        _publisher = publisher;
     }
 
     // Product Catalog
@@ -24,5 +31,42 @@ public class ApplicationDbContext : DbContext
 
         // Apply all entity configurations from this assembly
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        // Add global query filters for soft delete
+        modelBuilder.Entity<Product>().HasQueryFilter(p => !p.IsDeleted);
+        modelBuilder.Entity<Brand>().HasQueryFilter(b => !b.IsDeleted);
+        modelBuilder.Entity<Category>().HasQueryFilter(c => !c.IsDeleted);
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        // Collect domain events before saving
+        var domainEvents = ChangeTracker.Entries<Entity<Guid>>()
+            .Select(e => e.Entity)
+            .Where(e => e.DomainEvents.Any())
+            .SelectMany(e => e.DomainEvents)
+            .ToList();
+
+        // Save changes
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        // Dispatch domain events after successful save
+        if (_publisher != null)
+        {
+            foreach (var domainEvent in domainEvents)
+            {
+                await _publisher.Publish(domainEvent, cancellationToken);
+            }
+        }
+
+        // Clear domain events
+        foreach (var entity in ChangeTracker.Entries<Entity<Guid>>()
+            .Select(e => e.Entity)
+            .Where(e => e.DomainEvents.Any()))
+        {
+            entity.ClearDomainEvents();
+        }
+
+        return result;
     }
 }

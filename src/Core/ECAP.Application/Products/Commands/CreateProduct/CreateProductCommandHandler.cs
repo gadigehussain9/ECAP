@@ -7,6 +7,7 @@ using ECAP.Domain.ValueObjects;
 using ECAP.SharedKernel;
 using Mapster;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace ECAP.Application.Products.Commands.CreateProduct;
 
@@ -19,24 +20,34 @@ public sealed class CreateProductCommandHandler : IRequestHandler<CreateProductC
     private readonly IBrandRepository _brandRepository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<CreateProductCommandHandler> _logger;
 
     public CreateProductCommandHandler(
         IProductRepository productRepository,
         IBrandRepository brandRepository,
         ICategoryRepository categoryRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ILogger<CreateProductCommandHandler> logger)
     {
         _productRepository = productRepository;
         _brandRepository = brandRepository;
         _categoryRepository = categoryRepository;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<Result<ProductDto>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
+        _logger.LogInformation(
+            "Creating product with SKU: {Sku}, Name: {Name}, BrandId: {BrandId}",
+            request.Sku,
+            request.Name,
+            request.BrandId);
+
         // Check if SKU already exists
         if (await _productRepository.ExistsBySkuAsync(request.Sku, cancellationToken))
         {
+            _logger.LogWarning("Product creation failed: Duplicate SKU {Sku}", request.Sku);
             return Result<ProductDto>.Failure(
                 Error.Conflict("Product.Sku.Duplicate", $"A product with SKU '{request.Sku}' already exists"));
         }
@@ -45,6 +56,7 @@ public sealed class CreateProductCommandHandler : IRequestHandler<CreateProductC
         var brand = await _brandRepository.GetByIdAsync(request.BrandId, cancellationToken);
         if (brand is null)
         {
+            _logger.LogWarning("Product creation failed: Brand not found {BrandId}", request.BrandId);
             return Result<ProductDto>.Failure(
                 Error.NotFound("Brand.NotFound", $"Brand with ID '{request.BrandId}' was not found"));
         }

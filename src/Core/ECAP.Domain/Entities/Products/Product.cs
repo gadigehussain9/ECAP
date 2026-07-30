@@ -132,6 +132,17 @@ public sealed class Product : Entity<Guid>
             CreatedBy = createdBy
         };
 
+        // Raise domain event
+        product.RaiseDomainEvent(new Events.Products.ProductCreatedEvent(
+            product.Id, 
+            product.Sku.Value, 
+            product.Name, 
+            product.BrandId, 
+            product.CategoryId, 
+            product.Price, 
+            product.Currency, 
+            product.CreatedBy));
+
         return Result<Product>.Success(product);
     }
 
@@ -177,6 +188,16 @@ public sealed class Product : Entity<Guid>
         Price = price;
         UpdatedDate = DateTime.UtcNow;
         UpdatedBy = updatedBy;
+
+        // Raise domain event
+        RaiseDomainEvent(new Events.Products.ProductUpdatedEvent(
+            Id, 
+            Sku.Value, 
+            Name, 
+            BrandId, 
+            CategoryId, 
+            Price, 
+            UpdatedBy));
 
         return Result.Success();
     }
@@ -256,6 +277,9 @@ public sealed class Product : Entity<Guid>
         Status = ProductStatus.Active;
         UpdatedDate = DateTime.UtcNow;
         UpdatedBy = activatedBy;
+
+        // Raise domain event
+        RaiseDomainEvent(new Events.Products.ProductActivatedEvent(Id, Sku.Value, Name));
     }
 
     public void Deactivate(string? deactivatedBy = null)
@@ -263,6 +287,9 @@ public sealed class Product : Entity<Guid>
         Status = ProductStatus.Inactive;
         UpdatedDate = DateTime.UtcNow;
         UpdatedBy = deactivatedBy;
+
+        // Raise domain event
+        RaiseDomainEvent(new Events.Products.ProductDeactivatedEvent(Id, Sku.Value, Name));
     }
 
     public void Discontinue(string? discontinuedBy = null)
@@ -277,5 +304,8 @@ public sealed class Product : Entity<Guid>
         IsDeleted = true;
         UpdatedDate = DateTime.UtcNow;
         UpdatedBy = deletedBy;
+
+        // Raise domain event
+        RaiseDomainEvent(new Events.Products.ProductDeletedEvent(Id, Sku.Value, Name));
     }
 }

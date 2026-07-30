@@ -1,208 +1,598 @@
 # ECAP Coding Standards
 
-## C# Coding Conventions
+| Item | Value |
+|------|-------|
+| Document | Coding Standards |
+| Project | Enterprise Commerce & AI Platform (ECAP) |
+| Version | 1.0 |
+| Status | Approved |
+| Owner | Principal Architect |
+| Last Updated | 2026-07-30 |
 
-### Naming Conventions
+---
 
-- **Classes, Methods, Properties**: `PascalCase`
-- **Local variables, parameters**: `camelCase`
-- **Private fields**: `_camelCase` (with underscore prefix)
-- **Interfaces**: `IPascalCase` (start with I)
-- **Async methods**: End with `Async` suffix
-- **Test methods**: Use descriptive names with underscores (e.g., `GetProduct_WhenIdExists_ReturnsProduct`)
+# 1. Purpose
 
-### Code Organization
+This document defines the coding standards for the Enterprise Commerce & AI Platform (ECAP).
 
-1. **File Structure**
-   - One class per file
-   - File name matches class name
-   - Organize using statements (System first, then third-party, then project)
+The objectives are to:
 
-2. **Class Member Order**
-   - Constants
-   - Fields
-   - Constructors
-   - Properties
-   - Methods (public → private)
+- Improve code readability.
+- Ensure consistency across the codebase.
+- Reduce technical debt.
+- Improve maintainability.
+- Simplify onboarding.
+- Enable effective code reviews.
+- Produce production-quality software.
 
-### Vertical Slice Architecture
+These standards apply to all C#, .NET, Azure, AI and Infrastructure code within ECAP.
 
-```csharp
-// ✅ CORRECT: Feature-based organization
-Application/
-└── Features/
-    └── Catalog/
-        ├── Commands/
-        │   └── CreateProduct/
-        │       ├── CreateProductCommand.cs
-        │       ├── CreateProductCommandHandler.cs
-        │       └── CreateProductCommandValidator.cs
-        └── Queries/
-            └── GetProductById/
-                ├── GetProductByIdQuery.cs
-                └── GetProductByIdQueryHandler.cs
+---
 
-// ❌ WRONG: Layer-based organization
-Application/
-├── Commands/
-├── Queries/
-└── Handlers/
+# 2. General Principles
+
+Every developer shall follow:
+
+- SOLID Principles
+- Clean Code
+- Clean Architecture
+- DRY (Don't Repeat Yourself)
+- KISS (Keep It Simple)
+- YAGNI (You Aren't Gonna Need It)
+- CQRS
+- Domain-Driven Design (DDD)
+
+Code should optimise for readability and maintainability rather than cleverness.
+
+---
+
+# 3. Naming Conventions
+
+## Projects
+
+```
+Ecap.Api
+Ecap.Application
+Ecap.Domain
+Ecap.Infrastructure
+Ecap.Contracts
+Ecap.SharedKernel
 ```
 
-### CQRS Pattern
+---
+
+## Classes
+
+Use PascalCase.
+
+Good
+
+```
+Product
+ProductRepository
+CreateProductCommand
+SearchProductsQuery
+ProductCreatedEvent
+```
+
+Bad
+
+```
+product
+Product_class
+myProduct
+```
+
+---
+
+## Interfaces
+
+Prefix with `I`.
+
+```
+IProductRepository
+ICurrentUserService
+IClock
+IChatCompletionProvider
+```
+
+---
+
+## Methods
+
+Use PascalCase and verbs.
+
+Good
+
+```
+CreateProductAsync()
+SearchProductsAsync()
+DeleteProductAsync()
+```
+
+Bad
+
+```
+DoIt()
+Run()
+Method1()
+```
+
+---
+
+## Variables
+
+Use meaningful camelCase names.
+
+Good
+
+```
+product
+category
+productId
+searchRequest
+```
+
+Bad
+
+```
+obj
+temp
+data
+x
+```
+
+---
+
+## Constants
+
+Use PascalCase.
+
+```
+DefaultPageSize
+MaximumRetryCount
+```
+
+---
+
+## Enums
+
+Use singular nouns.
+
+```
+OrderStatus
+PaymentType
+ProductState
+```
+
+---
+
+# 4. File Organisation
+
+One public class per file.
+
+File name must match the class name.
+
+Example
+
+```
+CreateProductCommand.cs
+
+ProductRepository.cs
+
+Product.cs
+```
+
+---
+
+# 5. Class Design
+
+Classes should:
+
+- Have a single responsibility.
+- Be cohesive.
+- Be easy to test.
+- Be small and focused.
+
+Avoid "God Classes" with multiple responsibilities.
+
+---
+
+# 6. Method Design
+
+Methods should:
+
+- Perform one task.
+- Be easy to understand.
+- Have descriptive names.
+- Return early when appropriate.
+- Avoid excessive nesting.
+
+Aim for methods generally under **30 lines**, unless a longer method clearly improves readability.
+
+---
+
+# 7. Asynchronous Programming
+
+Prefer asynchronous APIs.
+
+Good
 
 ```csharp
-// Command (changes state)
-public sealed record CreateProductCommand(string Name, decimal Price) : IRequest<Result<Guid>>;
+await repository.GetByIdAsync(id, cancellationToken);
+```
 
-public sealed class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, Result<Guid>>
+Bad
+
+```csharp
+repository.GetById(id);
+
+repository.GetByIdAsync(id).Result;
+
+repository.GetByIdAsync(id).Wait();
+```
+
+Always propagate `CancellationToken` through async call chains.
+
+---
+
+# 8. Exception Handling
+
+Use exceptions only for exceptional situations.
+
+Do not swallow exceptions.
+
+Good
+
+```csharp
+try
 {
-    public async Task<Result<Guid>> Handle(CreateProductCommand command, CancellationToken ct)
-    {
-        // Implementation
-    }
+    await repository.SaveChangesAsync(cancellationToken);
 }
-
-// Query (reads state)
-public sealed record GetProductByIdQuery(Guid Id) : IRequest<ProductDto>;
-
-public sealed class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, ProductDto>
+catch (SqlException ex)
 {
-    public async Task<ProductDto> Handle(GetProductByIdQuery query, CancellationToken ct)
-    {
-        // Implementation
-    }
+    logger.LogError(ex, "Database update failed.");
+    throw;
 }
 ```
 
-### Error Handling
+Bad
 
 ```csharp
-// ✅ CORRECT: Use Result pattern
-public async Task<Result<Product>> GetProductAsync(Guid id)
+catch
 {
-    var product = await _repository.GetByIdAsync(id);
-
-    if (product is null)
-        return Result<Product>.Failure(new Error("Product.NotFound", $"Product {id} not found"));
-
-    return Result<Product>.Success(product);
-}
-
-// ❌ WRONG: Throw exceptions for business logic errors
-public async Task<Product> GetProductAsync(Guid id)
-{
-    var product = await _repository.GetByIdAsync(id);
-
-    if (product is null)
-        throw new NotFoundException(nameof(Product), id); // Only for exceptional cases
-
-    return product;
 }
 ```
 
-### Dependency Injection
+---
+
+# 9. Logging
+
+Use structured logging.
+
+Good
 
 ```csharp
-// ✅ CORRECT: Interface-based dependencies
+logger.LogInformation(
+    "Product {ProductId} created by {UserId}",
+    product.Id,
+    userId);
+```
+
+Bad
+
+```csharp
+logger.LogInformation(
+    $"Product {product.Id} created");
+```
+
+Never log:
+
+- Passwords
+- Access tokens
+- API keys
+- Connection strings
+- Personal information
+- Secrets
+
+---
+
+# 10. Dependency Injection
+
+Use constructor injection.
+
+Good
+
+```csharp
 public class ProductService
 {
-    private readonly IRepository<Product, Guid> _repository;
-    private readonly IEmailService _emailService;
+    private readonly IProductRepository repository;
 
-    public ProductService(IRepository<Product, Guid> repository, IEmailService emailService)
+    public ProductService(IProductRepository repository)
     {
-        _repository = repository;
-        _emailService = emailService;
+        this.repository = repository;
     }
 }
-
-// ❌ WRONG: Concrete dependencies
-public class ProductService
-{
-    private readonly ProductRepository _repository; // Tight coupling
-}
 ```
 
-### Async/Await
+Avoid:
+
+- Service Locator
+- Static services
+- Manual dependency creation
+
+---
+
+# 11. Repository Rules
+
+Repositories should:
+
+- Encapsulate persistence.
+- Return domain entities.
+- Be asynchronous.
+- Hide EF Core implementation details.
+
+Repositories must not:
+
+- Contain business rules.
+- Call external APIs.
+- Access HTTP context.
+
+---
+
+# 12. Entity Framework Core
+
+Use:
+
+- Fluent API configuration.
+- Migrations.
+- AsNoTracking() for read operations.
+- Optimistic concurrency where appropriate.
+- Cancellation tokens.
+
+Avoid:
+
+- Lazy loading.
+- N+1 query problems.
+- Raw SQL unless justified.
+
+---
+
+# 13. CQRS Standards
+
+Commands
+
+- Change system state.
+- Return minimal responses.
+- Publish domain events when required.
+
+Queries
+
+- Never modify data.
+- Return DTOs.
+- Support pagination, filtering and sorting.
+
+Handlers
+
+- One responsibility.
+- No presentation logic.
+- No HTTP context usage.
+
+---
+
+# 14. Validation
+
+Use FluentValidation.
+
+Validate:
+
+- Required fields.
+- Length.
+- Formats.
+- Business rules.
+- Ranges.
+
+Validation should occur before business logic.
+
+---
+
+# 15. API Standards
+
+Controllers should:
+
+- Be thin.
+- Delegate work to MediatR.
+- Return appropriate HTTP status codes.
+- Return Problem Details for errors.
+
+Controllers must not contain business logic.
+
+---
+
+# 16. Comments
+
+Prefer self-explanatory code.
+
+Write comments only when they add value.
+
+Good examples:
+
+- Business rules
+- Complex algorithms
+- Non-obvious decisions
+- External constraints
+
+Avoid comments that simply restate the code.
+
+---
+
+# 17. Magic Values
+
+Avoid hard-coded values.
+
+Bad
 
 ```csharp
-// ✅ CORRECT
-public async Task<Product> GetProductAsync(Guid id, CancellationToken cancellationToken)
-{
-    return await _context.Products
-        .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
-}
-
-// ❌ WRONG: Missing CancellationToken
-public async Task<Product> GetProductAsync(Guid id)
-{
-    return await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
-}
+if (price > 100)
 ```
 
-### Entity Framework Core
+Good
 
 ```csharp
-// ✅ CORRECT: Use configurations
-public class ProductConfiguration : IEntityTypeConfiguration<Product>
-{
-    public void Configure(EntityTypeBuilder<Product> builder)
-    {
-        builder.ToTable("Products");
-        builder.HasKey(p => p.Id);
-        builder.Property(p => p.Name).IsRequired().HasMaxLength(200);
-    }
-}
-
-// ❌ WRONG: Fluent API in OnModelCreating
-protected override void OnModelCreating(ModelBuilder modelBuilder)
-{
-    modelBuilder.Entity<Product>().HasKey(p => p.Id);
-    modelBuilder.Entity<Product>().Property(p => p.Name).IsRequired();
-    // ... hundreds of lines
-}
+if (price > BusinessRules.MaximumDiscountPrice)
 ```
 
-### Testing
+---
 
-```csharp
-// ✅ CORRECT: Arrange-Act-Assert pattern
-[Fact]
-public async Task CreateProduct_WithValidData_ReturnsSuccessResult()
-{
-    // Arrange
-    var command = new CreateProductCommand("Test Product", 99.99m);
-    var handler = new CreateProductCommandHandler(_repository, _unitOfWork);
+# 18. Configuration
 
-    // Act
-    var result = await handler.Handle(command, CancellationToken.None);
+Configuration belongs in:
 
-    // Assert
-    result.IsSuccess.Should().BeTrue();
-    result.Value.Should().NotBeEmpty();
-}
+- appsettings.json
+- Azure App Configuration
+- Azure Key Vault
+- Environment variables
 
-// Use Moq for mocking
-var mockRepository = new Mock<IRepository<Product, Guid>>();
-mockRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-    .ReturnsAsync(new Product());
+Never hard-code:
+
+- URLs
+- Secrets
+- Keys
+- Connection strings
+
+---
+
+# 19. Testing Expectations
+
+Every feature should include:
+
+- Unit Tests
+- Integration Tests
+- API Tests (where applicable)
+
+Code should be designed for testability.
+
+---
+
+# 20. Code Review Checklist
+
+Reviewers should verify:
+
+- Correctness.
+- Readability.
+- Simplicity.
+- Performance.
+- Security.
+- Test coverage.
+- Logging.
+- Exception handling.
+- Documentation updates.
+
+---
+
+# 21. Code Smells
+
+Avoid:
+
+- Long methods.
+- Large classes.
+- Duplicate logic.
+- Deep nesting.
+- Primitive obsession.
+- Feature envy.
+- Excessive parameters.
+- Circular dependencies.
+
+---
+
+# 22. Performance Guidelines
+
+Prefer:
+
+- Asynchronous I/O.
+- Pagination.
+- Efficient LINQ queries.
+- Caching where appropriate.
+- Batch operations.
+- Streaming for large datasets.
+
+Measure performance before optimising.
+
+---
+
+# 23. Security Guidelines
+
+Always:
+
+- Validate input.
+- Use parameterised queries.
+- Enforce authorisation.
+- Protect sensitive data.
+- Use Managed Identity where supported.
+- Retrieve secrets from Azure Key Vault.
+
+---
+
+# 24. AI Coding Guidelines
+
+AI-related code shall:
+
+- Depend on provider interfaces.
+- Avoid vendor-specific logic in business code.
+- Log AI requests without exposing sensitive prompts.
+- Capture latency and token usage.
+- Support prompt versioning.
+
+---
+
+# 25. Git Standards
+
+Branch names:
+
+```
+feature/product-search
+
+feature/product-create
+
+bugfix/product-validation
 ```
 
-## Code Quality Tools
+Commit format:
 
-- **EditorConfig**: Enforces coding style
-- **Roslyn Analyzers**: Catches common mistakes
-- **Architecture Tests**: Validates Clean Architecture rules
-- **Code Coverage**: Minimum 80% coverage for Domain and Application layers
+```
+feat(product): add create product command
 
-## Pre-Commit Checklist
+fix(product): validate duplicate sku
 
-- [ ] Code builds without warnings
-- [ ] All tests pass
-- [ ] Code coverage meets minimum threshold
-- [ ] Architecture tests pass
-- [ ] No commented-out code
-- [ ] XML documentation for public APIs
-- [ ] Followed naming conventions
-- [ ] Used async/await with CancellationToken
+refactor(product): simplify repository
+
+test(product): add integration tests
+
+docs(product): update API documentation
+```
+
+---
+
+# 26. Definition of Done
+
+Code is complete only when:
+
+- Builds successfully.
+- Passes all tests.
+- Meets coding standards.
+- Has no critical warnings.
+- Passes code review.
+- Documentation is updated.
+- CI/CD pipeline succeeds.
+
+---
+
+# 27. References
+
+- ADR-001 – Use CQRS
+- ADR-002 – Adopt Clean Architecture
+- ADR-003 – Use Azure SQL Database
+- ADR-004 – Adopt Azure AI Foundry and Azure OpenAI
+- ADR-005 – Use Bicep
+- 15-Implementation-Guide.md
+- 14-Testing.md

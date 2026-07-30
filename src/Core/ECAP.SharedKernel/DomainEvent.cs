@@ -1,10 +1,12 @@
+using MediatR;
+
 namespace ECAP.SharedKernel;
 
 /// <summary>
 /// Base record for domain events.
 /// Domain events represent something that happened in the domain that domain experts care about.
 /// </summary>
-public abstract record DomainEvent
+public abstract record DomainEvent : INotification
 {
     /// <summary>
     /// Gets the unique identifier for this event.

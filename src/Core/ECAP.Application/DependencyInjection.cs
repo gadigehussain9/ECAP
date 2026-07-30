@@ -1,3 +1,4 @@
+using ECAP.Application.Common.Behaviors;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -13,10 +14,20 @@ public static class DependencyInjection
     {
         var assembly = Assembly.GetExecutingAssembly();
 
-        // Register MediatR
+        // Register MediatR with pipeline behaviors
         services.AddMediatR(config =>
         {
             config.RegisterServicesFromAssembly(assembly);
+
+            // Register pipeline behaviors (order matters!)
+            // 1. Logging - logs all requests
+            config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+
+            // 2. Validation - validates before handling
+            config.AddOpenBehavior(typeof(ValidationBehavior<,>));
+
+            // 3. Performance - measures execution time
+            config.AddOpenBehavior(typeof(PerformanceBehavior<,>));
         });
 
         // Register FluentValidation validators

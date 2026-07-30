@@ -8,10 +8,17 @@ namespace ECAP.SharedKernel;
 public abstract class Entity<TId> : IEquatable<Entity<TId>>
     where TId : notnull
 {
+    private readonly List<DomainEvent> _domainEvents = new();
+
     /// <summary>
     /// Gets the unique identifier for this entity.
     /// </summary>
     public TId Id { get; protected set; }
+
+    /// <summary>
+    /// Gets the domain events raised by this entity.
+    /// </summary>
+    public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
     protected Entity(TId id)
     {
@@ -24,6 +31,23 @@ public abstract class Entity<TId> : IEquatable<Entity<TId>>
     protected Entity()
     {
         Id = default!;
+    }
+
+    /// <summary>
+    /// Raises a domain event.
+    /// </summary>
+    /// <param name="domainEvent">The domain event to raise</param>
+    protected void RaiseDomainEvent(DomainEvent domainEvent)
+    {
+        _domainEvents.Add(domainEvent);
+    }
+
+    /// <summary>
+    /// Clears all domain events.
+    /// </summary>
+    public void ClearDomainEvents()
+    {
+        _domainEvents.Clear();
     }
 
     public override bool Equals(object? obj)

@@ -1,58 +1,467 @@
-# 2. Use Clean Architecture
+# ADR-002: Adopt Clean Architecture
 
-Date: 2026-07-20
+| Item | Value |
+|------|-------|
+| ADR Number | ADR-002 |
+| Title | Adopt Clean Architecture |
+| Status | Accepted |
+| Date | 2026-07-30 |
+| Decision Makers | Principal Architect, Development Team |
+| Epic | Enterprise Commerce & AI Platform (ECAP) |
+| Related Documents | 06-Architecture.md, 09-CQRS.md, 15-Implementation-Guide.md |
 
-## Status
+---
 
-Accepted
+# 1. Context
 
-## Context
+The Enterprise Commerce & AI Platform (ECAP) is expected to become a long-lived enterprise platform supporting multiple business domains including:
 
-We need an architectural pattern that provides clear separation of concerns, testability, and maintainability for our enterprise e-commerce platform.
+- Product Catalog
+- Inventory
+- Orders
+- Customers
+- Payments
+- Search
+- Reviews
+- AI Platform
+- Notifications
+- Analytics
 
-## Decision
+The platform will continue evolving over many years.
 
-We will implement Clean Architecture (also known as Hexagonal Architecture or Ports and Adapters) with the following layers:
+Enterprise applications typically require:
 
-1. **Core** (innermost)
-   - `SharedKernel`: Domain primitives (Entity, ValueObject, Result, Guard)
-   - `Domain`: Business entities, value objects, domain services, repository interfaces
-   - `Application`: Use cases, CQRS handlers, DTOs, application services
+- Independent business logic
+- Multiple user interfaces
+- Multiple data stores
+- External integrations
+- AI capabilities
+- Cloud-native deployment
+- Long-term maintainability
 
-2. **Infrastructure** (outer)
-   - `Infrastructure.Persistence`: EF Core, DbContext, repository implementations
-   - `Infrastructure.Identity`: Authentication/Authorization (JWT, Identity)
-   - `Infrastructure.ExternalServices`: Third-party integrations (email, payment)
-   - `Infrastructure.Messaging`: Event bus implementations (RabbitMQ, Azure Service Bus)
+Traditional layered architectures often introduce tight coupling between presentation, business logic and infrastructure.
 
-3. **Presentation** (outermost)
-   - `Api`: ASP.NET Core Web API, controllers, middleware
+Changes to infrastructure frequently impact business logic, making the system harder to evolve and test.
 
-### Dependency Rules
-- Core layers depend only on themselves (Domain → SharedKernel, Application → Domain)
-- Infrastructure depends on Core (implements interfaces from Application/Domain)
-- Presentation depends on Infrastructure (for DI) and Application (for use cases)
+---
 
-### Benefits
-- **Testability**: Core business logic can be tested without external dependencies
-- **Independence**: Business rules don't depend on UI, database, or external agencies
-- **Flexibility**: Easy to swap infrastructure implementations (e.g., change database)
-- **Maintainability**: Clear boundaries make code easier to understand and modify
+# 2. Decision
 
-## Consequences
+ECAP will adopt **Clean Architecture** as its primary architectural style.
 
-### Positive
-- High testability through dependency injection and interface abstraction
-- Business logic remains stable as technology changes
-- Multiple teams can work on different layers simultaneously
-- Easy to add new features without affecting existing code
+The solution will separate responsibilities into independent layers with dependencies always pointing toward the Domain.
 
-### Negative
-- More initial setup complexity compared to traditional layered architecture
-- Requires discipline to maintain architectural boundaries
-- May seem over-engineered for simple CRUD applications
+Core business rules will remain independent of:
 
-### Mitigation
-- Use ArchitectureTests to enforce dependency rules automatically
-- Document architectural decisions in ADRs
-- Provide clear examples and templates for new features
+- Database technology
+- UI framework
+- Cloud provider
+- AI provider
+- Infrastructure implementation
+
+---
+
+# 3. Architecture Overview
+
+```
++------------------------------------------------+
+|                  Presentation                  |
+| ASP.NET Core API / Blazor / Future Clients     |
++------------------------------------------------+
+                     │
+                     ▼
++------------------------------------------------+
+|                 Application                    |
+| CQRS | Use Cases | DTOs | Validation           |
++------------------------------------------------+
+                     │
+                     ▼
++------------------------------------------------+
+|                    Domain                      |
+| Entities | Value Objects | Business Rules      |
++------------------------------------------------+
+                     ▲
+                     │
++------------------------------------------------+
+|                Infrastructure                  |
+| EF Core | Azure SQL | Blob | Key Vault         |
+| Redis | AI Providers | Service Bus             |
++------------------------------------------------+
+```
+
+Dependencies always point inward.
+
+---
+
+# 4. Decision Drivers
+
+This decision supports:
+
+- Maintainability
+- Testability
+- Scalability
+- Technology independence
+- AI readiness
+- Cloud-native design
+- Long-term evolution
+
+---
+
+# 5. Dependency Rule
+
+Dependencies shall follow:
+
+```
+Presentation
+        │
+        ▼
+Application
+        │
+        ▼
+Domain
+
+Infrastructure
+        │
+        └──────────────►
+Application
+```
+
+The Domain layer must never reference:
+
+- Infrastructure
+- API
+- EF Core
+- Azure SDKs
+- ASP.NET Core
+- UI frameworks
+
+---
+
+# 6. Layer Responsibilities
+
+## Presentation
+
+Responsibilities
+
+- HTTP Endpoints
+- Authentication
+- Authorization
+- Model Binding
+- API Documentation
+
+Must NOT contain:
+
+- Business logic
+- SQL
+- Domain rules
+
+---
+
+## Application
+
+Responsibilities
+
+- CQRS
+- Commands
+- Queries
+- DTOs
+- Validators
+- Interfaces
+- Use Cases
+- Domain Event Coordination
+
+Must NOT contain:
+
+- SQL
+- Azure SDK logic
+- UI logic
+
+---
+
+## Domain
+
+Responsibilities
+
+- Business rules
+- Entities
+- Value Objects
+- Domain Events
+- Business invariants
+
+Must NOT depend on any external framework.
+
+---
+
+## Infrastructure
+
+Responsibilities
+
+- Database
+- Blob Storage
+- Azure SDKs
+- Email
+- Service Bus
+- AI Providers
+- Logging
+
+Implements interfaces defined by the Application layer.
+
+---
+
+# 7. Solution Structure
+
+```
+src/
+
+├── Ecap.Api
+├── Ecap.Application
+├── Ecap.Domain
+├── Ecap.Infrastructure
+├── Ecap.Contracts
+├── Ecap.SharedKernel
+
+tests/
+
+├── Ecap.UnitTests
+├── Ecap.IntegrationTests
+├── Ecap.ApiTests
+```
+
+---
+
+# 8. Benefits
+
+## Separation of Concerns
+
+Each layer has one clear responsibility.
+
+---
+
+## Independent Business Logic
+
+Business rules remain independent from frameworks.
+
+---
+
+## Testability
+
+Domain and Application layers can be tested without Azure resources or databases.
+
+---
+
+## Technology Independence
+
+Infrastructure can change without affecting business logic.
+
+Examples:
+
+- Azure SQL → Cosmos DB
+- Azure OpenAI → Other LLM providers
+- REST → GraphQL
+
+---
+
+## AI Readiness
+
+AI capabilities become infrastructure concerns.
+
+Application interacts only through interfaces such as:
+
+- IChatCompletionProvider
+- IEmbeddingProvider
+- IVectorSearchProvider
+
+---
+
+## Cloud Readiness
+
+Azure services are isolated within Infrastructure.
+
+The business logic remains cloud-agnostic.
+
+---
+
+# 9. Consequences
+
+## Positive
+
+- High maintainability.
+- Excellent testability.
+- Clear architecture.
+- Better onboarding.
+- Easier technology upgrades.
+- Supports long-term growth.
+
+## Negative
+
+- More projects.
+- More interfaces.
+- Slightly higher learning curve.
+- Additional abstraction.
+
+These trade-offs are acceptable for an enterprise platform.
+
+---
+
+# 10. Alternatives Considered
+
+## Alternative 1 — Layered Architecture
+
+Structure:
+
+Controller
+
+↓
+
+Service
+
+↓
+
+Repository
+
+Advantages
+
+- Simple.
+- Familiar.
+- Fewer projects.
+
+Disadvantages
+
+- Coupled business logic.
+- Large services.
+- Difficult testing.
+
+Decision
+
+Rejected.
+
+---
+
+## Alternative 2 — Traditional N-Tier Architecture
+
+Advantages
+
+- Well known.
+- Easy for small systems.
+
+Disadvantages
+
+- Business logic leaks into infrastructure.
+- Harder to evolve.
+
+Decision
+
+Rejected.
+
+---
+
+## Alternative 3 — Vertical Slice Architecture Only
+
+Advantages
+
+- Feature-oriented.
+- Excellent with CQRS.
+
+Disadvantages
+
+- Without Clean Architecture, dependency boundaries become weaker.
+
+Decision
+
+Partially adopted.
+
+Vertical Slice organisation will be used **inside the Application layer** while Clean Architecture governs the overall solution.
+
+---
+
+# 11. Implementation Guidelines
+
+Developers shall:
+
+- Keep Domain framework-independent.
+- Define interfaces in Application.
+- Implement interfaces in Infrastructure.
+- Keep Controllers thin.
+- Place business rules in Domain.
+- Use CQRS for use cases.
+- Follow dependency inversion.
+
+---
+
+# 12. Technology Mapping
+
+| Layer | Technologies |
+|--------|--------------|
+| Presentation | ASP.NET Core, Swagger |
+| Application | MediatR, FluentValidation |
+| Domain | Plain C# |
+| Infrastructure | EF Core, Azure SDKs, Azure SQL, Blob Storage, Redis, Key Vault |
+| Testing | xUnit, FluentAssertions |
+
+---
+
+# 13. Risks
+
+Potential risks:
+
+- Over-abstraction.
+- Excessive interfaces.
+- Business logic leaking into controllers.
+- Infrastructure dependencies introduced into Domain.
+
+Mitigation:
+
+- Code reviews.
+- Architecture validation.
+- ADR compliance.
+- Dependency analysis.
+
+---
+
+# 14. Compliance
+
+This decision aligns with:
+
+- SOLID Principles
+- Clean Architecture (Robert C. Martin)
+- Domain-Driven Design (DDD)
+- Azure Well-Architected Framework
+- Microsoft .NET Best Practices
+
+---
+
+# 15. Review Criteria
+
+This ADR should be reviewed if:
+
+- A different architectural style is adopted.
+- Microservices require different boundaries.
+- Platform requirements change significantly.
+- The dependency rule can no longer be maintained.
+
+---
+
+# 16. Status History
+
+| Date | Status | Notes |
+|------|--------|-------|
+| 2026-07-30 | Accepted | Initial architectural decision for ECAP |
+
+---
+
+# 17. Related ADRs
+
+- ADR-001 – Use CQRS
+- ADR-003 – Use Azure SQL Database
+- ADR-004 – Use Azure API Management
+- ADR-005 – Use Bicep for Infrastructure as Code
+
+---
+
+# 18. Summary
+
+ECAP adopts **Clean Architecture** to ensure long-term maintainability, testability and technology independence.
+
+The architecture enforces clear separation of responsibilities, keeps business logic independent of infrastructure and cloud services, and provides a strong foundation for future AI capabilities, event-driven architecture and cloud-native deployment.
+
+Clean Architecture will serve as the architectural backbone for all current and future ECAP modules.
