@@ -1,4 +1,5 @@
 using ECAP.Application.Common.Behaviors;
+using ECAP.Application.Common.Mappings;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -33,8 +34,8 @@ public static class DependencyInjection
         // Register FluentValidation validators
         services.AddValidatorsFromAssembly(assembly);
 
-        // Register Mapster
-        // Mapster doesn't require explicit registration - it works via extension methods
+        // Register Mapster configurations
+        MapsterConfiguration.RegisterMappings();
 
         return services;
     }

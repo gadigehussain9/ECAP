@@ -1,16 +1,17 @@
-using ECAP.Application;
-using ECAP.Infrastructure.Persistence;
-using ECAP.Infrastructure.Identity;
-using ECAP.Infrastructure.ExternalServices;
-using ECAP.Infrastructure.Messaging;
-using ECAP.Api.Middleware;
-using ECAP.Api.Configuration;
-using ECAP.Api.Services;
+using System.Text;
 using Azure.Identity;
-using Serilog;
+using ECAP.Api.Configuration;
+using ECAP.Api.Middleware;
+using ECAP.Api.Services;
+using ECAP.Application;
+using ECAP.Infrastructure.ExternalServices;
+using ECAP.Infrastructure.Identity;
+using ECAP.Infrastructure.Messaging;
+using ECAP.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Scalar.AspNetCore;
+using Serilog;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -117,7 +118,7 @@ builder.Services.AddAuthorization(options =>
 
 // Add OpenAPI/Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
 
 // Add Application layer (MediatR, FluentValidation, Mapster)
 builder.Services.AddApplication();
@@ -169,8 +170,8 @@ app.UseSerilogRequestLogging();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();

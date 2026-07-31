@@ -32,6 +32,22 @@ public class ApplicationDbContext : DbContext
         // Apply all entity configurations from this assembly
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
+        // Ignore DomainEvents property for all entities (it's not a navigation property)
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            // Skip owned entity types - they are configured through their owner
+            if (entityType.IsOwned())
+            {
+                continue;
+            }
+
+            var domainEventsProperty = entityType.ClrType.GetProperty("DomainEvents");
+            if (domainEventsProperty != null)
+            {
+                modelBuilder.Entity(entityType.ClrType).Ignore(domainEventsProperty.Name);
+            }
+        }
+
         // Add global query filters for soft delete
         modelBuilder.Entity<Product>().HasQueryFilter(p => !p.IsDeleted);
         modelBuilder.Entity<Brand>().HasQueryFilter(b => !b.IsDeleted);

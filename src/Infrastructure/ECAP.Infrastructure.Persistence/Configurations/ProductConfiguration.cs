@@ -143,6 +143,9 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
 
             images.HasKey("Id");
 
+            // Ignore DomainEvents property from base Entity class
+            images.Ignore(i => i.DomainEvents);
+
             images.Property(i => i.Url)
                 .HasMaxLength(500)
                 .IsRequired();

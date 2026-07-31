@@ -37,19 +37,6 @@ public sealed class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, 
 
         var productDtos = products.Adapt<List<ProductDto>>();
 
-        // Enhance DTOs with calculated fields
-        foreach (var dto in productDtos)
-        {
-            var product = products.First(p => p.Id == dto.Id);
-            var enhanced = dto with
-            {
-                BrandName = product.Brand?.Name ?? string.Empty,
-                CategoryName = product.Category?.Name ?? string.Empty,
-                IsLowStock = product.IsLowStock()
-            };
-            productDtos[productDtos.IndexOf(dto)] = enhanced;
-        }
-
         var pagedResult = new PagedResult<ProductDto>(
             productDtos,
             request.PageNumber,
