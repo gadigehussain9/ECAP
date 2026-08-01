@@ -1,0 +1,643 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "languageVersion": "2.0",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.35.1.17967",
+      "templateHash": "7479104255118971686"
+    }
+  },
+  "parameters": {
+    "applicationName": {
+      "type": "string",
+      "metadata": {
+        "description": "Short application identifier used in resource names and tags."
+      }
+    },
+    "environment": {
+      "type": "string",
+      "metadata": {
+        "description": "Deployment environment, for example dev, qa, stage, or prod."
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure region for the environment resources."
+      }
+    },
+    "resourceGroupPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Prefix used for the environment Resource Group name."
+      }
+    },
+    "owner": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource owner or owning team."
+      }
+    },
+    "managedBy": {
+      "type": "string",
+      "metadata": {
+        "description": "Infrastructure management system."
+      }
+    },
+    "costCenter": {
+      "type": "string",
+      "metadata": {
+        "description": "Cost allocation identifier."
+      }
+    },
+    "businessUnit": {
+      "type": "string",
+      "metadata": {
+        "description": "Business unit responsible for the resources."
+      }
+    },
+    "criticality": {
+      "type": "string",
+      "metadata": {
+        "description": "Business criticality classification."
+      }
+    },
+    "createdBy": {
+      "type": "string",
+      "metadata": {
+        "description": "Identity that created or deployed the resources."
+      }
+    },
+    "infrastructureVersion": {
+      "type": "string",
+      "metadata": {
+        "description": "Version of the infrastructure contract."
+      }
+    },
+    "additionalTags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Additional resource tags."
+      }
+    },
+    "logAnalyticsSku": {
+      "type": "string",
+      "defaultValue": "PerGB2018",
+      "metadata": {
+        "description": "Log Analytics workspace SKU."
+      }
+    },
+    "logAnalyticsRetentionInDays": {
+      "type": "int",
+      "defaultValue": 30,
+      "metadata": {
+        "description": "Number of days to retain Log Analytics data."
+      }
+    },
+    "logAnalyticsPublicNetworkAccessForIngestion": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "metadata": {
+        "description": "Whether public Log Analytics ingestion is enabled."
+      }
+    },
+    "logAnalyticsPublicNetworkAccessForQuery": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "metadata": {
+        "description": "Whether public Log Analytics queries are enabled."
+      }
+    },
+    "applicationInsightsKind": {
+      "type": "string",
+      "defaultValue": "web",
+      "metadata": {
+        "description": "Application Insights resource kind."
+      }
+    },
+    "applicationInsightsType": {
+      "type": "string",
+      "defaultValue": "web",
+      "metadata": {
+        "description": "Application Insights application type."
+      }
+    }
+  },
+  "variables": {
+    "nameSuffix": "[format('{0}-{1}', toLower(parameters('applicationName')), toLower(parameters('environment')))]",
+    "resourceGroupName": "[format('{0}-{1}', parameters('resourceGroupPrefix'), variables('nameSuffix'))]",
+    "standardTags": "[union(parameters('additionalTags'), createObject('Application', parameters('applicationName'), 'Environment', parameters('environment'), 'Owner', parameters('owner'), 'ManagedBy', parameters('managedBy'), 'CostCenter', parameters('costCenter'), 'BusinessUnit', parameters('businessUnit'), 'Criticality', parameters('criticality'), 'CreatedBy', parameters('createdBy'), 'Version', parameters('infrastructureVersion')))]"
+  },
+  "resources": {
+    "resourceGroup": {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2024-03-01",
+      "name": "[variables('resourceGroupName')]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('standardTags')]"
+    },
+    "naming": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))]",
+      "location": "[deployment().location]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "applicationName": {
+            "value": "[parameters('applicationName')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "resourcePrefix": {
+            "value": "[parameters('resourceGroupPrefix')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "9510702233542593775"
+            }
+          },
+          "parameters": {
+            "applicationName": {
+              "type": "string",
+              "metadata": {
+                "description": "Short application identifier used in ECAP resource names."
+              }
+            },
+            "environment": {
+              "type": "string",
+              "metadata": {
+                "description": "Deployment environment, for example dev, qa, stage, or prod."
+              }
+            },
+            "resourcePrefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource type prefix used to construct a resource name."
+              }
+            }
+          },
+          "variables": {
+            "nameSuffix": "[format('{0}-{1}', toLower(parameters('applicationName')), toLower(parameters('environment')))]"
+          },
+          "resources": [],
+          "outputs": {
+            "resourceGroupName": {
+              "type": "string",
+              "value": "[format('{0}-{1}', parameters('resourcePrefix'), variables('nameSuffix'))]"
+            },
+            "logAnalyticsWorkspaceName": {
+              "type": "string",
+              "value": "[format('law-{0}', variables('nameSuffix'))]"
+            },
+            "applicationInsightsName": {
+              "type": "string",
+              "value": "[format('appi-{0}', variables('nameSuffix'))]"
+            }
+          }
+        }
+      }
+    },
+    "tagging": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('ecap-tags-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))]",
+      "location": "[deployment().location]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "application": {
+            "value": "[parameters('applicationName')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "owner": {
+            "value": "[parameters('owner')]"
+          },
+          "managedBy": {
+            "value": "[parameters('managedBy')]"
+          },
+          "costCenter": {
+            "value": "[parameters('costCenter')]"
+          },
+          "businessUnit": {
+            "value": "[parameters('businessUnit')]"
+          },
+          "criticality": {
+            "value": "[parameters('criticality')]"
+          },
+          "createdBy": {
+            "value": "[parameters('createdBy')]"
+          },
+          "version": {
+            "value": "[parameters('infrastructureVersion')]"
+          },
+          "additionalTags": {
+            "value": "[parameters('additionalTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "1722360712159472419"
+            }
+          },
+          "parameters": {
+            "application": {
+              "type": "string",
+              "metadata": {
+                "description": "Application name used for resource governance and cost reporting."
+              }
+            },
+            "environment": {
+              "type": "string",
+              "metadata": {
+                "description": "Deployment environment."
+              }
+            },
+            "owner": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource owner or owning team."
+              }
+            },
+            "managedBy": {
+              "type": "string",
+              "metadata": {
+                "description": "Infrastructure management system."
+              }
+            },
+            "costCenter": {
+              "type": "string",
+              "metadata": {
+                "description": "Cost allocation identifier."
+              }
+            },
+            "businessUnit": {
+              "type": "string",
+              "metadata": {
+                "description": "Business unit responsible for the resource."
+              }
+            },
+            "criticality": {
+              "type": "string",
+              "metadata": {
+                "description": "Business criticality classification."
+              }
+            },
+            "createdBy": {
+              "type": "string",
+              "metadata": {
+                "description": "Identity that created or deployed the resource."
+              }
+            },
+            "version": {
+              "type": "string",
+              "metadata": {
+                "description": "Version of the infrastructure contract."
+              }
+            },
+            "additionalTags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Additional tags. Required ECAP tags always take precedence."
+              }
+            }
+          },
+          "resources": [],
+          "outputs": {
+            "standardTags": {
+              "type": "object",
+              "value": "[union(parameters('additionalTags'), createObject('Application', parameters('application'), 'Environment', parameters('environment'), 'Owner', parameters('owner'), 'ManagedBy', parameters('managedBy'), 'CostCenter', parameters('costCenter'), 'BusinessUnit', parameters('businessUnit'), 'Criticality', parameters('criticality'), 'CreatedBy', parameters('createdBy'), 'Version', parameters('version')))]"
+            }
+          }
+        }
+      }
+    },
+    "logAnalytics": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('ecap-log-analytics-{0}', parameters('environment'))]",
+      "resourceGroup": "[variables('resourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "workspaceName": {
+            "value": "[reference('naming').outputs.logAnalyticsWorkspaceName.value]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "skuName": {
+            "value": "[parameters('logAnalyticsSku')]"
+          },
+          "retentionInDays": {
+            "value": "[parameters('logAnalyticsRetentionInDays')]"
+          },
+          "publicNetworkAccessForIngestion": {
+            "value": "[parameters('logAnalyticsPublicNetworkAccessForIngestion')]"
+          },
+          "publicNetworkAccessForQuery": {
+            "value": "[parameters('logAnalyticsPublicNetworkAccessForQuery')]"
+          },
+          "tags": {
+            "value": "[reference('tagging').outputs.standardTags.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "10769476850915213585"
+            }
+          },
+          "parameters": {
+            "workspaceName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Log Analytics workspace."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure region for the workspace."
+              }
+            },
+            "skuName": {
+              "type": "string",
+              "defaultValue": "PerGB2018",
+              "allowedValues": [
+                "PerGB2018",
+                "CapacityReservation"
+              ],
+              "metadata": {
+                "description": "Workspace SKU."
+              }
+            },
+            "retentionInDays": {
+              "type": "int",
+              "defaultValue": 30,
+              "minValue": 30,
+              "maxValue": 730,
+              "metadata": {
+                "description": "Number of days to retain workspace data."
+              }
+            },
+            "publicNetworkAccessForIngestion": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "allowedValues": [
+                "Enabled",
+                "Disabled"
+              ],
+              "metadata": {
+                "description": "Whether public ingestion is enabled for this workspace."
+              }
+            },
+            "publicNetworkAccessForQuery": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "allowedValues": [
+                "Enabled",
+                "Disabled"
+              ],
+              "metadata": {
+                "description": "Whether public queries are enabled for this workspace."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Standard ECAP resource tags."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2023-09-01",
+              "name": "[parameters('workspaceName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "sku": {
+                  "name": "[parameters('skuName')]"
+                },
+                "retentionInDays": "[parameters('retentionInDays')]",
+                "publicNetworkAccessForIngestion": "[parameters('publicNetworkAccessForIngestion')]",
+                "publicNetworkAccessForQuery": "[parameters('publicNetworkAccessForQuery')]"
+              }
+            }
+          ],
+          "outputs": {
+            "resourceId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('workspaceName')]"
+            },
+            "customerId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName')), '2023-09-01').customerId]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "naming",
+        "resourceGroup",
+        "tagging"
+      ]
+    },
+    "applicationInsights": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('ecap-application-insights-{0}', parameters('environment'))]",
+      "resourceGroup": "[variables('resourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "applicationInsightsName": {
+            "value": "[reference('naming').outputs.applicationInsightsName.value]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "workspaceResourceId": {
+            "value": "[reference('logAnalytics').outputs.resourceId.value]"
+          },
+          "kind": {
+            "value": "[parameters('applicationInsightsKind')]"
+          },
+          "applicationType": {
+            "value": "[parameters('applicationInsightsType')]"
+          },
+          "tags": {
+            "value": "[reference('tagging').outputs.standardTags.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "3620760794891090260"
+            }
+          },
+          "parameters": {
+            "applicationInsightsName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Application Insights component."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure region for Application Insights."
+              }
+            },
+            "workspaceResourceId": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource ID of the Log Analytics workspace used by Application Insights."
+              }
+            },
+            "kind": {
+              "type": "string",
+              "defaultValue": "web",
+              "allowedValues": [
+                "web",
+                "other"
+              ],
+              "metadata": {
+                "description": "Application Insights resource kind."
+              }
+            },
+            "applicationType": {
+              "type": "string",
+              "defaultValue": "web",
+              "allowedValues": [
+                "web",
+                "other"
+              ],
+              "metadata": {
+                "description": "Application Insights application type."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Standard ECAP resource tags."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Insights/components",
+              "apiVersion": "2020-02-02",
+              "name": "[parameters('applicationInsightsName')]",
+              "location": "[parameters('location')]",
+              "kind": "[parameters('kind')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "Application_Type": "[parameters('applicationType')]",
+                "WorkspaceResourceId": "[parameters('workspaceResourceId')]"
+              }
+            }
+          ],
+          "outputs": {
+            "resourceId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Insights/components', parameters('applicationInsightsName'))]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('applicationInsightsName')]"
+            },
+            "connectionString": {
+              "type": "securestring",
+              "value": "[reference(resourceId('Microsoft.Insights/components', parameters('applicationInsightsName')), '2020-02-02').ConnectionString]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "logAnalytics",
+        "naming",
+        "resourceGroup",
+        "tagging"
+      ]
+    }
+  },
+  "outputs": {
+    "resourceGroupId": {
+      "type": "string",
+      "value": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "value": "[variables('resourceGroupName')]"
+    },
+    "logAnalyticsWorkspaceId": {
+      "type": "string",
+      "value": "[reference('logAnalytics').outputs.resourceId.value]"
+    },
+    "logAnalyticsWorkspaceName": {
+      "type": "string",
+      "value": "[reference('logAnalytics').outputs.name.value]"
+    },
+    "logAnalyticsCustomerId": {
+      "type": "string",
+      "value": "[reference('logAnalytics').outputs.customerId.value]"
+    },
+    "applicationInsightsId": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-application-insights-{0}', parameters('environment'))), '2022-09-01').resourceId]"
+    },
+    "applicationInsightsName": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-application-insights-{0}', parameters('environment'))), '2022-09-01').name]"
+    },
+    "applicationInsightsConnectionString": {
+      "type": "securestring",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-application-insights-{0}', parameters('environment'))), '2022-09-01').connectionString]"
+    }
+  }
+}

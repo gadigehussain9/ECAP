@@ -1,0 +1,16 @@
+{
+  "analyzers": {
+    "core": {
+      "enabled": true,
+      "verbose": false,
+      "rules": {
+        "no-hardcoded-env-urls": {
+          "level": "warning"
+        },
+        "outputs-should-not-contain-secrets": {
+          "level": "warning"
+        }
+      }
+    }
+  }
+}

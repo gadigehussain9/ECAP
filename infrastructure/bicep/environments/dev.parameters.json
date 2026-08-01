@@ -1,0 +1,62 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "applicationName": {
+      "value": "ecap"
+    },
+    "environment": {
+      "value": "dev"
+    },
+    "location": {
+      "value": "eastus"
+    },
+    "resourceGroupPrefix": {
+      "value": "rg"
+    },
+    "owner": {
+      "value": "Architecture"
+    },
+    "managedBy": {
+      "value": "Bicep"
+    },
+    "costCenter": {
+      "value": "Engineering"
+    },
+    "businessUnit": {
+      "value": "Commerce"
+    },
+    "criticality": {
+      "value": "Medium"
+    },
+    "createdBy": {
+      "value": "Azure DevOps"
+    },
+    "infrastructureVersion": {
+      "value": "1.0.0"
+    },
+    "additionalTags": {
+      "value": {
+        "DataClassification": "Internal"
+      }
+    },
+    "logAnalyticsSku": {
+      "value": "PerGB2018"
+    },
+    "logAnalyticsRetentionInDays": {
+      "value": 30
+    },
+    "logAnalyticsPublicNetworkAccessForIngestion": {
+      "value": "Enabled"
+    },
+    "logAnalyticsPublicNetworkAccessForQuery": {
+      "value": "Enabled"
+    },
+    "applicationInsightsKind": {
+      "value": "web"
+    },
+    "applicationInsightsType": {
+      "value": "web"
+    }
+  }
+}
