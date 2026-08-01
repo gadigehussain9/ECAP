@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.35.1.17967",
-      "templateHash": "7479104255118971686"
+      "templateHash": "1547373015155946361"
     }
   },
   "parameters": {
@@ -336,10 +336,10 @@
         }
       }
     },
-    "logAnalytics": {
+    "monitoring": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
-      "name": "[format('ecap-log-analytics-{0}', parameters('environment'))]",
+      "name": "[format('ecap-monitoring-{0}', parameters('environment'))]",
       "resourceGroup": "[variables('resourceGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -350,20 +350,29 @@
           "workspaceName": {
             "value": "[reference('naming').outputs.logAnalyticsWorkspaceName.value]"
           },
+          "applicationInsightsName": {
+            "value": "[reference('naming').outputs.applicationInsightsName.value]"
+          },
           "location": {
             "value": "[parameters('location')]"
           },
-          "skuName": {
+          "logAnalyticsSku": {
             "value": "[parameters('logAnalyticsSku')]"
           },
-          "retentionInDays": {
+          "logAnalyticsRetentionInDays": {
             "value": "[parameters('logAnalyticsRetentionInDays')]"
           },
-          "publicNetworkAccessForIngestion": {
+          "logAnalyticsPublicNetworkAccessForIngestion": {
             "value": "[parameters('logAnalyticsPublicNetworkAccessForIngestion')]"
           },
-          "publicNetworkAccessForQuery": {
+          "logAnalyticsPublicNetworkAccessForQuery": {
             "value": "[parameters('logAnalyticsPublicNetworkAccessForQuery')]"
+          },
+          "applicationInsightsKind": {
+            "value": "[parameters('applicationInsightsKind')]"
+          },
+          "applicationInsightsType": {
+            "value": "[parameters('applicationInsightsType')]"
           },
           "tags": {
             "value": "[reference('tagging').outputs.standardTags.value]"
@@ -371,12 +380,13 @@
         },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "languageVersion": "2.0",
           "contentVersion": "1.0.0.0",
           "metadata": {
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "10769476850915213585"
+              "templateHash": "178335232413935945"
             }
           },
           "parameters": {
@@ -386,141 +396,6 @@
                 "description": "Name of the Log Analytics workspace."
               }
             },
-            "location": {
-              "type": "string",
-              "metadata": {
-                "description": "Azure region for the workspace."
-              }
-            },
-            "skuName": {
-              "type": "string",
-              "defaultValue": "PerGB2018",
-              "allowedValues": [
-                "PerGB2018",
-                "CapacityReservation"
-              ],
-              "metadata": {
-                "description": "Workspace SKU."
-              }
-            },
-            "retentionInDays": {
-              "type": "int",
-              "defaultValue": 30,
-              "minValue": 30,
-              "maxValue": 730,
-              "metadata": {
-                "description": "Number of days to retain workspace data."
-              }
-            },
-            "publicNetworkAccessForIngestion": {
-              "type": "string",
-              "defaultValue": "Enabled",
-              "allowedValues": [
-                "Enabled",
-                "Disabled"
-              ],
-              "metadata": {
-                "description": "Whether public ingestion is enabled for this workspace."
-              }
-            },
-            "publicNetworkAccessForQuery": {
-              "type": "string",
-              "defaultValue": "Enabled",
-              "allowedValues": [
-                "Enabled",
-                "Disabled"
-              ],
-              "metadata": {
-                "description": "Whether public queries are enabled for this workspace."
-              }
-            },
-            "tags": {
-              "type": "object",
-              "metadata": {
-                "description": "Standard ECAP resource tags."
-              }
-            }
-          },
-          "resources": [
-            {
-              "type": "Microsoft.OperationalInsights/workspaces",
-              "apiVersion": "2023-09-01",
-              "name": "[parameters('workspaceName')]",
-              "location": "[parameters('location')]",
-              "tags": "[parameters('tags')]",
-              "properties": {
-                "sku": {
-                  "name": "[parameters('skuName')]"
-                },
-                "retentionInDays": "[parameters('retentionInDays')]",
-                "publicNetworkAccessForIngestion": "[parameters('publicNetworkAccessForIngestion')]",
-                "publicNetworkAccessForQuery": "[parameters('publicNetworkAccessForQuery')]"
-              }
-            }
-          ],
-          "outputs": {
-            "resourceId": {
-              "type": "string",
-              "value": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
-            },
-            "name": {
-              "type": "string",
-              "value": "[parameters('workspaceName')]"
-            },
-            "customerId": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName')), '2023-09-01').customerId]"
-            }
-          }
-        }
-      },
-      "dependsOn": [
-        "naming",
-        "resourceGroup",
-        "tagging"
-      ]
-    },
-    "applicationInsights": {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
-      "name": "[format('ecap-application-insights-{0}', parameters('environment'))]",
-      "resourceGroup": "[variables('resourceGroupName')]",
-      "properties": {
-        "expressionEvaluationOptions": {
-          "scope": "inner"
-        },
-        "mode": "Incremental",
-        "parameters": {
-          "applicationInsightsName": {
-            "value": "[reference('naming').outputs.applicationInsightsName.value]"
-          },
-          "location": {
-            "value": "[parameters('location')]"
-          },
-          "workspaceResourceId": {
-            "value": "[reference('logAnalytics').outputs.resourceId.value]"
-          },
-          "kind": {
-            "value": "[parameters('applicationInsightsKind')]"
-          },
-          "applicationType": {
-            "value": "[parameters('applicationInsightsType')]"
-          },
-          "tags": {
-            "value": "[reference('tagging').outputs.standardTags.value]"
-          }
-        },
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "metadata": {
-            "_generator": {
-              "name": "bicep",
-              "version": "0.35.1.17967",
-              "templateHash": "3620760794891090260"
-            }
-          },
-          "parameters": {
             "applicationInsightsName": {
               "type": "string",
               "metadata": {
@@ -530,33 +405,47 @@
             "location": {
               "type": "string",
               "metadata": {
-                "description": "Azure region for Application Insights."
+                "description": "Azure region for monitoring resources."
               }
             },
-            "workspaceResourceId": {
+            "logAnalyticsSku": {
               "type": "string",
+              "defaultValue": "PerGB2018",
               "metadata": {
-                "description": "Resource ID of the Log Analytics workspace used by Application Insights."
+                "description": "Log Analytics workspace SKU."
               }
             },
-            "kind": {
+            "logAnalyticsRetentionInDays": {
+              "type": "int",
+              "defaultValue": 30,
+              "metadata": {
+                "description": "Number of days to retain Log Analytics data."
+              }
+            },
+            "logAnalyticsPublicNetworkAccessForIngestion": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "metadata": {
+                "description": "Whether public Log Analytics ingestion is enabled."
+              }
+            },
+            "logAnalyticsPublicNetworkAccessForQuery": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "metadata": {
+                "description": "Whether public Log Analytics queries are enabled."
+              }
+            },
+            "applicationInsightsKind": {
               "type": "string",
               "defaultValue": "web",
-              "allowedValues": [
-                "web",
-                "other"
-              ],
               "metadata": {
                 "description": "Application Insights resource kind."
               }
             },
-            "applicationType": {
+            "applicationInsightsType": {
               "type": "string",
               "defaultValue": "web",
-              "allowedValues": [
-                "web",
-                "other"
-              ],
               "metadata": {
                 "description": "Application Insights application type."
               }
@@ -568,41 +457,461 @@
               }
             }
           },
-          "resources": [
-            {
-              "type": "Microsoft.Insights/components",
-              "apiVersion": "2020-02-02",
-              "name": "[parameters('applicationInsightsName')]",
-              "location": "[parameters('location')]",
-              "kind": "[parameters('kind')]",
-              "tags": "[parameters('tags')]",
+          "resources": {
+            "logAnalytics": {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2022-09-01",
+              "name": "ecap-log-analytics",
               "properties": {
-                "Application_Type": "[parameters('applicationType')]",
-                "WorkspaceResourceId": "[parameters('workspaceResourceId')]"
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "workspaceName": {
+                    "value": "[parameters('workspaceName')]"
+                  },
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "skuName": {
+                    "value": "[parameters('logAnalyticsSku')]"
+                  },
+                  "retentionInDays": {
+                    "value": "[parameters('logAnalyticsRetentionInDays')]"
+                  },
+                  "publicNetworkAccessForIngestion": {
+                    "value": "[parameters('logAnalyticsPublicNetworkAccessForIngestion')]"
+                  },
+                  "publicNetworkAccessForQuery": {
+                    "value": "[parameters('logAnalyticsPublicNetworkAccessForQuery')]"
+                  },
+                  "tags": {
+                    "value": "[parameters('tags')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.35.1.17967",
+                      "templateHash": "10769476850915213585"
+                    }
+                  },
+                  "parameters": {
+                    "workspaceName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Name of the Log Analytics workspace."
+                      }
+                    },
+                    "location": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Azure region for the workspace."
+                      }
+                    },
+                    "skuName": {
+                      "type": "string",
+                      "defaultValue": "PerGB2018",
+                      "allowedValues": [
+                        "PerGB2018",
+                        "CapacityReservation"
+                      ],
+                      "metadata": {
+                        "description": "Workspace SKU."
+                      }
+                    },
+                    "retentionInDays": {
+                      "type": "int",
+                      "defaultValue": 30,
+                      "minValue": 30,
+                      "maxValue": 730,
+                      "metadata": {
+                        "description": "Number of days to retain workspace data."
+                      }
+                    },
+                    "publicNetworkAccessForIngestion": {
+                      "type": "string",
+                      "defaultValue": "Enabled",
+                      "allowedValues": [
+                        "Enabled",
+                        "Disabled"
+                      ],
+                      "metadata": {
+                        "description": "Whether public ingestion is enabled for this workspace."
+                      }
+                    },
+                    "publicNetworkAccessForQuery": {
+                      "type": "string",
+                      "defaultValue": "Enabled",
+                      "allowedValues": [
+                        "Enabled",
+                        "Disabled"
+                      ],
+                      "metadata": {
+                        "description": "Whether public queries are enabled for this workspace."
+                      }
+                    },
+                    "tags": {
+                      "type": "object",
+                      "metadata": {
+                        "description": "Standard ECAP resource tags."
+                      }
+                    }
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.OperationalInsights/workspaces",
+                      "apiVersion": "2023-09-01",
+                      "name": "[parameters('workspaceName')]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "properties": {
+                        "sku": {
+                          "name": "[parameters('skuName')]"
+                        },
+                        "retentionInDays": "[parameters('retentionInDays')]",
+                        "publicNetworkAccessForIngestion": "[parameters('publicNetworkAccessForIngestion')]",
+                        "publicNetworkAccessForQuery": "[parameters('publicNetworkAccessForQuery')]"
+                      }
+                    }
+                  ],
+                  "outputs": {
+                    "resourceId": {
+                      "type": "string",
+                      "value": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
+                    },
+                    "name": {
+                      "type": "string",
+                      "value": "[parameters('workspaceName')]"
+                    },
+                    "customerId": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName')), '2023-09-01').customerId]"
+                    }
+                  }
+                }
               }
+            },
+            "applicationInsights": {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2022-09-01",
+              "name": "ecap-application-insights",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "applicationInsightsName": {
+                    "value": "[parameters('applicationInsightsName')]"
+                  },
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "workspaceResourceId": {
+                    "value": "[reference('logAnalytics').outputs.resourceId.value]"
+                  },
+                  "kind": {
+                    "value": "[parameters('applicationInsightsKind')]"
+                  },
+                  "applicationType": {
+                    "value": "[parameters('applicationInsightsType')]"
+                  },
+                  "tags": {
+                    "value": "[parameters('tags')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.35.1.17967",
+                      "templateHash": "3620760794891090260"
+                    }
+                  },
+                  "parameters": {
+                    "applicationInsightsName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Name of the Application Insights component."
+                      }
+                    },
+                    "location": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Azure region for Application Insights."
+                      }
+                    },
+                    "workspaceResourceId": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Resource ID of the Log Analytics workspace used by Application Insights."
+                      }
+                    },
+                    "kind": {
+                      "type": "string",
+                      "defaultValue": "web",
+                      "allowedValues": [
+                        "web",
+                        "other"
+                      ],
+                      "metadata": {
+                        "description": "Application Insights resource kind."
+                      }
+                    },
+                    "applicationType": {
+                      "type": "string",
+                      "defaultValue": "web",
+                      "allowedValues": [
+                        "web",
+                        "other"
+                      ],
+                      "metadata": {
+                        "description": "Application Insights application type."
+                      }
+                    },
+                    "tags": {
+                      "type": "object",
+                      "metadata": {
+                        "description": "Standard ECAP resource tags."
+                      }
+                    }
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.Insights/components",
+                      "apiVersion": "2020-02-02",
+                      "name": "[parameters('applicationInsightsName')]",
+                      "location": "[parameters('location')]",
+                      "kind": "[parameters('kind')]",
+                      "tags": "[parameters('tags')]",
+                      "properties": {
+                        "Application_Type": "[parameters('applicationType')]",
+                        "WorkspaceResourceId": "[parameters('workspaceResourceId')]"
+                      }
+                    }
+                  ],
+                  "outputs": {
+                    "resourceId": {
+                      "type": "string",
+                      "value": "[resourceId('Microsoft.Insights/components', parameters('applicationInsightsName'))]"
+                    },
+                    "name": {
+                      "type": "string",
+                      "value": "[parameters('applicationInsightsName')]"
+                    },
+                    "connectionString": {
+                      "type": "securestring",
+                      "value": "[reference(resourceId('Microsoft.Insights/components', parameters('applicationInsightsName')), '2020-02-02').ConnectionString]"
+                    }
+                  }
+                }
+              },
+              "dependsOn": [
+                "logAnalytics"
+              ]
             }
-          ],
+          },
           "outputs": {
-            "resourceId": {
+            "logAnalyticsWorkspaceId": {
               "type": "string",
-              "value": "[resourceId('Microsoft.Insights/components', parameters('applicationInsightsName'))]"
+              "value": "[reference('logAnalytics').outputs.resourceId.value]"
             },
-            "name": {
+            "logAnalyticsWorkspaceName": {
               "type": "string",
-              "value": "[parameters('applicationInsightsName')]"
+              "value": "[reference('logAnalytics').outputs.name.value]"
             },
-            "connectionString": {
+            "logAnalyticsCustomerId": {
+              "type": "string",
+              "value": "[reference('logAnalytics').outputs.customerId.value]"
+            },
+            "applicationInsightsId": {
+              "type": "string",
+              "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', 'ecap-application-insights'), '2022-09-01').resourceId]"
+            },
+            "applicationInsightsName": {
+              "type": "string",
+              "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', 'ecap-application-insights'), '2022-09-01').name]"
+            },
+            "applicationInsightsConnectionString": {
               "type": "securestring",
-              "value": "[reference(resourceId('Microsoft.Insights/components', parameters('applicationInsightsName')), '2020-02-02').ConnectionString]"
+              "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', 'ecap-application-insights'), '2022-09-01').connectionString]"
             }
           }
         }
       },
       "dependsOn": [
-        "logAnalytics",
         "naming",
         "resourceGroup",
         "tagging"
+      ]
+    },
+    "security": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('ecap-security-{0}', parameters('environment'))]",
+      "resourceGroup": "[variables('resourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "5721384004089500046"
+            }
+          },
+          "resources": []
+        }
+      },
+      "dependsOn": [
+        "resourceGroup"
+      ]
+    },
+    "configuration": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('ecap-configuration-{0}', parameters('environment'))]",
+      "resourceGroup": "[variables('resourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "5721384004089500046"
+            }
+          },
+          "resources": []
+        }
+      },
+      "dependsOn": [
+        "resourceGroup"
+      ]
+    },
+    "data": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('ecap-data-{0}', parameters('environment'))]",
+      "resourceGroup": "[variables('resourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "5721384004089500046"
+            }
+          },
+          "resources": []
+        }
+      },
+      "dependsOn": [
+        "resourceGroup"
+      ]
+    },
+    "ai": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('ecap-ai-{0}', parameters('environment'))]",
+      "resourceGroup": "[variables('resourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "5721384004089500046"
+            }
+          },
+          "resources": []
+        }
+      },
+      "dependsOn": [
+        "resourceGroup"
+      ]
+    },
+    "compute": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('ecap-compute-{0}', parameters('environment'))]",
+      "resourceGroup": "[variables('resourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "5721384004089500046"
+            }
+          },
+          "resources": []
+        }
+      },
+      "dependsOn": [
+        "resourceGroup"
+      ]
+    },
+    "networking": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('ecap-networking-{0}', parameters('environment'))]",
+      "resourceGroup": "[variables('resourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "5721384004089500046"
+            }
+          },
+          "resources": []
+        }
+      },
+      "dependsOn": [
+        "resourceGroup"
       ]
     }
   },
@@ -617,27 +926,27 @@
     },
     "logAnalyticsWorkspaceId": {
       "type": "string",
-      "value": "[reference('logAnalytics').outputs.resourceId.value]"
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('environment'))), '2022-09-01').logAnalyticsWorkspaceId]"
     },
     "logAnalyticsWorkspaceName": {
       "type": "string",
-      "value": "[reference('logAnalytics').outputs.name.value]"
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('environment'))), '2022-09-01').logAnalyticsWorkspaceName]"
     },
     "logAnalyticsCustomerId": {
       "type": "string",
-      "value": "[reference('logAnalytics').outputs.customerId.value]"
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('environment'))), '2022-09-01').logAnalyticsCustomerId]"
     },
     "applicationInsightsId": {
       "type": "string",
-      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-application-insights-{0}', parameters('environment'))), '2022-09-01').resourceId]"
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('environment'))), '2022-09-01').applicationInsightsId]"
     },
     "applicationInsightsName": {
       "type": "string",
-      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-application-insights-{0}', parameters('environment'))), '2022-09-01').name]"
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('environment'))), '2022-09-01').applicationInsightsName]"
     },
     "applicationInsightsConnectionString": {
       "type": "securestring",
-      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-application-insights-{0}', parameters('environment'))), '2022-09-01').connectionString]"
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('environment'))), '2022-09-01').applicationInsightsConnectionString]"
     }
   }
 }

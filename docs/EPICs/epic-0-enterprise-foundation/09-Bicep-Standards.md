@@ -107,6 +107,45 @@ Application Deployment
 
 Each layer references reusable modules.
 
+Correction: 
+Layered Bicep Orchestration
+
+Instead of:
+
+main.bicep
+
+↓
+
+all modules
+
+I recommend:
+
+main.bicep
+
+↓
+
+monitoring.bicep
+
+↓
+
+security.bicep
+
+↓
+
+data.bicep
+
+↓
+
+ai.bicep
+
+↓
+
+compute.bicep
+
+Each orchestration module then deploys individual resources.
+
+This is how many enterprise Azure teams organize complex deployments.
+
 ---
 
 # 5. Module Standards

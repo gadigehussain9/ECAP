@@ -101,39 +101,59 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   tags: standardTags
 }
 
-module logAnalytics './modules/log-analytics.bicep' = {
-  name: 'ecap-log-analytics-${environment}'
+module monitoring './modules/monitoring.bicep' = {
+  name: 'ecap-monitoring-${environment}'
   scope: resourceGroup
   params: {
     workspaceName: naming.outputs.logAnalyticsWorkspaceName
+    applicationInsightsName: naming.outputs.applicationInsightsName
     location: location
-    skuName: logAnalyticsSku
-    retentionInDays: logAnalyticsRetentionInDays
-    publicNetworkAccessForIngestion: logAnalyticsPublicNetworkAccessForIngestion
-    publicNetworkAccessForQuery: logAnalyticsPublicNetworkAccessForQuery
+    logAnalyticsSku: logAnalyticsSku
+    logAnalyticsRetentionInDays: logAnalyticsRetentionInDays
+    logAnalyticsPublicNetworkAccessForIngestion: logAnalyticsPublicNetworkAccessForIngestion
+    logAnalyticsPublicNetworkAccessForQuery: logAnalyticsPublicNetworkAccessForQuery
+    applicationInsightsKind: applicationInsightsKind
+    applicationInsightsType: applicationInsightsType
     tags: tagging.outputs.standardTags
   }
 }
 
-module applicationInsights './modules/application-insights.bicep' = {
-  name: 'ecap-application-insights-${environment}'
+module security './modules/security.bicep' = {
+  name: 'ecap-security-${environment}'
   scope: resourceGroup
-  params: {
-    applicationInsightsName: naming.outputs.applicationInsightsName
-    location: location
-    workspaceResourceId: logAnalytics.outputs.resourceId
-    kind: applicationInsightsKind
-    applicationType: applicationInsightsType
-    tags: tagging.outputs.standardTags
-  }
+}
+
+module configuration './modules/configuration.bicep' = {
+  name: 'ecap-configuration-${environment}'
+  scope: resourceGroup
+}
+
+module data './modules/data.bicep' = {
+  name: 'ecap-data-${environment}'
+  scope: resourceGroup
+}
+
+module ai './modules/ai.bicep' = {
+  name: 'ecap-ai-${environment}'
+  scope: resourceGroup
+}
+
+module compute './modules/compute.bicep' = {
+  name: 'ecap-compute-${environment}'
+  scope: resourceGroup
+}
+
+module networking './modules/networking.bicep' = {
+  name: 'ecap-networking-${environment}'
+  scope: resourceGroup
 }
 
 output resourceGroupId string = resourceGroup.id
 output resourceGroupName string = resourceGroup.name
-output logAnalyticsWorkspaceId string = logAnalytics.outputs.resourceId
-output logAnalyticsWorkspaceName string = logAnalytics.outputs.name
-output logAnalyticsCustomerId string = logAnalytics.outputs.customerId
-output applicationInsightsId string = applicationInsights.outputs.resourceId
-output applicationInsightsName string = applicationInsights.outputs.name
+output logAnalyticsWorkspaceId string = monitoring.outputs.logAnalyticsWorkspaceId
+output logAnalyticsWorkspaceName string = monitoring.outputs.logAnalyticsWorkspaceName
+output logAnalyticsCustomerId string = monitoring.outputs.logAnalyticsCustomerId
+output applicationInsightsId string = monitoring.outputs.applicationInsightsId
+output applicationInsightsName string = monitoring.outputs.applicationInsightsName
 @secure()
-output applicationInsightsConnectionString string = applicationInsights.outputs.connectionString
+output applicationInsightsConnectionString string = monitoring.outputs.applicationInsightsConnectionString
