@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.35.1.17967",
-      "templateHash": "1547373015155946361"
+      "templateHash": "11486004321569832592"
     }
   },
   "parameters": {
@@ -26,6 +26,13 @@
       "type": "string",
       "metadata": {
         "description": "Azure region for the environment resources."
+      }
+    },
+    "namingSuffix": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional suffix applied by the centralized naming service."
       }
     },
     "resourceGroupPrefix": {
@@ -83,6 +90,83 @@
         "description": "Additional resource tags."
       }
     },
+    "project": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "ECAP project or product identifier."
+      }
+    },
+    "repository": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Source repository identifier."
+      }
+    },
+    "department": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Department responsible for the workload."
+      }
+    },
+    "supportContact": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Support contact or support team identifier."
+      }
+    },
+    "lifecycle": {
+      "type": "string",
+      "defaultValue": "Active",
+      "metadata": {
+        "description": "Workload lifecycle state."
+      }
+    },
+    "dataClassification": {
+      "type": "string",
+      "defaultValue": "Internal",
+      "metadata": {
+        "description": "Data classification applied to the resources."
+      }
+    },
+    "compliance": {
+      "type": "string",
+      "defaultValue": "None",
+      "metadata": {
+        "description": "Compliance classification or applicable control framework."
+      }
+    },
+    "businessOwner": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Business owner for the workload."
+      }
+    },
+    "technicalOwner": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Technical owner for the workload."
+      }
+    },
+    "workload": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Workload classification."
+      }
+    },
+    "deploymentDate": {
+      "type": "string",
+      "defaultValue": "[utcNow('yyyy-MM-dd')]",
+      "metadata": {
+        "description": "Deployment date in ISO 8601 date format."
+      }
+    },
     "logAnalyticsSku": {
       "type": "string",
       "defaultValue": "PerGB2018",
@@ -124,12 +208,42 @@
       "metadata": {
         "description": "Application Insights application type."
       }
+    },
+    "workloadPrincipalId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional workload principal ID used for Key Vault and App Configuration RBAC assignments."
+      }
+    },
+    "keyVaultEnablePurgeProtection": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Whether Key Vault purge protection is enabled. This cannot be disabled after it is enabled."
+      }
+    },
+    "appConfigurationPrivateEndpointSubnetResourceId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional subnet resource ID for an App Configuration private endpoint."
+      }
     }
   },
   "variables": {
-    "nameSuffix": "[format('{0}-{1}', toLower(parameters('applicationName')), toLower(parameters('environment')))]",
-    "resourceGroupName": "[format('{0}-{1}', parameters('resourceGroupPrefix'), variables('nameSuffix'))]",
-    "standardTags": "[union(parameters('additionalTags'), createObject('Application', parameters('applicationName'), 'Environment', parameters('environment'), 'Owner', parameters('owner'), 'ManagedBy', parameters('managedBy'), 'CostCenter', parameters('costCenter'), 'BusinessUnit', parameters('businessUnit'), 'Criticality', parameters('criticality'), 'CreatedBy', parameters('createdBy'), 'Version', parameters('infrastructureVersion')))]"
+    "normalizedNamingSuffix": "[toLower(replace(parameters('namingSuffix'), ' ', '-'))]",
+    "namingBase": "[format('{0}-{1}', toLower(parameters('applicationName')), toLower(parameters('environment')))]",
+    "qualifiedNamingBase": "[if(empty(variables('normalizedNamingSuffix')), variables('namingBase'), format('{0}-{1}', variables('namingBase'), variables('normalizedNamingSuffix')))]",
+    "resourceGroupName": "[format('{0}-{1}', toLower(parameters('resourceGroupPrefix')), variables('qualifiedNamingBase'))]",
+    "bootstrapProject": "[if(empty(parameters('project')), parameters('applicationName'), parameters('project'))]",
+    "bootstrapRepository": "[if(empty(parameters('repository')), parameters('applicationName'), parameters('repository'))]",
+    "bootstrapDepartment": "[if(empty(parameters('department')), parameters('businessUnit'), parameters('department'))]",
+    "bootstrapSupportContact": "[if(empty(parameters('supportContact')), parameters('owner'), parameters('supportContact'))]",
+    "bootstrapBusinessOwner": "[if(empty(parameters('businessOwner')), parameters('owner'), parameters('businessOwner'))]",
+    "bootstrapTechnicalOwner": "[if(empty(parameters('technicalOwner')), parameters('owner'), parameters('technicalOwner'))]",
+    "bootstrapWorkload": "[if(empty(parameters('workload')), parameters('applicationName'), parameters('workload'))]",
+    "bootstrapTags": "[union(parameters('additionalTags'), createObject('Application', parameters('applicationName'), 'Environment', parameters('environment'), 'Owner', parameters('owner'), 'ManagedBy', parameters('managedBy'), 'CostCenter', parameters('costCenter'), 'BusinessUnit', parameters('businessUnit'), 'Criticality', parameters('criticality'), 'Project', variables('bootstrapProject'), 'Repository', variables('bootstrapRepository'), 'Department', variables('bootstrapDepartment'), 'SupportContact', variables('bootstrapSupportContact'), 'Lifecycle', parameters('lifecycle'), 'Version', parameters('infrastructureVersion'), 'CreatedBy', parameters('createdBy'), 'DataClassification', parameters('dataClassification'), 'Compliance', parameters('compliance'), 'BusinessOwner', variables('bootstrapBusinessOwner'), 'TechnicalOwner', variables('bootstrapTechnicalOwner'), 'Workload', variables('bootstrapWorkload'), 'DeploymentDate', parameters('deploymentDate')))]"
   },
   "resources": {
     "resourceGroup": {
@@ -137,7 +251,7 @@
       "apiVersion": "2024-03-01",
       "name": "[variables('resourceGroupName')]",
       "location": "[parameters('location')]",
-      "tags": "[variables('standardTags')]"
+      "tags": "[variables('bootstrapTags')]"
     },
     "naming": {
       "type": "Microsoft.Resources/deployments",
@@ -156,8 +270,14 @@
           "environment": {
             "value": "[parameters('environment')]"
           },
-          "resourcePrefix": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "resourceGroupPrefix": {
             "value": "[parameters('resourceGroupPrefix')]"
+          },
+          "optionalSuffix": {
+            "value": "[parameters('namingSuffix')]"
           }
         },
         "template": {
@@ -167,7 +287,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "9510702233542593775"
+              "templateHash": "5157906783754054123"
             }
           },
           "parameters": {
@@ -183,29 +303,144 @@
                 "description": "Deployment environment, for example dev, qa, stage, or prod."
               }
             },
-            "resourcePrefix": {
+            "location": {
               "type": "string",
               "metadata": {
-                "description": "Resource type prefix used to construct a resource name."
+                "description": "Azure region used to make globally unique names deterministic per deployment location."
+              }
+            },
+            "resourceGroupPrefix": {
+              "type": "string",
+              "defaultValue": "rg",
+              "metadata": {
+                "description": "Prefix used for the environment Resource Group name."
+              }
+            },
+            "optionalSuffix": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional suffix appended to the normalized application and environment name."
+              }
+            },
+            "resourceType": {
+              "type": "string",
+              "defaultValue": "resourceGroup",
+              "allowedValues": [
+                "resourceGroup",
+                "appService",
+                "appServicePlan",
+                "storageAccount",
+                "sqlServer",
+                "sqlDatabase",
+                "keyVault",
+                "azureOpenAI",
+                "aiSearch",
+                "managedIdentity",
+                "logAnalytics",
+                "applicationInsights",
+                "appConfiguration"
+              ],
+              "metadata": {
+                "description": "Resource type to return through the generic resourceName output."
               }
             }
           },
           "variables": {
-            "nameSuffix": "[format('{0}-{1}', toLower(parameters('applicationName')), toLower(parameters('environment')))]"
+            "normalizedApplicationName": "[toLower(parameters('applicationName'))]",
+            "normalizedEnvironment": "[toLower(parameters('environment'))]",
+            "normalizedOptionalSuffix": "[toLower(replace(parameters('optionalSuffix'), ' ', '-'))]",
+            "nameBase": "[format('{0}-{1}', variables('normalizedApplicationName'), variables('normalizedEnvironment'))]",
+            "qualifiedName": "[if(empty(variables('normalizedOptionalSuffix')), variables('nameBase'), format('{0}-{1}', variables('nameBase'), variables('normalizedOptionalSuffix')))]",
+            "locationToken": "[toLower(replace(parameters('location'), ' ', ''))]",
+            "globalUniqueToken": "[take(uniqueString(subscription().id, variables('qualifiedName'), variables('locationToken')), 6)]",
+            "compactQualifiedName": "[replace(variables('qualifiedName'), '-', '')]",
+            "resourceGroupName": "[format('{0}-{1}', toLower(parameters('resourceGroupPrefix')), variables('qualifiedName'))]",
+            "appServiceName": "[format('{0}-{1}', take(format('app-{0}', variables('qualifiedName')), 53), variables('globalUniqueToken'))]",
+            "appServicePlanName": "[take(format('asp-{0}', variables('qualifiedName')), 40)]",
+            "storageAccountName": "[format('st{0}{1}', take(variables('compactQualifiedName'), 16), variables('globalUniqueToken'))]",
+            "sqlServerName": "[format('{0}-{1}', take(format('sql-{0}', variables('qualifiedName')), 56), variables('globalUniqueToken'))]",
+            "sqlDatabaseName": "[take(format('sqldb-{0}', variables('qualifiedName')), 128)]",
+            "keyVaultName": "[format('{0}-{1}', take(format('kv-{0}', variables('qualifiedName')), 17), variables('globalUniqueToken'))]",
+            "azureOpenAIName": "[format('{0}-{1}', take(format('aoai-{0}', variables('qualifiedName')), 57), variables('globalUniqueToken'))]",
+            "aiSearchName": "[format('{0}-{1}', take(format('aisearch-{0}', variables('qualifiedName')), 53), variables('globalUniqueToken'))]",
+            "managedIdentityName": "[take(format('mi-{0}', variables('qualifiedName')), 128)]",
+            "logAnalyticsWorkspaceName": "[take(format('law-{0}', variables('qualifiedName')), 63)]",
+            "applicationInsightsName": "[take(format('appi-{0}', variables('qualifiedName')), 255)]",
+            "appConfigurationName": "[format('{0}-{1}', take(format('appcfg-{0}', variables('qualifiedName')), 43), variables('globalUniqueToken'))]",
+            "names": {
+              "resourceGroup": "[variables('resourceGroupName')]",
+              "appService": "[variables('appServiceName')]",
+              "appServicePlan": "[variables('appServicePlanName')]",
+              "storageAccount": "[variables('storageAccountName')]",
+              "sqlServer": "[variables('sqlServerName')]",
+              "sqlDatabase": "[variables('sqlDatabaseName')]",
+              "keyVault": "[variables('keyVaultName')]",
+              "azureOpenAI": "[variables('azureOpenAIName')]",
+              "aiSearch": "[variables('aiSearchName')]",
+              "managedIdentity": "[variables('managedIdentityName')]",
+              "logAnalytics": "[variables('logAnalyticsWorkspaceName')]",
+              "applicationInsights": "[variables('applicationInsightsName')]",
+              "appConfiguration": "[variables('appConfigurationName')]"
+            }
           },
           "resources": [],
           "outputs": {
             "resourceGroupName": {
               "type": "string",
-              "value": "[format('{0}-{1}', parameters('resourcePrefix'), variables('nameSuffix'))]"
+              "value": "[variables('resourceGroupName')]"
+            },
+            "appServiceName": {
+              "type": "string",
+              "value": "[variables('appServiceName')]"
+            },
+            "appServicePlanName": {
+              "type": "string",
+              "value": "[variables('appServicePlanName')]"
+            },
+            "storageAccountName": {
+              "type": "string",
+              "value": "[variables('storageAccountName')]"
+            },
+            "sqlServerName": {
+              "type": "string",
+              "value": "[variables('sqlServerName')]"
+            },
+            "sqlDatabaseName": {
+              "type": "string",
+              "value": "[variables('sqlDatabaseName')]"
+            },
+            "keyVaultName": {
+              "type": "string",
+              "value": "[variables('keyVaultName')]"
+            },
+            "azureOpenAIName": {
+              "type": "string",
+              "value": "[variables('azureOpenAIName')]"
+            },
+            "aiSearchName": {
+              "type": "string",
+              "value": "[variables('aiSearchName')]"
+            },
+            "managedIdentityName": {
+              "type": "string",
+              "value": "[variables('managedIdentityName')]"
             },
             "logAnalyticsWorkspaceName": {
               "type": "string",
-              "value": "[format('law-{0}', variables('nameSuffix'))]"
+              "value": "[variables('logAnalyticsWorkspaceName')]"
             },
             "applicationInsightsName": {
               "type": "string",
-              "value": "[format('appi-{0}', variables('nameSuffix'))]"
+              "value": "[variables('applicationInsightsName')]"
+            },
+            "appConfigurationName": {
+              "type": "string",
+              "value": "[variables('appConfigurationName')]"
+            },
+            "resourceName": {
+              "type": "string",
+              "value": "[variables('names')[parameters('resourceType')]]"
             }
           }
         }
@@ -249,6 +484,39 @@
           "version": {
             "value": "[parameters('infrastructureVersion')]"
           },
+          "project": {
+            "value": "[parameters('project')]"
+          },
+          "repository": {
+            "value": "[parameters('repository')]"
+          },
+          "department": {
+            "value": "[parameters('department')]"
+          },
+          "supportContact": {
+            "value": "[parameters('supportContact')]"
+          },
+          "lifecycle": {
+            "value": "[parameters('lifecycle')]"
+          },
+          "dataClassification": {
+            "value": "[parameters('dataClassification')]"
+          },
+          "compliance": {
+            "value": "[parameters('compliance')]"
+          },
+          "businessOwner": {
+            "value": "[parameters('businessOwner')]"
+          },
+          "technicalOwner": {
+            "value": "[parameters('technicalOwner')]"
+          },
+          "workload": {
+            "value": "[parameters('workload')]"
+          },
+          "deploymentDate": {
+            "value": "[parameters('deploymentDate')]"
+          },
           "additionalTags": {
             "value": "[parameters('additionalTags')]"
           }
@@ -260,7 +528,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "1722360712159472419"
+              "templateHash": "3799450851013056120"
             }
           },
           "parameters": {
@@ -318,6 +586,83 @@
                 "description": "Version of the infrastructure contract."
               }
             },
+            "project": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "ECAP project or product identifier. Defaults to the application when omitted."
+              }
+            },
+            "repository": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Source repository identifier. Defaults to the application when omitted."
+              }
+            },
+            "department": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Department responsible for the workload. Defaults to the business unit when omitted."
+              }
+            },
+            "supportContact": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Support contact or support team identifier. Defaults to the resource owner when omitted."
+              }
+            },
+            "lifecycle": {
+              "type": "string",
+              "defaultValue": "Active",
+              "metadata": {
+                "description": "Workload lifecycle state."
+              }
+            },
+            "dataClassification": {
+              "type": "string",
+              "defaultValue": "Internal",
+              "metadata": {
+                "description": "Data classification applied to the resources."
+              }
+            },
+            "compliance": {
+              "type": "string",
+              "defaultValue": "None",
+              "metadata": {
+                "description": "Compliance classification or applicable control framework."
+              }
+            },
+            "businessOwner": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Business owner for the workload. Defaults to the resource owner when omitted."
+              }
+            },
+            "technicalOwner": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Technical owner for the workload. Defaults to the resource owner when omitted."
+              }
+            },
+            "workload": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Workload classification. Defaults to the application when omitted."
+              }
+            },
+            "deploymentDate": {
+              "type": "string",
+              "defaultValue": "[utcNow('yyyy-MM-dd')]",
+              "metadata": {
+                "description": "Deployment date in ISO 8601 date format. Defaults to the current deployment date."
+              }
+            },
             "additionalTags": {
               "type": "object",
               "defaultValue": {},
@@ -326,11 +671,45 @@
               }
             }
           },
+          "variables": {
+            "projectTag": "[if(empty(parameters('project')), parameters('application'), parameters('project'))]",
+            "repositoryTag": "[if(empty(parameters('repository')), parameters('application'), parameters('repository'))]",
+            "departmentTag": "[if(empty(parameters('department')), parameters('businessUnit'), parameters('department'))]",
+            "supportContactTag": "[if(empty(parameters('supportContact')), parameters('owner'), parameters('supportContact'))]",
+            "businessOwnerTag": "[if(empty(parameters('businessOwner')), parameters('owner'), parameters('businessOwner'))]",
+            "technicalOwnerTag": "[if(empty(parameters('technicalOwner')), parameters('owner'), parameters('technicalOwner'))]",
+            "workloadTag": "[if(empty(parameters('workload')), parameters('application'), parameters('workload'))]"
+          },
           "resources": [],
           "outputs": {
             "standardTags": {
               "type": "object",
-              "value": "[union(parameters('additionalTags'), createObject('Application', parameters('application'), 'Environment', parameters('environment'), 'Owner', parameters('owner'), 'ManagedBy', parameters('managedBy'), 'CostCenter', parameters('costCenter'), 'BusinessUnit', parameters('businessUnit'), 'Criticality', parameters('criticality'), 'CreatedBy', parameters('createdBy'), 'Version', parameters('version')))]"
+              "value": "[union(parameters('additionalTags'), createObject('Application', parameters('application'), 'Environment', parameters('environment'), 'Owner', parameters('owner'), 'ManagedBy', parameters('managedBy'), 'CostCenter', parameters('costCenter'), 'BusinessUnit', parameters('businessUnit'), 'Criticality', parameters('criticality'), 'Project', variables('projectTag'), 'Repository', variables('repositoryTag'), 'Department', variables('departmentTag'), 'SupportContact', variables('supportContactTag'), 'Lifecycle', parameters('lifecycle'), 'DataClassification', parameters('dataClassification'), 'Compliance', parameters('compliance'), 'BusinessOwner', variables('businessOwnerTag'), 'TechnicalOwner', variables('technicalOwnerTag'), 'Workload', variables('workloadTag'), 'DeploymentDate', parameters('deploymentDate'), 'CreatedBy', parameters('createdBy'), 'Version', parameters('version')))]"
+            },
+            "requiredTagKeys": {
+              "type": "array",
+              "value": [
+                "Application",
+                "Environment",
+                "Owner",
+                "ManagedBy",
+                "CostCenter",
+                "BusinessUnit",
+                "Criticality",
+                "Project",
+                "Repository",
+                "Department",
+                "SupportContact",
+                "Lifecycle",
+                "Version",
+                "CreatedBy",
+                "DataClassification",
+                "Compliance",
+                "BusinessOwner",
+                "TechnicalOwner",
+                "Workload",
+                "DeploymentDate"
+              ]
             }
           }
         }
@@ -762,6 +1141,26 @@
           "scope": "inner"
         },
         "mode": "Incremental",
+        "parameters": {
+          "keyVaultName": {
+            "value": "[reference('naming').outputs.keyVaultName.value]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "principalId": {
+            "value": "[parameters('workloadPrincipalId')]"
+          },
+          "logAnalyticsWorkspaceResourceId": {
+            "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('environment'))), '2022-09-01').logAnalyticsWorkspaceId]"
+          },
+          "enablePurgeProtection": {
+            "value": "[parameters('keyVaultEnablePurgeProtection')]"
+          },
+          "tags": {
+            "value": "[reference('tagging').outputs.standardTags.value]"
+          }
+        },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
           "contentVersion": "1.0.0.0",
@@ -769,14 +1168,242 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "5721384004089500046"
+              "templateHash": "6528520104575229326"
             }
           },
-          "resources": []
+          "parameters": {
+            "keyVaultName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Key Vault."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure region for the Key Vault."
+              }
+            },
+            "principalId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional system-assigned managed identity principal ID for RBAC."
+              }
+            },
+            "logAnalyticsWorkspaceResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional Log Analytics workspace resource ID for diagnostic settings."
+              }
+            },
+            "enablePurgeProtection": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether purge protection is enabled on the Key Vault."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Centralized ECAP governance tags passed to child resource modules."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2022-09-01",
+              "name": "ecap-key-vault",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "name": {
+                    "value": "[parameters('keyVaultName')]"
+                  },
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "tags": {
+                    "value": "[parameters('tags')]"
+                  },
+                  "principalId": {
+                    "value": "[parameters('principalId')]"
+                  },
+                  "logAnalyticsWorkspaceResourceId": {
+                    "value": "[parameters('logAnalyticsWorkspaceResourceId')]"
+                  },
+                  "enablePurgeProtection": {
+                    "value": "[parameters('enablePurgeProtection')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.35.1.17967",
+                      "templateHash": "13615362172385118811"
+                    }
+                  },
+                  "parameters": {
+                    "name": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Name of the Key Vault."
+                      }
+                    },
+                    "location": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Azure region for the Key Vault."
+                      }
+                    },
+                    "tags": {
+                      "type": "object",
+                      "metadata": {
+                        "description": "Standard ECAP resource tags."
+                      }
+                    },
+                    "principalId": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional workload principal ID to receive Key Vault Secrets User permissions."
+                      }
+                    },
+                    "logAnalyticsWorkspaceResourceId": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional Log Analytics workspace resource ID for diagnostic settings."
+                      }
+                    },
+                    "enablePurgeProtection": {
+                      "type": "bool",
+                      "defaultValue": false,
+                      "metadata": {
+                        "description": "Whether purge protection is enabled. This cannot be disabled after it is enabled."
+                      }
+                    }
+                  },
+                  "variables": {
+                    "keyVaultSecretsUserRoleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')]"
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.KeyVault/vaults",
+                      "apiVersion": "2023-07-01",
+                      "name": "[parameters('name')]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "properties": {
+                        "tenantId": "[subscription().tenantId]",
+                        "sku": {
+                          "family": "A",
+                          "name": "standard"
+                        },
+                        "accessPolicies": [],
+                        "enabledForDeployment": false,
+                        "enabledForDiskEncryption": false,
+                        "enabledForTemplateDeployment": false,
+                        "enableSoftDelete": true,
+                        "enablePurgeProtection": "[parameters('enablePurgeProtection')]",
+                        "enableRbacAuthorization": true,
+                        "publicNetworkAccess": "Enabled",
+                        "softDeleteRetentionInDays": 90,
+                        "networkAcls": {
+                          "bypass": "AzureServices",
+                          "defaultAction": "Allow"
+                        }
+                      }
+                    },
+                    {
+                      "condition": "[not(empty(parameters('principalId')))]",
+                      "type": "Microsoft.Authorization/roleAssignments",
+                      "apiVersion": "2022-04-01",
+                      "scope": "[format('Microsoft.KeyVault/vaults/{0}', parameters('name'))]",
+                      "name": "[guid(resourceId('Microsoft.KeyVault/vaults', parameters('name')), parameters('principalId'), variables('keyVaultSecretsUserRoleDefinitionId'))]",
+                      "properties": {
+                        "roleDefinitionId": "[variables('keyVaultSecretsUserRoleDefinitionId')]",
+                        "principalId": "[parameters('principalId')]",
+                        "principalType": "ServicePrincipal"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', parameters('name'))]"
+                      ]
+                    },
+                    {
+                      "condition": "[not(empty(parameters('logAnalyticsWorkspaceResourceId')))]",
+                      "type": "Microsoft.Insights/diagnosticSettings",
+                      "apiVersion": "2021-05-01-preview",
+                      "scope": "[format('Microsoft.KeyVault/vaults/{0}', parameters('name'))]",
+                      "name": "key-vault-diagnostics",
+                      "properties": {
+                        "workspaceId": "[parameters('logAnalyticsWorkspaceResourceId')]",
+                        "logs": [
+                          {
+                            "category": "AuditEvent",
+                            "enabled": true
+                          }
+                        ],
+                        "metrics": [
+                          {
+                            "category": "AllMetrics",
+                            "enabled": true
+                          }
+                        ]
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', parameters('name'))]"
+                      ]
+                    }
+                  ],
+                  "outputs": {
+                    "resourceId": {
+                      "type": "string",
+                      "value": "[resourceId('Microsoft.KeyVault/vaults', parameters('name'))]"
+                    },
+                    "name": {
+                      "type": "string",
+                      "value": "[parameters('name')]"
+                    },
+                    "vaultUri": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.KeyVault/vaults', parameters('name')), '2023-07-01').vaultUri]"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "resourceId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-key-vault'), '2022-09-01').outputs.resourceId.value]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-key-vault'), '2022-09-01').outputs.name.value]"
+            },
+            "vaultUri": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-key-vault'), '2022-09-01').outputs.vaultUri.value]"
+            }
+          }
         }
       },
       "dependsOn": [
-        "resourceGroup"
+        "monitoring",
+        "naming",
+        "resourceGroup",
+        "tagging"
       ]
     },
     "configuration": {
@@ -789,6 +1416,26 @@
           "scope": "inner"
         },
         "mode": "Incremental",
+        "parameters": {
+          "appConfigurationName": {
+            "value": "[reference('naming').outputs.appConfigurationName.value]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "principalId": {
+            "value": "[parameters('workloadPrincipalId')]"
+          },
+          "logAnalyticsWorkspaceResourceId": {
+            "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('environment'))), '2022-09-01').logAnalyticsWorkspaceId]"
+          },
+          "privateEndpointSubnetResourceId": {
+            "value": "[parameters('appConfigurationPrivateEndpointSubnetResourceId')]"
+          },
+          "tags": {
+            "value": "[reference('tagging').outputs.standardTags.value]"
+          }
+        },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
           "contentVersion": "1.0.0.0",
@@ -796,14 +1443,263 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "5721384004089500046"
+              "templateHash": "15336467612244331842"
             }
           },
-          "resources": []
+          "parameters": {
+            "appConfigurationName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the App Configuration store."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure region for the App Configuration store."
+              }
+            },
+            "principalId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional workload principal ID to receive App Configuration Data Reader permissions."
+              }
+            },
+            "logAnalyticsWorkspaceResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional Log Analytics workspace resource ID for diagnostic settings."
+              }
+            },
+            "privateEndpointSubnetResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional subnet resource ID for a future-ready private endpoint."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Centralized ECAP governance tags passed to child resource modules."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2022-09-01",
+              "name": "ecap-app-configuration",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "name": {
+                    "value": "[parameters('appConfigurationName')]"
+                  },
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "tags": {
+                    "value": "[parameters('tags')]"
+                  },
+                  "principalId": {
+                    "value": "[parameters('principalId')]"
+                  },
+                  "logAnalyticsWorkspaceResourceId": {
+                    "value": "[parameters('logAnalyticsWorkspaceResourceId')]"
+                  },
+                  "privateEndpointSubnetResourceId": {
+                    "value": "[parameters('privateEndpointSubnetResourceId')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.35.1.17967",
+                      "templateHash": "17577385822184198383"
+                    }
+                  },
+                  "parameters": {
+                    "name": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Name of the App Configuration store."
+                      }
+                    },
+                    "location": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Azure region for the App Configuration store."
+                      }
+                    },
+                    "tags": {
+                      "type": "object",
+                      "metadata": {
+                        "description": "Standard ECAP resource tags."
+                      }
+                    },
+                    "principalId": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional workload principal ID to receive App Configuration Data Reader permissions."
+                      }
+                    },
+                    "logAnalyticsWorkspaceResourceId": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional Log Analytics workspace resource ID for diagnostic settings."
+                      }
+                    },
+                    "privateEndpointSubnetResourceId": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional subnet resource ID. When supplied, deploys a private endpoint for the store."
+                      }
+                    }
+                  },
+                  "variables": {
+                    "appConfigurationDataReaderRoleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '516239f1-63e1-4d78-a4de-a74fb236a071')]"
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.AppConfiguration/configurationStores",
+                      "apiVersion": "2023-03-01",
+                      "name": "[parameters('name')]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "identity": {
+                        "type": "SystemAssigned"
+                      },
+                      "sku": {
+                        "name": "standard"
+                      },
+                      "properties": {
+                        "disableLocalAuth": true,
+                        "publicNetworkAccess": "Enabled"
+                      }
+                    },
+                    {
+                      "condition": "[not(empty(parameters('principalId')))]",
+                      "type": "Microsoft.Authorization/roleAssignments",
+                      "apiVersion": "2022-04-01",
+                      "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', parameters('name'))]",
+                      "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', parameters('name')), parameters('principalId'), variables('appConfigurationDataReaderRoleDefinitionId'))]",
+                      "properties": {
+                        "roleDefinitionId": "[variables('appConfigurationDataReaderRoleDefinitionId')]",
+                        "principalId": "[parameters('principalId')]",
+                        "principalType": "ServicePrincipal"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', parameters('name'))]"
+                      ]
+                    },
+                    {
+                      "condition": "[not(empty(parameters('privateEndpointSubnetResourceId')))]",
+                      "type": "Microsoft.Network/privateEndpoints",
+                      "apiVersion": "2023-09-01",
+                      "name": "[format('{0}-pe', parameters('name'))]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "properties": {
+                        "subnet": {
+                          "id": "[parameters('privateEndpointSubnetResourceId')]"
+                        },
+                        "privateLinkServiceConnections": [
+                          {
+                            "name": "[parameters('name')]",
+                            "properties": {
+                              "privateLinkServiceId": "[resourceId('Microsoft.AppConfiguration/configurationStores', parameters('name'))]",
+                              "groupIds": [
+                                "configurationStores"
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', parameters('name'))]"
+                      ]
+                    },
+                    {
+                      "condition": "[not(empty(parameters('logAnalyticsWorkspaceResourceId')))]",
+                      "type": "Microsoft.Insights/diagnosticSettings",
+                      "apiVersion": "2021-05-01-preview",
+                      "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', parameters('name'))]",
+                      "name": "app-configuration-diagnostics",
+                      "properties": {
+                        "workspaceId": "[parameters('logAnalyticsWorkspaceResourceId')]",
+                        "logs": [
+                          {
+                            "category": "HttpRequest",
+                            "enabled": true
+                          },
+                          {
+                            "category": "Audit",
+                            "enabled": true
+                          }
+                        ],
+                        "metrics": [
+                          {
+                            "category": "AllMetrics",
+                            "enabled": true
+                          }
+                        ]
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.AppConfiguration/configurationStores', parameters('name'))]"
+                      ]
+                    }
+                  ],
+                  "outputs": {
+                    "endpoint": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.AppConfiguration/configurationStores', parameters('name')), '2023-03-01').endpoint]"
+                    },
+                    "resourceId": {
+                      "type": "string",
+                      "value": "[resourceId('Microsoft.AppConfiguration/configurationStores', parameters('name'))]"
+                    },
+                    "name": {
+                      "type": "string",
+                      "value": "[parameters('name')]"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "endpoint": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-app-configuration'), '2022-09-01').outputs.endpoint.value]"
+            },
+            "resourceId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-app-configuration'), '2022-09-01').outputs.resourceId.value]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-app-configuration'), '2022-09-01').outputs.name.value]"
+            }
+          }
         }
       },
       "dependsOn": [
-        "resourceGroup"
+        "monitoring",
+        "naming",
+        "resourceGroup",
+        "tagging"
       ]
     },
     "data": {
@@ -816,6 +1712,11 @@
           "scope": "inner"
         },
         "mode": "Incremental",
+        "parameters": {
+          "tags": {
+            "value": "[reference('tagging').outputs.standardTags.value]"
+          }
+        },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
           "contentVersion": "1.0.0.0",
@@ -823,14 +1724,29 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "5721384004089500046"
+              "templateHash": "13019240539689719200"
             }
           },
-          "resources": []
+          "parameters": {
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Centralized ECAP governance tags passed to child resource modules."
+              }
+            }
+          },
+          "resources": [],
+          "outputs": {
+            "inheritedTags": {
+              "type": "object",
+              "value": "[parameters('tags')]"
+            }
+          }
         }
       },
       "dependsOn": [
-        "resourceGroup"
+        "resourceGroup",
+        "tagging"
       ]
     },
     "ai": {
@@ -843,6 +1759,11 @@
           "scope": "inner"
         },
         "mode": "Incremental",
+        "parameters": {
+          "tags": {
+            "value": "[reference('tagging').outputs.standardTags.value]"
+          }
+        },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
           "contentVersion": "1.0.0.0",
@@ -850,14 +1771,29 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "5721384004089500046"
+              "templateHash": "13019240539689719200"
             }
           },
-          "resources": []
+          "parameters": {
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Centralized ECAP governance tags passed to child resource modules."
+              }
+            }
+          },
+          "resources": [],
+          "outputs": {
+            "inheritedTags": {
+              "type": "object",
+              "value": "[parameters('tags')]"
+            }
+          }
         }
       },
       "dependsOn": [
-        "resourceGroup"
+        "resourceGroup",
+        "tagging"
       ]
     },
     "compute": {
@@ -870,6 +1806,11 @@
           "scope": "inner"
         },
         "mode": "Incremental",
+        "parameters": {
+          "tags": {
+            "value": "[reference('tagging').outputs.standardTags.value]"
+          }
+        },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
           "contentVersion": "1.0.0.0",
@@ -877,14 +1818,29 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "5721384004089500046"
+              "templateHash": "13019240539689719200"
             }
           },
-          "resources": []
+          "parameters": {
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Centralized ECAP governance tags passed to child resource modules."
+              }
+            }
+          },
+          "resources": [],
+          "outputs": {
+            "inheritedTags": {
+              "type": "object",
+              "value": "[parameters('tags')]"
+            }
+          }
         }
       },
       "dependsOn": [
-        "resourceGroup"
+        "resourceGroup",
+        "tagging"
       ]
     },
     "networking": {
@@ -897,6 +1853,11 @@
           "scope": "inner"
         },
         "mode": "Incremental",
+        "parameters": {
+          "tags": {
+            "value": "[reference('tagging').outputs.standardTags.value]"
+          }
+        },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
           "contentVersion": "1.0.0.0",
@@ -904,14 +1865,29 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "5721384004089500046"
+              "templateHash": "13019240539689719200"
             }
           },
-          "resources": []
+          "parameters": {
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Centralized ECAP governance tags passed to child resource modules."
+              }
+            }
+          },
+          "resources": [],
+          "outputs": {
+            "inheritedTags": {
+              "type": "object",
+              "value": "[parameters('tags')]"
+            }
+          }
         }
       },
       "dependsOn": [
-        "resourceGroup"
+        "resourceGroup",
+        "tagging"
       ]
     }
   },
@@ -947,6 +1923,30 @@
     "applicationInsightsConnectionString": {
       "type": "securestring",
       "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('environment'))), '2022-09-01').applicationInsightsConnectionString]"
+    },
+    "keyVaultResourceId": {
+      "type": "string",
+      "value": "[reference('security').outputs.resourceId.value]"
+    },
+    "keyVaultName": {
+      "type": "string",
+      "value": "[reference('security').outputs.name.value]"
+    },
+    "keyVaultUri": {
+      "type": "string",
+      "value": "[reference('security').outputs.vaultUri.value]"
+    },
+    "appConfigurationResourceId": {
+      "type": "string",
+      "value": "[reference('configuration').outputs.resourceId.value]"
+    },
+    "appConfigurationName": {
+      "type": "string",
+      "value": "[reference('configuration').outputs.name.value]"
+    },
+    "appConfigurationEndpoint": {
+      "type": "string",
+      "value": "[reference('configuration').outputs.endpoint.value]"
     }
   }
 }

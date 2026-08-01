@@ -57,6 +57,9 @@
     },
     "applicationInsightsType": {
       "value": "web"
+    },
+    "keyVaultEnablePurgeProtection": {
+      "value": false
     }
   }
 }

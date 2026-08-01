@@ -65,6 +65,10 @@ Infrastructure Layer (implements Application interfaces)
 - ✅ **Azure Key Vault** integration
 - ✅ **Health Checks** for SQL Server
 
+### ECAP Bicep Foundation (Sprint 2)
+
+The reusable Azure foundation is documented in [`infrastructure/bicep/README.md`](infrastructure/bicep/README.md). Sprint 2 provisions RBAC-enabled Azure Key Vault and Azure App Configuration with enterprise naming, standard tags, Log Analytics diagnostics, environment parameter files, and optional future workload RBAC. No standalone managed identity is deployed; Sprint 3 will use the App Service system-assigned identity as the primary workload identity.
+
 ### Implemented Modules (Sprint 1)
 - ✅ **Product Catalog** - Complete CRUD, Brand & Category management, SKU validation, Product lifecycle
   - 8 REST API endpoints
