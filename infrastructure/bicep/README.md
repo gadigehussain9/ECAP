@@ -10,20 +10,123 @@ The requested docs/handbook/epic-0-enterprise-foundation/ and docs/standards/ pa
 
 ```text
 main.bicep
-  |-- naming.bicep and tags.bicep (subscription bootstrap)
+  |-- modules/globals.bicep (subscription-scoped configuration contract)
+  |     |-- modules/shared/naming.bicep
+  |     +-- modules/shared/tags.bicep
   |-- Resource Group
-  +-- monitoring.bicep
-  |     |-- log-analytics.bicep
-  |     +-- application-insights.bicep
-  |-- security.bicep
-  |-- configuration.bicep
-  |-- data.bicep
-  |-- ai.bicep
-  |-- compute.bicep
-  +-- networking.bicep (future)
+  +-- modules/platform.bicep (Resource Group orchestration)
+        |-- monitoring (globals)
+        |     |-- log-analytics.bicep
+        |     +-- application-insights.bicep
+        |-- security (globals + monitoring workspace output)
+        |     +-- key-vault.bicep (globals diagnostic settings)
+        |-- configuration (globals + monitoring workspace output)
+        |     +-- app-configuration.bicep (globals diagnostic settings)
+        |-- data (globals)
+        |-- ai (globals)
+        |-- compute (globals)
+        +-- networking (globals, future)
 ```
 
-Each populated orchestration module references only resource modules in its responsibility. Monitoring is the only populated layer because no approved security, configuration, data, AI, compute, or networking resource modules currently exist. The empty boundaries avoid speculative infrastructure while preserving the target architecture.
+`globals.bicep` is the shared configuration contract for downstream layers. It
+exposes environment, location, application, project, company, resource prefix,
+standard tags, default SKUs, monitoring settings, diagnostic settings, allowed
+locations, naming outputs, and future feature flags through one `globals` object.
+
+The Resource Group retains a small local bootstrap tag expression in `main.bicep`.
+Azure requires Resource Group properties such as `name` and `tags` to be
+calculable at the start of a subscription deployment (`BCP120`), before module
+outputs are available. All downstream resource and orchestration modules consume
+`globals.outputs.globals`; the bootstrap expression is therefore a platform
+constraint, not a second downstream configuration contract.
+
+### Why globals improves maintainability
+
+- **One configuration contract:** new layers consume one object instead of
+  repeating location, naming, tags, and monitoring parameter lists.
+- **Consistent governance:** naming and standard tags remain implemented by the
+  existing shared modules and are distributed from one output.
+- **Safer changes:** changing a default SKU, diagnostic category, or feature flag
+  is localized to globals and its parameter file rather than many modules.
+- **Clear dependencies:** Bicep output references create the dependency graph
+  without artificial `dependsOn` declarations.
+- **Incremental adoption:** existing child resource module contracts remain
+  intact; only orchestration boundaries were refactored.
+
+Shared utility modules are separated from Azure resource and layer-orchestration modules:
+
+```text
+infrastructure/bicep/modules/
+|-- shared/
+|   |-- naming.bicep
+|   \-- tags.bicep
+|-- monitoring.bicep
+|-- security.bicep
+|-- configuration.bicep
+|-- data.bicep
+|-- ai.bicep
+|-- compute.bicep
+|-- networking.bicep
+\-- resource modules
+```
+
+### Shared module architecture review
+
+`naming.bicep` and `tags.bicep` are cross-cutting utilities, not Azure resource modules. Keeping them under `modules/shared/` makes that contract explicit and prevents resource-oriented module folders from mixing deployment resources with reusable governance helpers. The modules remain parameterized, deterministic, environment-independent, and unchanged in behavior.
+
+Shared modules improve enterprise architecture by:
+
+- Providing one import location for cross-cutting infrastructure policies.
+- Preventing duplicate naming and tagging logic across resource modules.
+- Making ownership and code review boundaries clear.
+- Supporting reuse by future orchestration layers without coupling them to a specific Azure resource.
+- Preserving DRY, deterministic naming, mandatory tagging, and CI/CD validation requirements.
+
+### Migration steps
+
+1. Create `modules/shared/`.
+2. Move `naming.bicep` and `tags.bicep` into that directory without changing their contracts.
+3. Update imports to `./modules/shared/naming.bicep` and `./modules/shared/tags.bicep`.
+4. Remove the old root utility files so duplicate implementations cannot be introduced.
+5. Rebuild the Bicep entrypoint and run the deployment validation pipeline.
+
+### Validation steps
+
+```powershell
+az bicep build --file infrastructure/bicep/main.bicep
+az deployment sub validate --location eastus --template-file infrastructure/bicep/main.bicep --parameters infrastructure/bicep/environments/dev.parameters.json
+az deployment sub what-if --location eastus --template-file infrastructure/bicep/main.bicep --parameters infrastructure/bicep/environments/dev.parameters.json
+```
+
+Confirm that:
+
+- No active Bicep source imports `./modules/naming.bicep` or `./modules/tags.bicep`.
+- `main.bicep` resolves both utilities from `modules/shared/`.
+- Generated names and standard tags remain unchanged for the same parameters.
+- Bicep build, validation, what-if, and CI checks pass before deployment.
+
+### Platform validation commands
+
+Run these commands from the repository root before deployment. They validate the
+entire platform graph; the build compiles templates and does not execute resource
+creation locally.
+
+```powershell
+# Compile main, globals, orchestration modules, and all child resource modules.
+az bicep build --file infrastructure/bicep/main.bicep
+
+# Run repository validation for one environment.
+./infrastructure/bicep/scripts/validate.ps1 -Environment dev
+
+# Preview the ordered platform change set for one environment.
+./infrastructure/bicep/scripts/whatif.ps1 -Environment dev
+```
+
+Repeat validation and What-If for `qa`, `stage`, and `prod`. Confirm each result
+matches the expected layer ordering and that no unapproved resources were added
+to `modules/platform.bicep`.
+
+Each populated orchestration module references only resource modules in its responsibility. Shared utilities are referenced by the subscription entrypoint, while monitoring, security, and configuration are populated layers. The remaining empty boundaries avoid speculative infrastructure while preserving the target architecture.
 
 ## Updated folder structure
 
@@ -32,7 +135,10 @@ infrastructure/bicep/
 |-- main.bicep
 |-- bicepconfig.json
 |-- environments/ (dev, qa, stage, prod parameter files)
-+-- modules/ (shared helpers, orchestration modules, resource modules)
++-- modules/
+    |-- globals.bicep
+    |-- shared/ (naming and tags)
+    +-- orchestration and resource modules
 ```
 
 ## Architectural decisions
@@ -46,10 +152,38 @@ infrastructure/bicep/
 7. Express dependencies through output references; do not add artificial dependsOn.
 8. Keep all environment differences in parameter files.
 9. Keep the Resource Group bootstrap expression in `main.bicep` because Azure requires that name to be calculable at deployment start (BCP120). It mirrors the naming service's Resource Group rule; all downstream resource names come from naming outputs.
+10. Use `globals.bicep` as the reusable configuration boundary for all orchestration layers.
+11. Keep diagnostic categories and monitoring defaults in globals so resource modules do not duplicate policy values.
+
+## Globals validation steps
+
+Run the following commands from the repository root. Replace `dev` with `qa`,
+`stage`, or `prod` for the other supported Azure environments.
+
+```powershell
+# Compile the complete module graph, including globals, naming, tags, and resource modules.
+az bicep build --file infrastructure/bicep/main.bicep
+
+# Run standalone Bicep analyzer rules when the standalone CLI is installed.
+bicep lint --file infrastructure/bicep/main.bicep
+
+# If the standalone CLI is unavailable, the validation script uses this build command as its analyzer fallback.
+az bicep build --file infrastructure/bicep/main.bicep
+
+# Validate Azure Resource Manager parameter binding without changing resources.
+az deployment sub validate --location eastus --template-file infrastructure/bicep/main.bicep --parameters @infrastructure/bicep/environments/dev.parameters.json
+
+# Preview the globals-driven resource graph without deploying it.
+az deployment sub what-if --location eastus --template-file infrastructure/bicep/main.bicep --parameters @infrastructure/bicep/environments/dev.parameters.json
+```
+
+Confirm that the build has no errors, all environment parameter files still bind,
+the expected naming and tags are unchanged, diagnostic settings are controlled by
+the globals output, and What-If contains no unintended changes before deployment.
 
 ## Centralized naming service
 
-`modules/naming.bicep` is the single source of truth for ECAP resource names. It accepts `applicationName`, `environment`, `location`, `optionalSuffix`, and `resourceGroupPrefix`, and exposes the following outputs:
+`modules/shared/naming.bicep` is the single source of truth for ECAP resource names. It accepts `applicationName`, `environment`, `location`, `optionalSuffix`, and `resourceGroupPrefix`, and exposes the following outputs:
 
 - `resourceGroupName`
 - `appServiceName`
@@ -165,7 +299,7 @@ To add a resource type, add its approved prefix and constraint-specific expressi
 
 ### Architecture review
 
-`modules/tags.bicep` is the single source of truth for ECAP governance tags. The previous implementation defined the standard dictionary in both `tags.bicep` and `main.bicep`; child-resource duplication has been removed. All resource-group orchestration modules and their child resources receive `tagging.outputs.standardTags`. The Resource Group retains a deployment-start bootstrap projection because Azure does not allow subscription module outputs in its `tags` property (BCP120); that projection mirrors the centralized contract and is not a second consumer-defined tag policy.
+`modules/shared/tags.bicep` is the single source of truth for ECAP governance tags. The previous implementation defined the standard dictionary in both `tags.bicep` and `main.bicep`; child-resource duplication has been removed. All resource-group orchestration modules and their child resources receive `tagging.outputs.standardTags`. The Resource Group retains a deployment-start bootstrap projection because Azure does not allow subscription module outputs in its `tags` property (BCP120); that projection mirrors the centralized
 
 Bicep does not implicitly inherit parameters across module boundaries. ECAP implements automatic tag propagation as an explicit contract: `main.bicep` passes the governed dictionary to every orchestration module, and each orchestration module passes the same object to its child resource modules. Resource modules must accept `tags object` and apply it to every taggable resource.
 

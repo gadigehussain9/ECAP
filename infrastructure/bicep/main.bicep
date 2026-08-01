@@ -3,6 +3,9 @@ targetScope = 'subscription'
 @description('Short application identifier used in resource names and tags.')
 param applicationName string
 
+@description('Company or organization name used by downstream governance consumers.')
+param companyName string = 'ECAP'
+
 @description('Deployment environment, for example dev, qa, stage, or prod.')
 param environment string
 
@@ -99,10 +102,20 @@ param keyVaultEnablePurgeProtection bool = false
 @description('Optional subnet resource ID for an App Configuration private endpoint.')
 param appConfigurationPrivateEndpointSubnetResourceId string = ''
 
+@description('Whether standard diagnostic settings are enabled.')
+param diagnosticSettingsEnabled bool = true
+
+@description('Locations approved by the platform policy. Defaults to the deployment location.')
+param allowedLocations array = []
+
+@description('Feature flags reserved for future platform capabilities.')
+param featureFlags object = {}
+
 var normalizedNamingSuffix = toLower(replace(namingSuffix, ' ', '-'))
 var namingBase = '${toLower(applicationName)}-${toLower(environment)}'
 var qualifiedNamingBase = empty(normalizedNamingSuffix) ? namingBase : '${namingBase}-${normalizedNamingSuffix}'
 var resourceGroupName = '${toLower(resourceGroupPrefix)}-${qualifiedNamingBase}'
+// Resource Group bootstrap tags must be calculable before subscription module outputs exist.
 var bootstrapProject = empty(project) ? applicationName : project
 var bootstrapRepository = empty(repository) ? applicationName : repository
 var bootstrapDepartment = empty(department) ? businessUnit : department
@@ -132,33 +145,25 @@ var bootstrapTags = union(additionalTags, {
   Workload: bootstrapWorkload
   DeploymentDate: deploymentDate
 })
-
-module naming './modules/naming.bicep' = {
-  name: 'ecap-naming-${uniqueString(subscription().id, applicationName, environment)}'
+module globals './modules/globals.bicep' = {
+  name: 'ecap-globals-${uniqueString(subscription().id, applicationName, environment)}'
   scope: subscription()
   params: {
-    applicationName: applicationName
     environment: environment
     location: location
+    applicationName: applicationName
+    companyName: companyName
+    project: project
     resourceGroupPrefix: resourceGroupPrefix
-    optionalSuffix: namingSuffix
-  }
-}
-
-module tagging './modules/tags.bicep' = {
-  name: 'ecap-tags-${uniqueString(subscription().id, applicationName, environment)}'
-  scope: subscription()
-  params: {
-    application: applicationName
-    environment: environment
+    namingSuffix: namingSuffix
     owner: owner
     managedBy: managedBy
     costCenter: costCenter
     businessUnit: businessUnit
     criticality: criticality
     createdBy: createdBy
-    version: infrastructureVersion
-    project: project
+    infrastructureVersion: infrastructureVersion
+    additionalTags: additionalTags
     repository: repository
     department: department
     supportContact: supportContact
@@ -169,7 +174,15 @@ module tagging './modules/tags.bicep' = {
     technicalOwner: technicalOwner
     workload: workload
     deploymentDate: deploymentDate
-    additionalTags: additionalTags
+    logAnalyticsSku: logAnalyticsSku
+    logAnalyticsRetentionInDays: logAnalyticsRetentionInDays
+    logAnalyticsPublicNetworkAccessForIngestion: logAnalyticsPublicNetworkAccessForIngestion
+    logAnalyticsPublicNetworkAccessForQuery: logAnalyticsPublicNetworkAccessForQuery
+    applicationInsightsKind: applicationInsightsKind
+    applicationInsightsType: applicationInsightsType
+    diagnosticSettingsEnabled: diagnosticSettingsEnabled
+    allowedLocations: allowedLocations
+    featureFlags: featureFlags
   }
 }
 
@@ -179,93 +192,29 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   tags: bootstrapTags
 }
 
-module monitoring './modules/monitoring.bicep' = {
-  name: 'ecap-monitoring-${environment}'
+module platform './modules/platform.bicep' = {
+  name: 'ecap-platform-${environment}'
   scope: resourceGroup
   params: {
-    workspaceName: naming.outputs.logAnalyticsWorkspaceName
-    applicationInsightsName: naming.outputs.applicationInsightsName
-    location: location
-    logAnalyticsSku: logAnalyticsSku
-    logAnalyticsRetentionInDays: logAnalyticsRetentionInDays
-    logAnalyticsPublicNetworkAccessForIngestion: logAnalyticsPublicNetworkAccessForIngestion
-    logAnalyticsPublicNetworkAccessForQuery: logAnalyticsPublicNetworkAccessForQuery
-    applicationInsightsKind: applicationInsightsKind
-    applicationInsightsType: applicationInsightsType
-    tags: tagging.outputs.standardTags
-  }
-}
-
-module security './modules/security.bicep' = {
-  name: 'ecap-security-${environment}'
-  scope: resourceGroup
-  params: {
-    keyVaultName: naming.outputs.keyVaultName
-    location: location
-    principalId: workloadPrincipalId
-    logAnalyticsWorkspaceResourceId: monitoring.outputs.logAnalyticsWorkspaceId
-    enablePurgeProtection: keyVaultEnablePurgeProtection
-    tags: tagging.outputs.standardTags
-  }
-}
-
-module configuration './modules/configuration.bicep' = {
-  name: 'ecap-configuration-${environment}'
-  scope: resourceGroup
-  params: {
-    appConfigurationName: naming.outputs.appConfigurationName
-    location: location
-    principalId: workloadPrincipalId
-    logAnalyticsWorkspaceResourceId: monitoring.outputs.logAnalyticsWorkspaceId
-    privateEndpointSubnetResourceId: appConfigurationPrivateEndpointSubnetResourceId
-    tags: tagging.outputs.standardTags
-  }
-}
-
-module data './modules/data.bicep' = {
-  name: 'ecap-data-${environment}'
-  scope: resourceGroup
-  params: {
-    tags: tagging.outputs.standardTags
-  }
-}
-
-module ai './modules/ai.bicep' = {
-  name: 'ecap-ai-${environment}'
-  scope: resourceGroup
-  params: {
-    tags: tagging.outputs.standardTags
-  }
-}
-
-module compute './modules/compute.bicep' = {
-  name: 'ecap-compute-${environment}'
-  scope: resourceGroup
-  params: {
-    tags: tagging.outputs.standardTags
-  }
-}
-
-module networking './modules/networking.bicep' = {
-  name: 'ecap-networking-${environment}'
-  scope: resourceGroup
-  params: {
-    tags: tagging.outputs.standardTags
+    globals: globals.outputs.globals
+    keyVaultEnablePurgeProtection: keyVaultEnablePurgeProtection
+    workloadPrincipalId: workloadPrincipalId
+    appConfigurationPrivateEndpointSubnetResourceId: appConfigurationPrivateEndpointSubnetResourceId
   }
 }
 
 output resourceGroupId string = resourceGroup.id
 output resourceGroupName string = resourceGroup.name
-output logAnalyticsWorkspaceId string = monitoring.outputs.logAnalyticsWorkspaceId
-output logAnalyticsWorkspaceName string = monitoring.outputs.logAnalyticsWorkspaceName
-output logAnalyticsCustomerId string = monitoring.outputs.logAnalyticsCustomerId
-output applicationInsightsId string = monitoring.outputs.applicationInsightsId
-output applicationInsightsName string = monitoring.outputs.applicationInsightsName
+output logAnalyticsWorkspaceId string = platform.outputs.logAnalyticsWorkspaceId
+output logAnalyticsWorkspaceName string = platform.outputs.logAnalyticsWorkspaceName
+output logAnalyticsCustomerId string = platform.outputs.logAnalyticsCustomerId
+output applicationInsightsId string = platform.outputs.applicationInsightsId
+output applicationInsightsName string = platform.outputs.applicationInsightsName
 @secure()
-output applicationInsightsConnectionString string = monitoring.outputs.applicationInsightsConnectionString
-output keyVaultResourceId string = security.outputs.resourceId
-output keyVaultName string = security.outputs.name
-output keyVaultUri string = security.outputs.vaultUri
-output appConfigurationResourceId string = configuration.outputs.resourceId
-output appConfigurationName string = configuration.outputs.name
-output appConfigurationEndpoint string = configuration.outputs.endpoint
+output applicationInsightsConnectionString string = platform.outputs.applicationInsightsConnectionString
+output keyVaultResourceId string = platform.outputs.keyVaultResourceId
+output keyVaultName string = platform.outputs.keyVaultName
+output keyVaultUri string = platform.outputs.keyVaultUri
+output appConfigurationResourceId string = platform.outputs.appConfigurationResourceId
+output appConfigurationName string = platform.outputs.appConfigurationName
+output appConfigurationEndpoint string = platform.outputs.appConfigurationEndpoint

@@ -18,6 +18,17 @@ param logAnalyticsWorkspaceResourceId string = ''
 @description('Whether purge protection is enabled. This cannot be disabled after it is enabled.')
 param enablePurgeProtection bool = false
 
+@description('Centralized diagnostic settings configuration.')
+param diagnosticSettings object = {
+  enabled: true
+  keyVaultLogCategories: [
+    'AuditEvent'
+  ]
+  metricCategories: [
+    'AllMetrics'
+  ]
+}
+
 var keyVaultSecretsUserRoleDefinitionId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
@@ -56,23 +67,19 @@ resource keyVaultSecretsUserRoleAssignment 'Microsoft.Authorization/roleAssignme
   }
 }
 
-resource keyVaultDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (!empty(logAnalyticsWorkspaceResourceId)) {
+resource keyVaultDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (!empty(logAnalyticsWorkspaceResourceId) && diagnosticSettings.enabled) {
   name: 'key-vault-diagnostics'
   scope: keyVault
   properties: {
     workspaceId: logAnalyticsWorkspaceResourceId
-    logs: [
-      {
-        category: 'AuditEvent'
-        enabled: true
-      }
-    ]
-    metrics: [
-      {
-        category: 'AllMetrics'
-        enabled: true
-      }
-    ]
+    logs: [for category in diagnosticSettings.keyVaultLogCategories: {
+      category: category
+      enabled: true
+    }]
+    metrics: [for category in diagnosticSettings.metricCategories: {
+      category: category
+      enabled: true
+    }]
   }
 }
 

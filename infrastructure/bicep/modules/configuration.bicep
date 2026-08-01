@@ -1,10 +1,7 @@
 targetScope = 'resourceGroup'
 
-@description('Name of the App Configuration store.')
-param appConfigurationName string
-
-@description('Azure region for the App Configuration store.')
-param location string
+@description('Centralized ECAP deployment configuration from the globals module.')
+param globals object
 
 @description('Optional workload principal ID to receive App Configuration Data Reader permissions.')
 param principalId string = ''
@@ -15,18 +12,16 @@ param logAnalyticsWorkspaceResourceId string = ''
 @description('Optional subnet resource ID for a future-ready private endpoint.')
 param privateEndpointSubnetResourceId string = ''
 
-@description('Centralized ECAP governance tags passed to child resource modules.')
-param tags object
-
 module appConfiguration './app-configuration.bicep' = {
   name: 'ecap-app-configuration'
   params: {
-    name: appConfigurationName
-    location: location
-    tags: tags
+    name: globals.namingOutputs.appConfigurationName
+    location: globals.location
+    tags: globals.standardTags
     principalId: principalId
     logAnalyticsWorkspaceResourceId: logAnalyticsWorkspaceResourceId
     privateEndpointSubnetResourceId: privateEndpointSubnetResourceId
+    diagnosticSettings: globals.diagnosticSettings
   }
 }
 

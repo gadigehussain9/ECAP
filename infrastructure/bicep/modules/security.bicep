@@ -1,10 +1,7 @@
 targetScope = 'resourceGroup'
 
-@description('Name of the Key Vault.')
-param keyVaultName string
-
-@description('Azure region for the Key Vault.')
-param location string
+@description('Centralized ECAP deployment configuration from the globals module.')
+param globals object
 
 @description('Optional system-assigned managed identity principal ID for RBAC.')
 param principalId string = ''
@@ -15,18 +12,16 @@ param logAnalyticsWorkspaceResourceId string = ''
 @description('Whether purge protection is enabled on the Key Vault.')
 param enablePurgeProtection bool = false
 
-@description('Centralized ECAP governance tags passed to child resource modules.')
-param tags object
-
 module keyVault './key-vault.bicep' = {
   name: 'ecap-key-vault'
   params: {
-    name: keyVaultName
-    location: location
-    tags: tags
+    name: globals.namingOutputs.keyVaultName
+    location: globals.location
+    tags: globals.standardTags
     principalId: principalId
     logAnalyticsWorkspaceResourceId: logAnalyticsWorkspaceResourceId
     enablePurgeProtection: enablePurgeProtection
+    diagnosticSettings: globals.diagnosticSettings
   }
 }
 

@@ -1,57 +1,30 @@
 targetScope = 'resourceGroup'
 
-@description('Name of the Log Analytics workspace.')
-param workspaceName string
-
-@description('Name of the Application Insights component.')
-param applicationInsightsName string
-
-@description('Azure region for monitoring resources.')
-param location string
-
-@description('Log Analytics workspace SKU.')
-param logAnalyticsSku string = 'PerGB2018'
-
-@description('Number of days to retain Log Analytics data.')
-param logAnalyticsRetentionInDays int = 30
-
-@description('Whether public Log Analytics ingestion is enabled.')
-param logAnalyticsPublicNetworkAccessForIngestion string = 'Enabled'
-
-@description('Whether public Log Analytics queries are enabled.')
-param logAnalyticsPublicNetworkAccessForQuery string = 'Enabled'
-
-@description('Application Insights resource kind.')
-param applicationInsightsKind string = 'web'
-
-@description('Application Insights application type.')
-param applicationInsightsType string = 'web'
-
-@description('Standard ECAP resource tags.')
-param tags object
+@description('Centralized ECAP deployment configuration from the globals module.')
+param globals object
 
 module logAnalytics './log-analytics.bicep' = {
   name: 'ecap-log-analytics'
   params: {
-    workspaceName: workspaceName
-    location: location
-    skuName: logAnalyticsSku
-    retentionInDays: logAnalyticsRetentionInDays
-    publicNetworkAccessForIngestion: logAnalyticsPublicNetworkAccessForIngestion
-    publicNetworkAccessForQuery: logAnalyticsPublicNetworkAccessForQuery
-    tags: tags
+    workspaceName: globals.namingOutputs.logAnalyticsWorkspaceName
+    location: globals.location
+    skuName: globals.defaultSkus.logAnalytics
+    retentionInDays: globals.monitoringConfiguration.logAnalyticsRetentionInDays
+    publicNetworkAccessForIngestion: globals.monitoringConfiguration.logAnalyticsPublicNetworkAccessForIngestion
+    publicNetworkAccessForQuery: globals.monitoringConfiguration.logAnalyticsPublicNetworkAccessForQuery
+    tags: globals.standardTags
   }
 }
 
 module applicationInsights './application-insights.bicep' = {
   name: 'ecap-application-insights'
   params: {
-    applicationInsightsName: applicationInsightsName
-    location: location
+    applicationInsightsName: globals.namingOutputs.applicationInsightsName
+    location: globals.location
     workspaceResourceId: logAnalytics.outputs.resourceId
-    kind: applicationInsightsKind
-    applicationType: applicationInsightsType
-    tags: tags
+    kind: globals.monitoringConfiguration.applicationInsightsKind
+    applicationType: globals.monitoringConfiguration.applicationInsightsType
+    tags: globals.standardTags
   }
 }
 
