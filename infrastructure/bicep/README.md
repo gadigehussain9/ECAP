@@ -620,7 +620,7 @@ The module preserves the `standardTags` object output and adds `requiredTagKeys`
 
 ```powershell
 az bicep build --file infrastructure/bicep/main.bicep
-az bicep lint --file infrastructure/bicep/main.bicep
+# az bicep build performs compiler validation; run the Bicep linter in CI if installed.
 az deployment sub validate --location eastus --template-file infrastructure/bicep/main.bicep --parameters @infrastructure/bicep/environments/dev.parameters.json
 az deployment sub what-if --location eastus --template-file infrastructure/bicep/main.bicep --parameters @infrastructure/bicep/environments/dev.parameters.json
 ```
@@ -630,3 +630,161 @@ CI/CD must gate deployment on build, lint, parameter validation, what-if, deploy
 ## Compatibility and scope
 
 With the default empty `namingSuffix`, existing Resource Group, Log Analytics, and Application Insights names remain stable. The refactor adds names for future resource types but does not provision new Azure services, change API versions, or alter monitoring settings.
+
+## US-018 App Service platform
+
+### Purpose and architecture
+
+US-018 provisions the shared ECAP hosting platform for the Product Catalog API,
+AI API, GraphQL API, background workers, and future microservices. The
+subscription-scoped `main.bicep` creates the environment Resource Group and
+passes the centralized globals contract plus App Service sizing settings to
+`modules/platform.bicep`. The platform layer invokes `modules/app.bicep`,
+which creates one Linux Premium v3 App Service Plan and one system-assigned
+identity-enabled App Service.
+
+App Service is selected over Container Apps for this phase because ECAP needs a
+predictable dedicated hosting boundary, Always On, straightforward .NET
+runtime support, built-in health checks, and deployment-slot readiness for
+API and worker workloads. Container Apps remains a future evaluation option;
+no hosting redesign is required because runtime, settings, networking, and
+scaling concerns are parameterized at the platform boundary.
+
+### Inputs and outputs
+
+The root deployment parameterizes the Plan SKU, instance count, zone
+redundancy, per-site scaling, .NET runtime version, health path, HTTP/2,
+WebSockets, public access, and additional non-secret app settings. Environment
+files provide explicit values for these settings. The deployment outputs the
+App Service name, resource ID, default hostname, managed identity principal ID,
+Plan name, and Plan resource ID.
+
+The app settings reference the deployed Azure OpenAI, Azure AI Search, Azure
+SQL, Storage Blob, App Configuration, and Key Vault endpoints. Authentication
+settings select managed identity or Microsoft Entra managed identity; no
+credentials, SQL logins, API keys, or secret values are stored in Bicep or
+parameter files. Key Vault references can be added later without changing the
+identity contract.
+
+### Security, networking, and monitoring
+
+The App Service is HTTPS-only, uses minimum TLS 1.2, HTTP/2, Always On, a
+configurable health check, disabled ARR affinity, disabled FTPS, and a system-
+assigned managed identity. Public access is enabled for the current sprint and
+is controlled by a parameter. Private Endpoints, regional VNet Integration,
+access restrictions, and Private DNS are intentionally not deployed; their
+future resource IDs can be introduced without changing the module boundary.
+
+Application Insights is connected through the existing monitoring module, and
+App Service HTTP, console, application, audit, and metric categories are sent
+The managed identity principal, client, and tenant IDs are exposed for
+downstream workloads. Azure SQL is prepared for Microsoft Entra authentication;
+the application connects with an access token and a passwordless connection
+string containing only the server and database name.
+
+### Validation and deployment
+
+```powershell
+# Build and lint
+az bicep build --file infrastructure/bicep/main.bicep
+# az bicep build performs compiler validation; run the Bicep linter in CI if installed.
+
+# Azure CLI validation, what-if, and deployment
+az deployment sub validate --location eastus --template-file infrastructure/bicep/main.bicep --parameters @infrastructure/bicep/environments/dev.parameters.json
+az deployment sub what-if --location eastus --template-file infrastructure/bicep/main.bicep --parameters @infrastructure/bicep/environments/dev.parameters.json
+az deployment sub create --location eastus --template-file infrastructure/bicep/main.bicep --parameters @infrastructure/bicep/environments/dev.parameters.json
+
+# PowerShell deployment
+New-AzSubscriptionDeployment -Location eastus -TemplateFile infrastructure/bicep/main.bicep -TemplateParameterFile infrastructure/bicep/environments/dev.parameters.json
+```
+
+Repeat validation and what-if for QA, Stage, and Production before promotion.
+In the portal, verify the Plan is Linux Premium v3 with the expected capacity
+and zone setting; verify the App Service has HTTPS-only, TLS 1.2, HTTP/2,
+Always On, health check, disabled ARR affinity and FTPS, the expected public
+access setting, system-assigned identity, Application Insights connection,
+diagnostic settings, and Log Analytics destination. Confirm no private endpoint
+or VNet integration resources were created by this story.
+
+### Future enhancements
+
+Deployment slots, blue-green and canary workflows, autoscale rules, private
+endpoints, regional VNet Integration, access restrictions, private DNS, and a
+possible Container Apps implementation can be added behind the existing
+platform contract. The current module deliberately does not deploy those
+resources.
+
+## US-019 Managed Identity and enterprise configuration
+
+### Identity architecture
+
+`modules/app.bicep` enables a system-assigned managed identity on the ECAP App
+Service. `modules/identity.bicep` exposes the identity as a reusable contract,
+and `modules/rbac.bicep` grants that principal resource-scoped permissions.
+This preserves the existing `main.bicep` -> `platform.bicep` -> resource module
+layers while allowing future App Services, workers, Functions, Container Apps,
+or AKS workloads to use the same identity/RBAC pattern. User-assigned
+identities can be introduced later as an alternate identity module input.
+
+Managed identity is preferred over secrets because Azure issues and rotates
+tokens for the workload, credentials are not persisted in source, parameter
+files, or App Service settings, and access is controlled centrally by
+Microsoft Entra ID and Azure RBAC.
+
+### RBAC strategy
+
+The App Service identity receives only the roles needed by the current
+integration contract:
+
+| Resource | Role | Reason |
+|----------|------|--------|
+| Storage Account | Storage Blob Data Contributor | Read, create, update, and delete application blobs without shared keys. |
+| Key Vault | Key Vault Secrets User | Read secrets through RBAC and future Key Vault references; no access policies are used. |
+| App Configuration | App Configuration Data Reader | Read feature flags and configuration without store keys. |
+| Azure AI Search | Search Index Data Contributor | Query and prepare for application-managed index operations. |
+| Azure OpenAI | Cognitive Services OpenAI User | Invoke deployed models without API keys. |
+
+Role assignments are deterministic, resource-scoped, and use built-in role
+definition IDs. SQL does not receive a generic Azure RBAC assignment here;
+the SQL logical server's Microsoft Entra administrator and database-level
+contained user grants must be managed through the approved database migration
+process. No SQL login is created.
+
+### Configuration and security
+
+App Service settings contain only deployed endpoint metadata and authentication
+mode flags. `AzureSql__Connection` contains no user, password, or access token;
+the application must acquire a Microsoft Entra access token for the
+`https://database.windows.net/.default` scope using its managed identity.
+Application Insights uses the existing secure connection-string parameter and
+is not replaced with a credential-bearing service setting. Public networking
+remains enabled for this sprint; Private Endpoints, VNet Integration, and
+Private DNS are not deployed but existing module contracts remain ready for
+them.
+
+### US-019 validation and portal verification
+
+```powershell
+# Bicep build and lint
+az bicep build --file infrastructure/bicep/main.bicep
+# az bicep build performs compiler validation; run the Bicep linter in CI if installed.
+
+# Azure CLI validation, what-if, and deployment
+az deployment sub validate --location eastus --template-file infrastructure/bicep/main.bicep --parameters @infrastructure/bicep/environments/dev.parameters.json
+az deployment sub what-if --location eastus --template-file infrastructure/bicep/main.bicep --parameters @infrastructure/bicep/environments/dev.parameters.json
+az deployment sub create --location eastus --template-file infrastructure/bicep/main.bicep --parameters @infrastructure/bicep/environments/dev.parameters.json
+
+# PowerShell deployment
+New-AzSubscriptionDeployment -Location eastus -TemplateFile infrastructure/bicep/main.bicep -TemplateParameterFile infrastructure/bicep/environments/dev.parameters.json
+```
+
+Repeat validation and what-if for QA, Stage, and Production. In Azure Portal:
+
+1. App Service > Identity: verify System assigned is On and record the principal, client, and tenant IDs.
+2. App Service > Configuration: verify endpoint settings and managed identity authentication flags; verify no passwords, API keys, or credential-bearing connection strings exist.
+3. Each target resource > Access control (IAM): verify the five assignments are present for the App Service principal and scoped to that resource.
+4. Key Vault > Access configuration: verify Azure RBAC is selected, access policies are empty, and the identity can read only permitted secrets.
+5. App Configuration: verify local authentication is disabled and the identity has Data Reader access.
+6. Storage Account: verify shared key access is disabled and the identity has Blob Data Contributor access.
+7. Azure OpenAI and Azure AI Search: verify local/API-key authentication is disabled where configured and the identity has the documented data-plane role.
+8. Deployment > Outputs: verify identity IDs, assigned RBAC roles, and all configuration endpoints are present and contain no secrets.

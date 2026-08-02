@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.35.1.17967",
-      "templateHash": "6525229046599583286"
+      "templateHash": "18397194014472290190"
     }
   },
   "parameters": {
@@ -95,6 +95,18 @@
       "defaultValue": {},
       "metadata": {
         "description": "Additional resource tags."
+      }
+    },
+    "resourceLockLevel": {
+      "type": "string",
+      "defaultValue": "",
+      "allowedValues": [
+        "",
+        "CanNotDelete",
+        "ReadOnly"
+      ],
+      "metadata": {
+        "description": "Optional lock applied to the environment Resource Group. Leave empty by default; supported values are CanNotDelete and ReadOnly."
       }
     },
     "project": {
@@ -216,13 +228,6 @@
         "description": "Application Insights application type."
       }
     },
-    "workloadPrincipalId": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Optional workload principal ID used for Key Vault and App Configuration RBAC assignments."
-      }
-    },
     "keyVaultEnablePurgeProtection": {
       "type": "bool",
       "defaultValue": false,
@@ -242,6 +247,103 @@
       "defaultValue": true,
       "metadata": {
         "description": "Whether standard diagnostic settings are enabled."
+      }
+    },
+    "appServicePlanSkuName": {
+      "type": "string",
+      "defaultValue": "P1v3",
+      "allowedValues": [
+        "P1v3",
+        "P2v3",
+        "P3v3"
+      ],
+      "metadata": {
+        "description": "App Service Plan SKU name. Premium v3 is the enterprise default."
+      }
+    },
+    "appServicePlanSkuTier": {
+      "type": "string",
+      "defaultValue": "PremiumV3",
+      "allowedValues": [
+        "PremiumV3"
+      ],
+      "metadata": {
+        "description": "App Service Plan SKU tier."
+      }
+    },
+    "appServicePlanInstanceCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "metadata": {
+        "description": "Initial App Service Plan instance count."
+      }
+    },
+    "appServicePlanZoneRedundant": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Whether the App Service Plan uses availability zones."
+      }
+    },
+    "appServicePlanPerSiteScaling": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Whether per-site scaling is enabled on the App Service Plan."
+      }
+    },
+    "appServiceRuntimeVersion": {
+      "type": "string",
+      "defaultValue": "10.0",
+      "metadata": {
+        "description": "App Service .NET runtime version, for example 10.0."
+      }
+    },
+    "appServiceAlwaysOn": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether the App Service is kept warm without an incoming request."
+      }
+    },
+    "appServiceHealthCheckPath": {
+      "type": "string",
+      "defaultValue": "/health",
+      "metadata": {
+        "description": "Health check endpoint path exposed by the hosted application."
+      }
+    },
+    "appServiceHttp20Enabled": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether HTTP/2 is enabled for the App Service."
+      }
+    },
+    "appServiceWebSocketsEnabled": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Whether WebSockets are enabled for the App Service."
+      }
+    },
+    "appServicePublicNetworkAccess": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ],
+      "metadata": {
+        "description": "Whether public network access is enabled for the App Service."
+      }
+    },
+    "appServiceAdditionalAppSettings": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Additional non-secret App Service application settings reserved for workload integrations."
       }
     },
     "storageLargeFileSharesState": {
@@ -456,6 +558,165 @@
       "metadata": {
         "description": "Feature flags reserved for future platform capabilities."
       }
+    },
+    "azureOpenAIName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional Azure OpenAI resource name. Defaults to the enterprise naming module output."
+      }
+    },
+    "azureOpenAIPublicNetworkAccess": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ],
+      "metadata": {
+        "description": "Azure OpenAI public network access mode."
+      }
+    },
+    "azureOpenAIDisableLocalAuth": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether Azure OpenAI API key authentication is disabled."
+      }
+    },
+    "azureOpenAIChatDeploymentName": {
+      "type": "string",
+      "defaultValue": "chat",
+      "metadata": {
+        "description": "Azure OpenAI chat deployment name."
+      }
+    },
+    "azureOpenAIChatModelName": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure OpenAI chat model name."
+      }
+    },
+    "azureOpenAIChatModelVersion": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure OpenAI chat model version."
+      }
+    },
+    "azureOpenAIEmbeddingDeploymentName": {
+      "type": "string",
+      "defaultValue": "embeddings",
+      "metadata": {
+        "description": "Azure OpenAI embedding deployment name."
+      }
+    },
+    "azureOpenAIEmbeddingModelName": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure OpenAI embedding model name."
+      }
+    },
+    "azureOpenAIEmbeddingModelVersion": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure OpenAI embedding model version."
+      }
+    },
+    "azureOpenAISkuName": {
+      "type": "string",
+      "defaultValue": "S0",
+      "metadata": {
+        "description": "Azure OpenAI account SKU."
+      }
+    },
+    "azureOpenAIDeploymentSkuName": {
+      "type": "string",
+      "defaultValue": "GlobalStandard",
+      "allowedValues": [
+        "GlobalStandard",
+        "Standard"
+      ],
+      "metadata": {
+        "description": "Azure OpenAI deployment SKU."
+      }
+    },
+    "azureOpenAIDeploymentCapacity": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "Azure OpenAI deployment capacity in thousands of tokens per minute."
+      }
+    },
+    "azureAISearchName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional Azure AI Search service name. Defaults to the enterprise naming module output."
+      }
+    },
+    "azureAISearchSkuName": {
+      "type": "string",
+      "defaultValue": "standard",
+      "metadata": {
+        "description": "Azure AI Search service SKU."
+      }
+    },
+    "azureAISearchReplicaCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "metadata": {
+        "description": "Azure AI Search replica count."
+      }
+    },
+    "azureAISearchPartitionCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "metadata": {
+        "description": "Azure AI Search partition count."
+      }
+    },
+    "azureAISearchPublicNetworkAccess": {
+      "type": "string",
+      "defaultValue": "enabled",
+      "allowedValues": [
+        "enabled",
+        "disabled"
+      ],
+      "metadata": {
+        "description": "Azure AI Search public network access mode."
+      }
+    },
+    "azureAISearchSemanticSearch": {
+      "type": "string",
+      "defaultValue": "free",
+      "allowedValues": [
+        "disabled",
+        "free",
+        "standard"
+      ],
+      "metadata": {
+        "description": "Azure AI Search semantic ranking capability."
+      }
+    },
+    "azureAISearchAuthOptions": {
+      "type": "string",
+      "defaultValue": "aad",
+      "allowedValues": [
+        "aad",
+        "aadOrApiKey"
+      ],
+      "metadata": {
+        "description": "Azure AI Search authentication mode."
+      }
+    },
+    "azureAISearchDisableLocalAuth": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether Azure AI Search local API-key authentication is disabled."
+      }
     }
   },
   "variables": {
@@ -479,6 +740,67 @@
       "name": "[variables('resourceGroupName')]",
       "location": "[parameters('location')]",
       "tags": "[variables('bootstrapTags')]"
+    },
+    "resourceLock": {
+      "condition": "[not(empty(parameters('resourceLockLevel')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('ecap-resource-lock-{0}', parameters('environment'))]",
+      "resourceGroup": "[variables('resourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "lockLevel": {
+            "value": "[parameters('resourceLockLevel')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "17509071460835112351"
+            }
+          },
+          "parameters": {
+            "lockLevel": {
+              "type": "string",
+              "metadata": {
+                "description": "Optional lock level for the environment Resource Group."
+              }
+            },
+            "environment": {
+              "type": "string",
+              "metadata": {
+                "description": "Deployment environment name used in the lock name."
+              }
+            }
+          },
+          "resources": [
+            {
+              "condition": "[not(empty(parameters('lockLevel')))]",
+              "type": "Microsoft.Authorization/locks",
+              "apiVersion": "2016-09-01",
+              "name": "[format('ecap-{0}-{1}', parameters('environment'), toLower(parameters('lockLevel')))]",
+              "properties": {
+                "level": "[parameters('lockLevel')]",
+                "notes": "Optional ECAP environment protection lock. Remove or change through an approved infrastructure deployment."
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "resourceGroup"
+      ]
     },
     "globals": {
       "type": "Microsoft.Resources/deployments",
@@ -658,6 +980,66 @@
           },
           "featureFlags": {
             "value": "[parameters('featureFlags')]"
+          },
+          "azureOpenAIName": {
+            "value": "[parameters('azureOpenAIName')]"
+          },
+          "azureOpenAIPublicNetworkAccess": {
+            "value": "[parameters('azureOpenAIPublicNetworkAccess')]"
+          },
+          "azureOpenAIDisableLocalAuth": {
+            "value": "[parameters('azureOpenAIDisableLocalAuth')]"
+          },
+          "azureOpenAIChatDeploymentName": {
+            "value": "[parameters('azureOpenAIChatDeploymentName')]"
+          },
+          "azureOpenAIChatModelName": {
+            "value": "[parameters('azureOpenAIChatModelName')]"
+          },
+          "azureOpenAIChatModelVersion": {
+            "value": "[parameters('azureOpenAIChatModelVersion')]"
+          },
+          "azureOpenAIEmbeddingDeploymentName": {
+            "value": "[parameters('azureOpenAIEmbeddingDeploymentName')]"
+          },
+          "azureOpenAIEmbeddingModelName": {
+            "value": "[parameters('azureOpenAIEmbeddingModelName')]"
+          },
+          "azureOpenAIEmbeddingModelVersion": {
+            "value": "[parameters('azureOpenAIEmbeddingModelVersion')]"
+          },
+          "azureOpenAISkuName": {
+            "value": "[parameters('azureOpenAISkuName')]"
+          },
+          "azureOpenAIDeploymentSkuName": {
+            "value": "[parameters('azureOpenAIDeploymentSkuName')]"
+          },
+          "azureOpenAIDeploymentCapacity": {
+            "value": "[parameters('azureOpenAIDeploymentCapacity')]"
+          },
+          "azureAISearchName": {
+            "value": "[parameters('azureAISearchName')]"
+          },
+          "azureAISearchSkuName": {
+            "value": "[parameters('azureAISearchSkuName')]"
+          },
+          "azureAISearchReplicaCount": {
+            "value": "[parameters('azureAISearchReplicaCount')]"
+          },
+          "azureAISearchPartitionCount": {
+            "value": "[parameters('azureAISearchPartitionCount')]"
+          },
+          "azureAISearchPublicNetworkAccess": {
+            "value": "[parameters('azureAISearchPublicNetworkAccess')]"
+          },
+          "azureAISearchSemanticSearch": {
+            "value": "[parameters('azureAISearchSemanticSearch')]"
+          },
+          "azureAISearchAuthOptions": {
+            "value": "[parameters('azureAISearchAuthOptions')]"
+          },
+          "azureAISearchDisableLocalAuth": {
+            "value": "[parameters('azureAISearchDisableLocalAuth')]"
           }
         },
         "template": {
@@ -667,7 +1049,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "4605352118740764765"
+              "templateHash": "8931137036216214904"
             }
           },
           "parameters": {
@@ -1097,6 +1479,165 @@
               "metadata": {
                 "description": "Feature flags reserved for future platform capabilities."
               }
+            },
+            "azureOpenAIName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional Azure OpenAI resource name. Defaults to the enterprise naming module output."
+              }
+            },
+            "azureOpenAIPublicNetworkAccess": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "allowedValues": [
+                "Enabled",
+                "Disabled"
+              ],
+              "metadata": {
+                "description": "Azure OpenAI public network access mode. Disable after private endpoint networking is provisioned."
+              }
+            },
+            "azureOpenAIDisableLocalAuth": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Whether API key authentication is disabled. Microsoft Entra ID and Azure RBAC are preferred."
+              }
+            },
+            "azureOpenAIChatDeploymentName": {
+              "type": "string",
+              "defaultValue": "chat",
+              "metadata": {
+                "description": "Azure OpenAI chat deployment name."
+              }
+            },
+            "azureOpenAIChatModelName": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure OpenAI chat model name."
+              }
+            },
+            "azureOpenAIChatModelVersion": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure OpenAI chat model version."
+              }
+            },
+            "azureOpenAIEmbeddingDeploymentName": {
+              "type": "string",
+              "defaultValue": "embeddings",
+              "metadata": {
+                "description": "Azure OpenAI embedding deployment name."
+              }
+            },
+            "azureOpenAIEmbeddingModelName": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure OpenAI embedding model name."
+              }
+            },
+            "azureOpenAIEmbeddingModelVersion": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure OpenAI embedding model version."
+              }
+            },
+            "azureOpenAISkuName": {
+              "type": "string",
+              "defaultValue": "S0",
+              "metadata": {
+                "description": "Azure OpenAI account SKU."
+              }
+            },
+            "azureOpenAIDeploymentSkuName": {
+              "type": "string",
+              "defaultValue": "GlobalStandard",
+              "allowedValues": [
+                "GlobalStandard",
+                "Standard"
+              ],
+              "metadata": {
+                "description": "Azure OpenAI deployment SKU."
+              }
+            },
+            "azureOpenAIDeploymentCapacity": {
+              "type": "int",
+              "defaultValue": 1,
+              "metadata": {
+                "description": "Azure OpenAI deployment capacity in thousands of tokens per minute."
+              }
+            },
+            "azureAISearchName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional Azure AI Search service name. Defaults to the enterprise naming module output."
+              }
+            },
+            "azureAISearchSkuName": {
+              "type": "string",
+              "defaultValue": "standard",
+              "metadata": {
+                "description": "Azure AI Search service SKU."
+              }
+            },
+            "azureAISearchReplicaCount": {
+              "type": "int",
+              "defaultValue": 1,
+              "minValue": 1,
+              "metadata": {
+                "description": "Azure AI Search replica count."
+              }
+            },
+            "azureAISearchPartitionCount": {
+              "type": "int",
+              "defaultValue": 1,
+              "minValue": 1,
+              "metadata": {
+                "description": "Azure AI Search partition count."
+              }
+            },
+            "azureAISearchPublicNetworkAccess": {
+              "type": "string",
+              "defaultValue": "enabled",
+              "allowedValues": [
+                "enabled",
+                "disabled"
+              ],
+              "metadata": {
+                "description": "Azure AI Search public network access mode."
+              }
+            },
+            "azureAISearchSemanticSearch": {
+              "type": "string",
+              "defaultValue": "free",
+              "allowedValues": [
+                "disabled",
+                "free",
+                "standard"
+              ],
+              "metadata": {
+                "description": "Azure AI Search semantic ranking capability. Availability depends on SKU and region."
+              }
+            },
+            "azureAISearchAuthOptions": {
+              "type": "string",
+              "defaultValue": "aad",
+              "allowedValues": [
+                "aad",
+                "aadOrApiKey"
+              ],
+              "metadata": {
+                "description": "Azure AI Search authentication mode."
+              }
+            },
+            "azureAISearchDisableLocalAuth": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Whether Azure AI Search local API-key authentication is disabled."
+              }
             }
           },
           "variables": {
@@ -1133,6 +1674,15 @@
               "enabled": "[parameters('diagnosticSettingsEnabled')]",
               "keyVaultLogCategories": [
                 "AuditEvent"
+              ],
+              "azureAISearchLogCategories": [
+                "OperationLogs",
+                "QueryLogs"
+              ],
+              "azureOpenAILogCategories": [
+                "Audit",
+                "RequestResponse",
+                "Trace"
               ],
               "appConfigurationLogCategories": [
                 "HttpRequest",
@@ -1644,6 +2194,30 @@
                 "diagnosticSettings": "[variables('diagnosticSettings')]",
                 "storageConfiguration": "[variables('storageConfiguration')]",
                 "sqlConfiguration": "[variables('sqlConfiguration')]",
+                "azureOpenAIConfiguration": {
+                  "name": "[if(empty(parameters('azureOpenAIName')), reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.azureOpenAIName.value, parameters('azureOpenAIName'))]",
+                  "publicNetworkAccess": "[parameters('azureOpenAIPublicNetworkAccess')]",
+                  "disableLocalAuth": "[parameters('azureOpenAIDisableLocalAuth')]",
+                  "skuName": "[parameters('azureOpenAISkuName')]",
+                  "deploymentSkuName": "[parameters('azureOpenAIDeploymentSkuName')]",
+                  "deploymentCapacity": "[parameters('azureOpenAIDeploymentCapacity')]",
+                  "chatDeploymentName": "[parameters('azureOpenAIChatDeploymentName')]",
+                  "chatModelName": "[parameters('azureOpenAIChatModelName')]",
+                  "chatModelVersion": "[parameters('azureOpenAIChatModelVersion')]",
+                  "embeddingDeploymentName": "[parameters('azureOpenAIEmbeddingDeploymentName')]",
+                  "embeddingModelName": "[parameters('azureOpenAIEmbeddingModelName')]",
+                  "embeddingModelVersion": "[parameters('azureOpenAIEmbeddingModelVersion')]"
+                },
+                "azureAISearchConfiguration": {
+                  "name": "[if(empty(parameters('azureAISearchName')), reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.aiSearchName.value, parameters('azureAISearchName'))]",
+                  "skuName": "[parameters('azureAISearchSkuName')]",
+                  "replicaCount": "[parameters('azureAISearchReplicaCount')]",
+                  "partitionCount": "[parameters('azureAISearchPartitionCount')]",
+                  "publicNetworkAccess": "[parameters('azureAISearchPublicNetworkAccess')]",
+                  "semanticSearch": "[parameters('azureAISearchSemanticSearch')]",
+                  "authOptions": "[parameters('azureAISearchAuthOptions')]",
+                  "disableLocalAuth": "[parameters('azureAISearchDisableLocalAuth')]"
+                },
                 "allowedLocations": "[variables('effectiveAllowedLocations')]",
                 "namingOutputs": {
                   "resourceGroupName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.resourceGroupName.value]",
@@ -1711,6 +2285,36 @@
               "type": "object",
               "value": "[variables('sqlConfiguration')]"
             },
+            "azureOpenAIConfiguration": {
+              "type": "object",
+              "value": {
+                "name": "[if(empty(parameters('azureOpenAIName')), reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.azureOpenAIName.value, parameters('azureOpenAIName'))]",
+                "publicNetworkAccess": "[parameters('azureOpenAIPublicNetworkAccess')]",
+                "disableLocalAuth": "[parameters('azureOpenAIDisableLocalAuth')]",
+                "skuName": "[parameters('azureOpenAISkuName')]",
+                "deploymentSkuName": "[parameters('azureOpenAIDeploymentSkuName')]",
+                "deploymentCapacity": "[parameters('azureOpenAIDeploymentCapacity')]",
+                "chatDeploymentName": "[parameters('azureOpenAIChatDeploymentName')]",
+                "chatModelName": "[parameters('azureOpenAIChatModelName')]",
+                "chatModelVersion": "[parameters('azureOpenAIChatModelVersion')]",
+                "embeddingDeploymentName": "[parameters('azureOpenAIEmbeddingDeploymentName')]",
+                "embeddingModelName": "[parameters('azureOpenAIEmbeddingModelName')]",
+                "embeddingModelVersion": "[parameters('azureOpenAIEmbeddingModelVersion')]"
+              }
+            },
+            "azureAISearchConfiguration": {
+              "type": "object",
+              "value": {
+                "name": "[if(empty(parameters('azureAISearchName')), reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.aiSearchName.value, parameters('azureAISearchName'))]",
+                "skuName": "[parameters('azureAISearchSkuName')]",
+                "replicaCount": "[parameters('azureAISearchReplicaCount')]",
+                "partitionCount": "[parameters('azureAISearchPartitionCount')]",
+                "publicNetworkAccess": "[parameters('azureAISearchPublicNetworkAccess')]",
+                "semanticSearch": "[parameters('azureAISearchSemanticSearch')]",
+                "authOptions": "[parameters('azureAISearchAuthOptions')]",
+                "disableLocalAuth": "[parameters('azureAISearchDisableLocalAuth')]"
+              }
+            },
             "allowedLocations": {
               "type": "array",
               "value": "[variables('effectiveAllowedLocations')]"
@@ -1758,11 +2362,44 @@
           "keyVaultEnablePurgeProtection": {
             "value": "[parameters('keyVaultEnablePurgeProtection')]"
           },
-          "workloadPrincipalId": {
-            "value": "[parameters('workloadPrincipalId')]"
-          },
           "appConfigurationPrivateEndpointSubnetResourceId": {
             "value": "[parameters('appConfigurationPrivateEndpointSubnetResourceId')]"
+          },
+          "appServicePlanSkuName": {
+            "value": "[parameters('appServicePlanSkuName')]"
+          },
+          "appServicePlanSkuTier": {
+            "value": "[parameters('appServicePlanSkuTier')]"
+          },
+          "appServicePlanInstanceCount": {
+            "value": "[parameters('appServicePlanInstanceCount')]"
+          },
+          "appServicePlanZoneRedundant": {
+            "value": "[parameters('appServicePlanZoneRedundant')]"
+          },
+          "appServicePlanPerSiteScaling": {
+            "value": "[parameters('appServicePlanPerSiteScaling')]"
+          },
+          "appServiceRuntimeVersion": {
+            "value": "[parameters('appServiceRuntimeVersion')]"
+          },
+          "appServiceAlwaysOn": {
+            "value": "[parameters('appServiceAlwaysOn')]"
+          },
+          "appServiceHealthCheckPath": {
+            "value": "[parameters('appServiceHealthCheckPath')]"
+          },
+          "appServiceHttp20Enabled": {
+            "value": "[parameters('appServiceHttp20Enabled')]"
+          },
+          "appServiceWebSocketsEnabled": {
+            "value": "[parameters('appServiceWebSocketsEnabled')]"
+          },
+          "appServicePublicNetworkAccess": {
+            "value": "[parameters('appServicePublicNetworkAccess')]"
+          },
+          "appServiceAdditionalAppSettings": {
+            "value": "[parameters('appServiceAdditionalAppSettings')]"
           }
         },
         "template": {
@@ -1773,7 +2410,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "8415979014791841479"
+              "templateHash": "17383267192746965113"
             }
           },
           "parameters": {
@@ -1781,13 +2418,6 @@
               "type": "object",
               "metadata": {
                 "description": "Centralized ECAP deployment configuration from the globals module."
-              }
-            },
-            "workloadPrincipalId": {
-              "type": "string",
-              "defaultValue": "",
-              "metadata": {
-                "description": "Optional workload principal ID used by security and configuration layers."
               }
             },
             "keyVaultEnablePurgeProtection": {
@@ -1803,9 +2433,120 @@
               "metadata": {
                 "description": "Optional subnet resource ID for an App Configuration private endpoint."
               }
+            },
+            "appServicePlanSkuName": {
+              "type": "string",
+              "defaultValue": "P1v3",
+              "metadata": {
+                "description": "App Service Plan SKU name."
+              }
+            },
+            "appServicePlanSkuTier": {
+              "type": "string",
+              "defaultValue": "PremiumV3",
+              "metadata": {
+                "description": "App Service Plan SKU tier."
+              }
+            },
+            "appServicePlanInstanceCount": {
+              "type": "int",
+              "defaultValue": 1,
+              "metadata": {
+                "description": "App Service Plan instance count."
+              }
+            },
+            "appServicePlanZoneRedundant": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether the App Service Plan is zone redundant."
+              }
+            },
+            "appServicePlanPerSiteScaling": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether per-site scaling is enabled."
+              }
+            },
+            "appServiceRuntimeVersion": {
+              "type": "string",
+              "defaultValue": "10.0",
+              "metadata": {
+                "description": "App Service .NET runtime version."
+              }
+            },
+            "appServiceAlwaysOn": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Whether the App Service is always on."
+              }
+            },
+            "appServiceHealthCheckPath": {
+              "type": "string",
+              "defaultValue": "/health",
+              "metadata": {
+                "description": "App Service health check path."
+              }
+            },
+            "appServiceHttp20Enabled": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Whether HTTP/2 is enabled."
+              }
+            },
+            "appServiceWebSocketsEnabled": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether WebSockets are enabled."
+              }
+            },
+            "appServicePublicNetworkAccess": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "metadata": {
+                "description": "Whether public network access is enabled."
+              }
+            },
+            "appServiceAdditionalAppSettings": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Additional non-secret App Service application settings."
+              }
             }
           },
           "resources": {
+            "appServiceSettings": {
+              "type": "Microsoft.Web/sites/config",
+              "apiVersion": "2024-04-01",
+              "name": "[format('{0}/appsettings', parameters('globals').namingOutputs.appServiceName)]",
+              "properties": {
+                "APPLICATIONINSIGHTS_CONNECTION_STRING": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('globals').environment)), '2022-09-01').applicationInsightsConnectionString]",
+                "AzureOpenAI__Endpoint": "[reference('ai').outputs.endpoint.value]",
+                "AzureOpenAI__Authentication": "ManagedIdentity",
+                "AzureAISearch__Endpoint": "[reference('ai').outputs.azureAISearchEndpoint.value]",
+                "AzureAISearch__Authentication": "ManagedIdentity",
+                "AzureSql__Connection": "[format('Server=tcp:{0},1433;Database={1};Encrypt=True;TrustServerCertificate=False;', reference('data').outputs.sqlServerFullyQualifiedDomainName.value, reference('data').outputs.sqlDatabaseName.value)]",
+                "AzureSql__Authentication": "Active Directory Managed Identity",
+                "Storage__Account": "[reference('data').outputs.blobEndpoint.value]",
+                "Storage__Authentication": "ManagedIdentity",
+                "AppConfiguration__Endpoint": "[reference('configuration').outputs.endpoint.value]",
+                "KeyVault__Uri": "[reference('security').outputs.vaultUri.value]",
+                "KeyVault__ReferencePrefix": ""
+              },
+              "dependsOn": [
+                "ai",
+                "configuration",
+                "data",
+                "monitoring",
+                "rbac",
+                "security"
+              ]
+            },
             "monitoring": {
               "type": "Microsoft.Resources/deployments",
               "apiVersion": "2022-09-01",
@@ -2129,6 +2870,371 @@
                 }
               }
             },
+            "app": {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2022-09-01",
+              "name": "[format('ecap-app-service-{0}', parameters('globals').environment)]",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "configuration": {
+                    "value": {
+                      "planName": "[parameters('globals').namingOutputs.appServicePlanName]",
+                      "appName": "[parameters('globals').namingOutputs.appServiceName]",
+                      "skuName": "[parameters('appServicePlanSkuName')]",
+                      "skuTier": "[parameters('appServicePlanSkuTier')]",
+                      "instanceCount": "[parameters('appServicePlanInstanceCount')]",
+                      "zoneRedundant": "[parameters('appServicePlanZoneRedundant')]",
+                      "perSiteScaling": "[parameters('appServicePlanPerSiteScaling')]",
+                      "linuxFxVersion": "[format('DOTNETCORE|{0}', parameters('appServiceRuntimeVersion'))]",
+                      "alwaysOn": "[parameters('appServiceAlwaysOn')]",
+                      "healthCheckPath": "[parameters('appServiceHealthCheckPath')]",
+                      "http20Enabled": "[parameters('appServiceHttp20Enabled')]",
+                      "webSocketsEnabled": "[parameters('appServiceWebSocketsEnabled')]",
+                      "minimumTlsVersion": "1.2",
+                      "publicNetworkAccess": "[parameters('appServicePublicNetworkAccess')]",
+                      "additionalAppSettings": "[parameters('appServiceAdditionalAppSettings')]",
+                      "sqlDatabaseName": "[parameters('globals').namingOutputs.sqlDatabaseName]"
+                    }
+                  },
+                  "location": {
+                    "value": "[parameters('globals').location]"
+                  },
+                  "tags": {
+                    "value": "[parameters('globals').standardTags]"
+                  },
+                  "logAnalyticsWorkspaceResourceId": {
+                    "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('globals').environment)), '2022-09-01').logAnalyticsWorkspaceId]"
+                  },
+                  "applicationInsightsConnectionString": {
+                    "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('globals').environment)), '2022-09-01').applicationInsightsConnectionString]"
+                  },
+                  "diagnosticSettings": {
+                    "value": {
+                      "enabled": "[parameters('globals').diagnosticSettings.enabled]",
+                      "appServiceLogCategories": [
+                        "AppServiceHTTPLogs",
+                        "AppServiceConsoleLogs",
+                        "AppServiceAppLogs",
+                        "AppServiceAuditLogs"
+                      ],
+                      "metricCategories": "[parameters('globals').diagnosticSettings.metricCategories]"
+                    }
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.35.1.17967",
+                      "templateHash": "18225694085942721181"
+                    }
+                  },
+                  "parameters": {
+                    "configuration": {
+                      "type": "object",
+                      "metadata": {
+                        "description": "Centralized App Service configuration from the globals module."
+                      }
+                    },
+                    "location": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Azure region for the App Service resources."
+                      }
+                    },
+                    "tags": {
+                      "type": "object",
+                      "metadata": {
+                        "description": "Standard ECAP resource tags."
+                      }
+                    },
+                    "logAnalyticsWorkspaceResourceId": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional Log Analytics workspace resource ID for diagnostic settings."
+                      }
+                    },
+                    "applicationInsightsConnectionString": {
+                      "type": "securestring",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Application Insights connection string for platform telemetry."
+                      }
+                    },
+                    "azureOpenAIEndpoint": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Azure OpenAI endpoint used by the application with managed identity authentication."
+                      }
+                    },
+                    "azureAISearchEndpoint": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Azure AI Search endpoint used by the application with managed identity authentication."
+                      }
+                    },
+                    "sqlServerFullyQualifiedDomainName": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Azure SQL logical server fully qualified domain name used for Microsoft Entra authentication."
+                      }
+                    },
+                    "storageBlobEndpoint": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Storage Blob endpoint used by the application with managed identity authentication."
+                      }
+                    },
+                    "keyVaultUri": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Key Vault URI used for RBAC-authorized secret retrieval and future Key Vault references."
+                      }
+                    },
+                    "appConfigurationEndpoint": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "App Configuration endpoint used with managed identity authentication."
+                      }
+                    },
+                    "diagnosticSettings": {
+                      "type": "object",
+                      "defaultValue": {
+                        "enabled": true,
+                        "appServiceLogCategories": [
+                          "AppServiceHTTPLogs",
+                          "AppServiceConsoleLogs",
+                          "AppServiceAppLogs",
+                          "AppServiceAuditLogs"
+                        ],
+                        "metricCategories": [
+                          "AllMetrics"
+                        ]
+                      },
+                      "metadata": {
+                        "description": "Centralized diagnostic settings configuration."
+                      }
+                    }
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.Web/serverfarms",
+                      "apiVersion": "2024-04-01",
+                      "name": "[parameters('configuration').planName]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "kind": "linux",
+                      "sku": {
+                        "name": "[parameters('configuration').skuName]",
+                        "tier": "[parameters('configuration').skuTier]",
+                        "capacity": "[parameters('configuration').instanceCount]"
+                      },
+                      "properties": {
+                        "reserved": true,
+                        "zoneRedundant": "[parameters('configuration').zoneRedundant]",
+                        "perSiteScaling": "[parameters('configuration').perSiteScaling]"
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Web/sites",
+                      "apiVersion": "2024-04-01",
+                      "name": "[parameters('configuration').appName]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "kind": "app,linux",
+                      "identity": {
+                        "type": "SystemAssigned"
+                      },
+                      "properties": {
+                        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('configuration').planName)]",
+                        "httpsOnly": true,
+                        "publicNetworkAccess": "[parameters('configuration').publicNetworkAccess]",
+                        "clientAffinityEnabled": false,
+                        "siteConfig": {
+                          "linuxFxVersion": "[parameters('configuration').linuxFxVersion]",
+                          "alwaysOn": "[parameters('configuration').alwaysOn]",
+                          "healthCheckPath": "[parameters('configuration').healthCheckPath]",
+                          "http20Enabled": "[parameters('configuration').http20Enabled]",
+                          "minTlsVersion": "[parameters('configuration').minimumTlsVersion]",
+                          "ftpsState": "Disabled",
+                          "webSocketsEnabled": "[parameters('configuration').webSocketsEnabled]",
+                          "appSettings": "[flatten(createArray(createArray(createObject('name', 'APPLICATIONINSIGHTS_CONNECTION_STRING', 'value', parameters('applicationInsightsConnectionString')), createObject('name', 'AzureOpenAI__Endpoint', 'value', parameters('azureOpenAIEndpoint')), createObject('name', 'AzureOpenAI__Authentication', 'value', 'ManagedIdentity'), createObject('name', 'AzureAISearch__Endpoint', 'value', parameters('azureAISearchEndpoint')), createObject('name', 'AzureAISearch__Authentication', 'value', 'ManagedIdentity'), createObject('name', 'AzureSql__Connection', 'value', format('Server=tcp:{0},1433;Database={1};Encrypt=True;TrustServerCertificate=False;', parameters('sqlServerFullyQualifiedDomainName'), parameters('configuration').sqlDatabaseName)), createObject('name', 'AzureSql__Authentication', 'value', 'Active Directory Managed Identity'), createObject('name', 'Storage__Account', 'value', parameters('storageBlobEndpoint')), createObject('name', 'Storage__Authentication', 'value', 'ManagedIdentity'), createObject('name', 'AppConfiguration__Endpoint', 'value', parameters('appConfigurationEndpoint')), createObject('name', 'KeyVault__Uri', 'value', parameters('keyVaultUri')), createObject('name', 'KeyVault__ReferencePrefix', 'value', '')), parameters('configuration').additionalAppSettings))]"
+                        }
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Web/serverfarms', parameters('configuration').planName)]"
+                      ]
+                    },
+                    {
+                      "condition": "[and(not(empty(parameters('logAnalyticsWorkspaceResourceId'))), parameters('diagnosticSettings').enabled)]",
+                      "type": "Microsoft.Insights/diagnosticSettings",
+                      "apiVersion": "2021-05-01-preview",
+                      "scope": "[format('Microsoft.Web/sites/{0}', parameters('configuration').appName)]",
+                      "name": "app-service-diagnostics",
+                      "properties": {
+                        "copy": [
+                          {
+                            "name": "logs",
+                            "count": "[length(parameters('diagnosticSettings').appServiceLogCategories)]",
+                            "input": {
+                              "category": "[parameters('diagnosticSettings').appServiceLogCategories[copyIndex('logs')]]",
+                              "enabled": true
+                            }
+                          },
+                          {
+                            "name": "metrics",
+                            "count": "[length(parameters('diagnosticSettings').metricCategories)]",
+                            "input": {
+                              "category": "[parameters('diagnosticSettings').metricCategories[copyIndex('metrics')]]",
+                              "enabled": true
+                            }
+                          }
+                        ],
+                        "workspaceId": "[parameters('logAnalyticsWorkspaceResourceId')]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('configuration').appName)]"
+                      ]
+                    }
+                  ],
+                  "outputs": {
+                    "appServiceName": {
+                      "type": "string",
+                      "value": "[parameters('configuration').appName]"
+                    },
+                    "appServiceResourceId": {
+                      "type": "string",
+                      "value": "[resourceId('Microsoft.Web/sites', parameters('configuration').appName)]"
+                    },
+                    "defaultHostName": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Web/sites', parameters('configuration').appName), '2024-04-01').defaultHostName]"
+                    },
+                    "managedIdentityPrincipalId": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Web/sites', parameters('configuration').appName), '2024-04-01', 'full').identity.principalId]"
+                    },
+                    "managedIdentityClientId": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Web/sites', parameters('configuration').appName), '2024-04-01', 'full').identity.principalId]"
+                    },
+                    "managedIdentityTenantId": {
+                      "type": "string",
+                      "value": "[subscription().tenantId]"
+                    },
+                    "appServicePlanName": {
+                      "type": "string",
+                      "value": "[parameters('configuration').planName]"
+                    },
+                    "appServicePlanResourceId": {
+                      "type": "string",
+                      "value": "[resourceId('Microsoft.Web/serverfarms', parameters('configuration').planName)]"
+                    }
+                  }
+                }
+              },
+              "dependsOn": [
+                "monitoring"
+              ]
+            },
+            "identity": {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2022-09-01",
+              "name": "[format('ecap-identity-{0}', parameters('globals').environment)]",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "appServiceResourceId": {
+                    "value": "[reference('app').outputs.appServiceResourceId.value]"
+                  },
+                  "principalId": {
+                    "value": "[reference('app').outputs.managedIdentityPrincipalId.value]"
+                  },
+                  "clientId": {
+                    "value": "[reference('app').outputs.managedIdentityClientId.value]"
+                  },
+                  "tenantId": {
+                    "value": "[reference('app').outputs.managedIdentityTenantId.value]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.35.1.17967",
+                      "templateHash": "1251014295324254704"
+                    }
+                  },
+                  "parameters": {
+                    "appServiceResourceId": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "App Service resource ID owning the system-assigned managed identity."
+                      }
+                    },
+                    "principalId": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "System-assigned managed identity principal ID exposed by the App Service module."
+                      }
+                    },
+                    "clientId": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "System-assigned managed identity client ID exposed by the App Service module."
+                      }
+                    },
+                    "tenantId": {
+                      "type": "string",
+                      "defaultValue": "[subscription().tenantId]",
+                      "metadata": {
+                        "description": "Microsoft Entra tenant ID for the deployment."
+                      }
+                    }
+                  },
+                  "resources": [],
+                  "outputs": {
+                    "appServiceResourceId": {
+                      "type": "string",
+                      "value": "[parameters('appServiceResourceId')]"
+                    },
+                    "principalId": {
+                      "type": "string",
+                      "value": "[parameters('principalId')]"
+                    },
+                    "clientId": {
+                      "type": "string",
+                      "value": "[parameters('clientId')]"
+                    },
+                    "tenantId": {
+                      "type": "string",
+                      "value": "[parameters('tenantId')]"
+                    }
+                  }
+                }
+              },
+              "dependsOn": [
+                "app"
+              ]
+            },
             "security": {
               "type": "Microsoft.Resources/deployments",
               "apiVersion": "2022-09-01",
@@ -2141,9 +3247,6 @@
                 "parameters": {
                   "globals": {
                     "value": "[parameters('globals')]"
-                  },
-                  "principalId": {
-                    "value": "[parameters('workloadPrincipalId')]"
                   },
                   "logAnalyticsWorkspaceResourceId": {
                     "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('globals').environment)), '2022-09-01').logAnalyticsWorkspaceId]"
@@ -2159,7 +3262,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.35.1.17967",
-                      "templateHash": "14528802516262454104"
+                      "templateHash": "18022745534968832825"
                     }
                   },
                   "parameters": {
@@ -2167,13 +3270,6 @@
                       "type": "object",
                       "metadata": {
                         "description": "Centralized ECAP deployment configuration from the globals module."
-                      }
-                    },
-                    "principalId": {
-                      "type": "string",
-                      "defaultValue": "",
-                      "metadata": {
-                        "description": "Optional system-assigned managed identity principal ID for RBAC."
                       }
                     },
                     "logAnalyticsWorkspaceResourceId": {
@@ -2211,9 +3307,6 @@
                           "tags": {
                             "value": "[parameters('globals').standardTags]"
                           },
-                          "principalId": {
-                            "value": "[parameters('principalId')]"
-                          },
                           "logAnalyticsWorkspaceResourceId": {
                             "value": "[parameters('logAnalyticsWorkspaceResourceId')]"
                           },
@@ -2231,7 +3324,7 @@
                             "_generator": {
                               "name": "bicep",
                               "version": "0.35.1.17967",
-                              "templateHash": "788434124164991195"
+                              "templateHash": "6923575734516732369"
                             }
                           },
                           "parameters": {
@@ -2251,13 +3344,6 @@
                               "type": "object",
                               "metadata": {
                                 "description": "Standard ECAP resource tags."
-                              }
-                            },
-                            "principalId": {
-                              "type": "string",
-                              "defaultValue": "",
-                              "metadata": {
-                                "description": "Optional workload principal ID to receive Key Vault Secrets User permissions."
                               }
                             },
                             "logAnalyticsWorkspaceResourceId": {
@@ -2290,9 +3376,6 @@
                               }
                             }
                           },
-                          "variables": {
-                            "keyVaultSecretsUserRoleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')]"
-                          },
                           "resources": [
                             {
                               "type": "Microsoft.KeyVault/vaults",
@@ -2320,21 +3403,6 @@
                                   "defaultAction": "Allow"
                                 }
                               }
-                            },
-                            {
-                              "condition": "[not(empty(parameters('principalId')))]",
-                              "type": "Microsoft.Authorization/roleAssignments",
-                              "apiVersion": "2022-04-01",
-                              "scope": "[format('Microsoft.KeyVault/vaults/{0}', parameters('name'))]",
-                              "name": "[guid(resourceId('Microsoft.KeyVault/vaults', parameters('name')), parameters('principalId'), variables('keyVaultSecretsUserRoleDefinitionId'))]",
-                              "properties": {
-                                "roleDefinitionId": "[variables('keyVaultSecretsUserRoleDefinitionId')]",
-                                "principalId": "[parameters('principalId')]",
-                                "principalType": "ServicePrincipal"
-                              },
-                              "dependsOn": [
-                                "[resourceId('Microsoft.KeyVault/vaults', parameters('name'))]"
-                              ]
                             },
                             {
                               "condition": "[and(not(empty(parameters('logAnalyticsWorkspaceResourceId'))), parameters('diagnosticSettings').enabled)]",
@@ -2419,9 +3487,6 @@
                   "globals": {
                     "value": "[parameters('globals')]"
                   },
-                  "principalId": {
-                    "value": "[parameters('workloadPrincipalId')]"
-                  },
                   "logAnalyticsWorkspaceResourceId": {
                     "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('globals').environment)), '2022-09-01').logAnalyticsWorkspaceId]"
                   },
@@ -2436,7 +3501,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.35.1.17967",
-                      "templateHash": "11332317763878246014"
+                      "templateHash": "8849417935452368443"
                     }
                   },
                   "parameters": {
@@ -2444,13 +3509,6 @@
                       "type": "object",
                       "metadata": {
                         "description": "Centralized ECAP deployment configuration from the globals module."
-                      }
-                    },
-                    "principalId": {
-                      "type": "string",
-                      "defaultValue": "",
-                      "metadata": {
-                        "description": "Optional workload principal ID to receive App Configuration Data Reader permissions."
                       }
                     },
                     "logAnalyticsWorkspaceResourceId": {
@@ -2488,9 +3546,6 @@
                           "tags": {
                             "value": "[parameters('globals').standardTags]"
                           },
-                          "principalId": {
-                            "value": "[parameters('principalId')]"
-                          },
                           "logAnalyticsWorkspaceResourceId": {
                             "value": "[parameters('logAnalyticsWorkspaceResourceId')]"
                           },
@@ -2508,7 +3563,7 @@
                             "_generator": {
                               "name": "bicep",
                               "version": "0.35.1.17967",
-                              "templateHash": "16826605128881947999"
+                              "templateHash": "14999200219085976646"
                             }
                           },
                           "parameters": {
@@ -2528,13 +3583,6 @@
                               "type": "object",
                               "metadata": {
                                 "description": "Standard ECAP resource tags."
-                              }
-                            },
-                            "principalId": {
-                              "type": "string",
-                              "defaultValue": "",
-                              "metadata": {
-                                "description": "Optional workload principal ID to receive App Configuration Data Reader permissions."
                               }
                             },
                             "logAnalyticsWorkspaceResourceId": {
@@ -2568,9 +3616,6 @@
                               }
                             }
                           },
-                          "variables": {
-                            "appConfigurationDataReaderRoleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '516239f1-63e1-4d78-a4de-a74fb236a071')]"
-                          },
                           "resources": [
                             {
                               "type": "Microsoft.AppConfiguration/configurationStores",
@@ -2588,21 +3633,6 @@
                                 "disableLocalAuth": true,
                                 "publicNetworkAccess": "Enabled"
                               }
-                            },
-                            {
-                              "condition": "[not(empty(parameters('principalId')))]",
-                              "type": "Microsoft.Authorization/roleAssignments",
-                              "apiVersion": "2022-04-01",
-                              "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', parameters('name'))]",
-                              "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', parameters('name')), parameters('principalId'), variables('appConfigurationDataReaderRoleDefinitionId'))]",
-                              "properties": {
-                                "roleDefinitionId": "[variables('appConfigurationDataReaderRoleDefinitionId')]",
-                                "principalId": "[parameters('principalId')]",
-                                "principalType": "ServicePrincipal"
-                              },
-                              "dependsOn": [
-                                "[resourceId('Microsoft.AppConfiguration/configurationStores', parameters('name'))]"
-                              ]
                             },
                             {
                               "condition": "[not(empty(parameters('privateEndpointSubnetResourceId')))]",
@@ -3634,6 +4664,9 @@
                 "parameters": {
                   "globals": {
                     "value": "[parameters('globals')]"
+                  },
+                  "logAnalyticsWorkspaceResourceId": {
+                    "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('globals').environment)), '2022-09-01').logAnalyticsWorkspaceId]"
                   }
                 },
                 "template": {
@@ -3643,7 +4676,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.35.1.17967",
-                      "templateHash": "11100525939359834372"
+                      "templateHash": "10458649051872945891"
                     }
                   },
                   "parameters": {
@@ -3652,19 +4685,628 @@
                       "metadata": {
                         "description": "Centralized ECAP deployment configuration from the globals module."
                       }
+                    },
+                    "logAnalyticsWorkspaceResourceId": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional Log Analytics workspace resource ID for diagnostic settings."
+                      }
                     }
                   },
-                  "resources": [],
+                  "variables": {
+                    "azureOpenAIConfiguration": "[parameters('globals').azureOpenAIConfiguration]",
+                    "azureAISearchConfiguration": "[parameters('globals').azureAISearchConfiguration]"
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2022-09-01",
+                      "name": "ecap-azure-openai-account",
+                      "properties": {
+                        "expressionEvaluationOptions": {
+                          "scope": "inner"
+                        },
+                        "mode": "Incremental",
+                        "parameters": {
+                          "configuration": {
+                            "value": "[variables('azureOpenAIConfiguration')]"
+                          },
+                          "location": {
+                            "value": "[parameters('globals').location]"
+                          },
+                          "tags": {
+                            "value": "[parameters('globals').standardTags]"
+                          },
+                          "logAnalyticsWorkspaceResourceId": {
+                            "value": "[parameters('logAnalyticsWorkspaceResourceId')]"
+                          },
+                          "diagnosticSettings": {
+                            "value": "[parameters('globals').diagnosticSettings]"
+                          }
+                        },
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "metadata": {
+                            "_generator": {
+                              "name": "bicep",
+                              "version": "0.35.1.17967",
+                              "templateHash": "11219932753070669003"
+                            }
+                          },
+                          "parameters": {
+                            "configuration": {
+                              "type": "object",
+                              "metadata": {
+                                "description": "Azure OpenAI account configuration from the centralized globals object."
+                              }
+                            },
+                            "location": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "Azure region for the Azure OpenAI account."
+                              }
+                            },
+                            "tags": {
+                              "type": "object",
+                              "metadata": {
+                                "description": "Standard ECAP resource tags."
+                              }
+                            },
+                            "logAnalyticsWorkspaceResourceId": {
+                              "type": "string",
+                              "defaultValue": "",
+                              "metadata": {
+                                "description": "Optional Log Analytics workspace resource ID for diagnostic settings."
+                              }
+                            },
+                            "diagnosticSettings": {
+                              "type": "object",
+                              "defaultValue": {
+                                "enabled": true,
+                                "azureOpenAILogCategories": [
+                                  "Audit",
+                                  "RequestResponse",
+                                  "Trace"
+                                ],
+                                "metricCategories": [
+                                  "AllMetrics"
+                                ]
+                              },
+                              "metadata": {
+                                "description": "Centralized diagnostic settings configuration."
+                              }
+                            }
+                          },
+                          "resources": [
+                            {
+                              "type": "Microsoft.CognitiveServices/accounts",
+                              "apiVersion": "2024-10-01",
+                              "name": "[parameters('configuration').name]",
+                              "location": "[parameters('location')]",
+                              "tags": "[parameters('tags')]",
+                              "kind": "OpenAI",
+                              "identity": {
+                                "type": "SystemAssigned"
+                              },
+                              "sku": {
+                                "name": "[parameters('configuration').skuName]"
+                              },
+                              "properties": {
+                                "customSubDomainName": "[parameters('configuration').name]",
+                                "publicNetworkAccess": "[parameters('configuration').publicNetworkAccess]",
+                                "networkAcls": {
+                                  "defaultAction": "Allow",
+                                  "ipRules": [],
+                                  "virtualNetworkRules": []
+                                },
+                                "disableLocalAuth": "[parameters('configuration').disableLocalAuth]"
+                              }
+                            },
+                            {
+                              "condition": "[and(not(empty(parameters('logAnalyticsWorkspaceResourceId'))), parameters('diagnosticSettings').enabled)]",
+                              "type": "Microsoft.Insights/diagnosticSettings",
+                              "apiVersion": "2021-05-01-preview",
+                              "scope": "[format('Microsoft.CognitiveServices/accounts/{0}', parameters('configuration').name)]",
+                              "name": "azure-openai-diagnostics",
+                              "properties": {
+                                "copy": [
+                                  {
+                                    "name": "logs",
+                                    "count": "[length(parameters('diagnosticSettings').azureOpenAILogCategories)]",
+                                    "input": {
+                                      "category": "[parameters('diagnosticSettings').azureOpenAILogCategories[copyIndex('logs')]]",
+                                      "enabled": true
+                                    }
+                                  },
+                                  {
+                                    "name": "metrics",
+                                    "count": "[length(parameters('diagnosticSettings').metricCategories)]",
+                                    "input": {
+                                      "category": "[parameters('diagnosticSettings').metricCategories[copyIndex('metrics')]]",
+                                      "enabled": true
+                                    }
+                                  }
+                                ],
+                                "workspaceId": "[parameters('logAnalyticsWorkspaceResourceId')]"
+                              },
+                              "dependsOn": [
+                                "[resourceId('Microsoft.CognitiveServices/accounts', parameters('configuration').name)]"
+                              ]
+                            }
+                          ],
+                          "outputs": {
+                            "resourceId": {
+                              "type": "string",
+                              "value": "[resourceId('Microsoft.CognitiveServices/accounts', parameters('configuration').name)]"
+                            },
+                            "name": {
+                              "type": "string",
+                              "value": "[parameters('configuration').name]"
+                            },
+                            "endpoint": {
+                              "type": "string",
+                              "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', parameters('configuration').name), '2024-10-01').endpoint]"
+                            },
+                            "location": {
+                              "type": "string",
+                              "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', parameters('configuration').name), '2024-10-01', 'full').location]"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2022-09-01",
+                      "name": "ecap-azure-ai-search",
+                      "properties": {
+                        "expressionEvaluationOptions": {
+                          "scope": "inner"
+                        },
+                        "mode": "Incremental",
+                        "parameters": {
+                          "configuration": {
+                            "value": "[variables('azureAISearchConfiguration')]"
+                          },
+                          "location": {
+                            "value": "[parameters('globals').location]"
+                          },
+                          "tags": {
+                            "value": "[parameters('globals').standardTags]"
+                          },
+                          "logAnalyticsWorkspaceResourceId": {
+                            "value": "[parameters('logAnalyticsWorkspaceResourceId')]"
+                          },
+                          "diagnosticSettings": {
+                            "value": "[parameters('globals').diagnosticSettings]"
+                          }
+                        },
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "metadata": {
+                            "_generator": {
+                              "name": "bicep",
+                              "version": "0.35.1.17967",
+                              "templateHash": "12175713657761079628"
+                            }
+                          },
+                          "parameters": {
+                            "configuration": {
+                              "type": "object",
+                              "metadata": {
+                                "description": "Azure AI Search service configuration from the centralized globals object."
+                              }
+                            },
+                            "location": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "Azure region for the Search service."
+                              }
+                            },
+                            "tags": {
+                              "type": "object",
+                              "metadata": {
+                                "description": "Standard ECAP resource tags."
+                              }
+                            },
+                            "logAnalyticsWorkspaceResourceId": {
+                              "type": "string",
+                              "defaultValue": "",
+                              "metadata": {
+                                "description": "Optional Log Analytics workspace resource ID for diagnostic settings."
+                              }
+                            },
+                            "diagnosticSettings": {
+                              "type": "object",
+                              "defaultValue": {
+                                "enabled": true,
+                                "azureAISearchLogCategories": [
+                                  "OperationLogs",
+                                  "QueryLogs"
+                                ],
+                                "metricCategories": [
+                                  "AllMetrics"
+                                ]
+                              },
+                              "metadata": {
+                                "description": "Centralized diagnostic settings configuration."
+                              }
+                            }
+                          },
+                          "resources": [
+                            {
+                              "type": "Microsoft.Search/searchServices",
+                              "apiVersion": "2024-06-01",
+                              "name": "[parameters('configuration').name]",
+                              "location": "[parameters('location')]",
+                              "tags": "[parameters('tags')]",
+                              "sku": {
+                                "name": "[parameters('configuration').skuName]"
+                              },
+                              "properties": {
+                                "replicaCount": "[parameters('configuration').replicaCount]",
+                                "partitionCount": "[parameters('configuration').partitionCount]",
+                                "hostingMode": "default",
+                                "publicNetworkAccess": "[parameters('configuration').publicNetworkAccess]",
+                                "networkRuleSet": {
+                                  "ipRules": [],
+                                  "virtualNetworkRules": []
+                                },
+                                "semanticSearch": "[parameters('configuration').semanticSearch]",
+                                "authOptions": "[parameters('configuration').authOptions]",
+                                "disableLocalAuth": "[parameters('configuration').disableLocalAuth]"
+                              }
+                            },
+                            {
+                              "condition": "[and(not(empty(parameters('logAnalyticsWorkspaceResourceId'))), parameters('diagnosticSettings').enabled)]",
+                              "type": "Microsoft.Insights/diagnosticSettings",
+                              "apiVersion": "2021-05-01-preview",
+                              "scope": "[format('Microsoft.Search/searchServices/{0}', parameters('configuration').name)]",
+                              "name": "azure-ai-search-diagnostics",
+                              "properties": {
+                                "copy": [
+                                  {
+                                    "name": "logs",
+                                    "count": "[length(parameters('diagnosticSettings').azureAISearchLogCategories)]",
+                                    "input": {
+                                      "category": "[parameters('diagnosticSettings').azureAISearchLogCategories[copyIndex('logs')]]",
+                                      "enabled": true
+                                    }
+                                  },
+                                  {
+                                    "name": "metrics",
+                                    "count": "[length(parameters('diagnosticSettings').metricCategories)]",
+                                    "input": {
+                                      "category": "[parameters('diagnosticSettings').metricCategories[copyIndex('metrics')]]",
+                                      "enabled": true
+                                    }
+                                  }
+                                ],
+                                "workspaceId": "[parameters('logAnalyticsWorkspaceResourceId')]"
+                              },
+                              "dependsOn": [
+                                "[resourceId('Microsoft.Search/searchServices', parameters('configuration').name)]"
+                              ]
+                            }
+                          ],
+                          "outputs": {
+                            "resourceId": {
+                              "type": "string",
+                              "value": "[resourceId('Microsoft.Search/searchServices', parameters('configuration').name)]"
+                            },
+                            "name": {
+                              "type": "string",
+                              "value": "[parameters('configuration').name]"
+                            },
+                            "endpoint": {
+                              "type": "string",
+                              "value": "[format('https://{0}.search.windows.net', parameters('configuration').name)]"
+                            },
+                            "location": {
+                              "type": "string",
+                              "value": "[reference(resourceId('Microsoft.Search/searchServices', parameters('configuration').name), '2024-06-01', 'full').location]"
+                            },
+                            "replicaCount": {
+                              "type": "int",
+                              "value": "[reference(resourceId('Microsoft.Search/searchServices', parameters('configuration').name), '2024-06-01').replicaCount]"
+                            },
+                            "partitionCount": {
+                              "type": "int",
+                              "value": "[reference(resourceId('Microsoft.Search/searchServices', parameters('configuration').name), '2024-06-01').partitionCount]"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2022-09-01",
+                      "name": "ecap-azure-openai-chat-deployment",
+                      "properties": {
+                        "expressionEvaluationOptions": {
+                          "scope": "inner"
+                        },
+                        "mode": "Incremental",
+                        "parameters": {
+                          "accountName": {
+                            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account'), '2022-09-01').outputs.name.value]"
+                          },
+                          "deploymentName": {
+                            "value": "[variables('azureOpenAIConfiguration').chatDeploymentName]"
+                          },
+                          "modelName": {
+                            "value": "[variables('azureOpenAIConfiguration').chatModelName]"
+                          },
+                          "modelVersion": {
+                            "value": "[variables('azureOpenAIConfiguration').chatModelVersion]"
+                          },
+                          "skuName": {
+                            "value": "[variables('azureOpenAIConfiguration').deploymentSkuName]"
+                          },
+                          "capacity": {
+                            "value": "[variables('azureOpenAIConfiguration').deploymentCapacity]"
+                          }
+                        },
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "metadata": {
+                            "_generator": {
+                              "name": "bicep",
+                              "version": "0.35.1.17967",
+                              "templateHash": "6612841721265514555"
+                            }
+                          },
+                          "parameters": {
+                            "accountName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "Azure OpenAI account name that owns the deployment."
+                              }
+                            },
+                            "deploymentName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "Deployment name exposed to clients."
+                              }
+                            },
+                            "modelName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "Azure OpenAI model name. Availability varies by region and subscription."
+                              }
+                            },
+                            "modelVersion": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "Azure OpenAI model version. Availability varies by region and subscription."
+                              }
+                            },
+                            "skuName": {
+                              "type": "string",
+                              "defaultValue": "GlobalStandard",
+                              "allowedValues": [
+                                "GlobalStandard",
+                                "Standard"
+                              ],
+                              "metadata": {
+                                "description": "Deployment SKU name."
+                              }
+                            },
+                            "capacity": {
+                              "type": "int",
+                              "defaultValue": 1,
+                              "metadata": {
+                                "description": "Deployment capacity in thousands of tokens per minute."
+                              }
+                            }
+                          },
+                          "resources": [
+                            {
+                              "type": "Microsoft.CognitiveServices/accounts/deployments",
+                              "apiVersion": "2024-10-01",
+                              "name": "[format('{0}/{1}', parameters('accountName'), parameters('deploymentName'))]",
+                              "sku": {
+                                "name": "[parameters('skuName')]",
+                                "capacity": "[parameters('capacity')]"
+                              },
+                              "properties": {
+                                "model": {
+                                  "format": "OpenAI",
+                                  "name": "[parameters('modelName')]",
+                                  "version": "[parameters('modelVersion')]"
+                                }
+                              }
+                            }
+                          ],
+                          "outputs": {
+                            "name": {
+                              "type": "string",
+                              "value": "[parameters('deploymentName')]"
+                            }
+                          }
+                        }
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account')]"
+                      ]
+                    },
+                    {
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2022-09-01",
+                      "name": "ecap-azure-openai-embedding-deployment",
+                      "properties": {
+                        "expressionEvaluationOptions": {
+                          "scope": "inner"
+                        },
+                        "mode": "Incremental",
+                        "parameters": {
+                          "accountName": {
+                            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account'), '2022-09-01').outputs.name.value]"
+                          },
+                          "deploymentName": {
+                            "value": "[variables('azureOpenAIConfiguration').embeddingDeploymentName]"
+                          },
+                          "modelName": {
+                            "value": "[variables('azureOpenAIConfiguration').embeddingModelName]"
+                          },
+                          "modelVersion": {
+                            "value": "[variables('azureOpenAIConfiguration').embeddingModelVersion]"
+                          },
+                          "skuName": {
+                            "value": "[variables('azureOpenAIConfiguration').deploymentSkuName]"
+                          },
+                          "capacity": {
+                            "value": "[variables('azureOpenAIConfiguration').deploymentCapacity]"
+                          }
+                        },
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "metadata": {
+                            "_generator": {
+                              "name": "bicep",
+                              "version": "0.35.1.17967",
+                              "templateHash": "6612841721265514555"
+                            }
+                          },
+                          "parameters": {
+                            "accountName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "Azure OpenAI account name that owns the deployment."
+                              }
+                            },
+                            "deploymentName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "Deployment name exposed to clients."
+                              }
+                            },
+                            "modelName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "Azure OpenAI model name. Availability varies by region and subscription."
+                              }
+                            },
+                            "modelVersion": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "Azure OpenAI model version. Availability varies by region and subscription."
+                              }
+                            },
+                            "skuName": {
+                              "type": "string",
+                              "defaultValue": "GlobalStandard",
+                              "allowedValues": [
+                                "GlobalStandard",
+                                "Standard"
+                              ],
+                              "metadata": {
+                                "description": "Deployment SKU name."
+                              }
+                            },
+                            "capacity": {
+                              "type": "int",
+                              "defaultValue": 1,
+                              "metadata": {
+                                "description": "Deployment capacity in thousands of tokens per minute."
+                              }
+                            }
+                          },
+                          "resources": [
+                            {
+                              "type": "Microsoft.CognitiveServices/accounts/deployments",
+                              "apiVersion": "2024-10-01",
+                              "name": "[format('{0}/{1}', parameters('accountName'), parameters('deploymentName'))]",
+                              "sku": {
+                                "name": "[parameters('skuName')]",
+                                "capacity": "[parameters('capacity')]"
+                              },
+                              "properties": {
+                                "model": {
+                                  "format": "OpenAI",
+                                  "name": "[parameters('modelName')]",
+                                  "version": "[parameters('modelVersion')]"
+                                }
+                              }
+                            }
+                          ],
+                          "outputs": {
+                            "name": {
+                              "type": "string",
+                              "value": "[parameters('deploymentName')]"
+                            }
+                          }
+                        }
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account')]"
+                      ]
+                    }
+                  ],
                   "outputs": {
                     "inheritedTags": {
                       "type": "object",
                       "value": "[parameters('globals').standardTags]"
+                    },
+                    "resourceId": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account'), '2022-09-01').outputs.resourceId.value]"
+                    },
+                    "name": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account'), '2022-09-01').outputs.name.value]"
+                    },
+                    "endpoint": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account'), '2022-09-01').outputs.endpoint.value]"
+                    },
+                    "location": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account'), '2022-09-01').outputs.location.value]"
+                    },
+                    "chatDeploymentName": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-chat-deployment'), '2022-09-01').outputs.name.value]"
+                    },
+                    "embeddingDeploymentName": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-embedding-deployment'), '2022-09-01').outputs.name.value]"
+                    },
+                    "azureAISearchResourceId": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-ai-search'), '2022-09-01').outputs.resourceId.value]"
+                    },
+                    "azureAISearchName": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-ai-search'), '2022-09-01').outputs.name.value]"
+                    },
+                    "azureAISearchEndpoint": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-ai-search'), '2022-09-01').outputs.endpoint.value]"
+                    },
+                    "azureAISearchLocation": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-ai-search'), '2022-09-01').outputs.location.value]"
+                    },
+                    "azureAISearchReplicaCount": {
+                      "type": "int",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-ai-search'), '2022-09-01').outputs.replicaCount.value]"
+                    },
+                    "azureAISearchPartitionCount": {
+                      "type": "int",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-ai-search'), '2022-09-01').outputs.partitionCount.value]"
                     }
                   }
                 }
               },
               "dependsOn": [
-                "data"
+                "data",
+                "monitoring"
               ]
             },
             "compute": {
@@ -3756,6 +5398,170 @@
               "dependsOn": [
                 "compute"
               ]
+            },
+            "rbac": {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2022-09-01",
+              "name": "[format('ecap-rbac-{0}', parameters('globals').environment)]",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "principalId": {
+                    "value": "[reference('identity').outputs.principalId.value]"
+                  },
+                  "storageAccountName": {
+                    "value": "[reference('data').outputs.storageAccountName.value]"
+                  },
+                  "keyVaultName": {
+                    "value": "[reference('security').outputs.name.value]"
+                  },
+                  "appConfigurationName": {
+                    "value": "[reference('configuration').outputs.name.value]"
+                  },
+                  "azureAISearchName": {
+                    "value": "[reference('ai').outputs.azureAISearchName.value]"
+                  },
+                  "azureOpenAIName": {
+                    "value": "[reference('ai').outputs.name.value]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.35.1.17967",
+                      "templateHash": "11036552246352853222"
+                    }
+                  },
+                  "parameters": {
+                    "principalId": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Principal ID of the App Service system-assigned managed identity."
+                      }
+                    },
+                    "storageAccountName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Storage Account name receiving Blob Data Contributor permissions."
+                      }
+                    },
+                    "keyVaultName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Key Vault resource ID receiving Secrets User permissions."
+                      }
+                    },
+                    "appConfigurationName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "App Configuration resource ID receiving Data Reader permissions."
+                      }
+                    },
+                    "azureAISearchName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Azure AI Search resource ID receiving Index Data Contributor permissions."
+                      }
+                    },
+                    "azureOpenAIName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Azure OpenAI resource ID receiving Cognitive Services OpenAI User permissions."
+                      }
+                    }
+                  },
+                  "variables": {
+                    "storageBlobDataContributorRoleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
+                    "keyVaultSecretsUserRoleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')]",
+                    "appConfigurationDataReaderRoleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '516239f1-63e1-4d78-a4de-a74fb236a071')]",
+                    "searchIndexDataContributorRoleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8ebe5a00-799e-43f5-93ac-243d3dce84a7')]",
+                    "cognitiveServicesOpenAIUserRoleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')]"
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.Authorization/roleAssignments",
+                      "apiVersion": "2022-04-01",
+                      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('storageAccountName'))]",
+                      "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), parameters('principalId'), variables('storageBlobDataContributorRoleDefinitionId'))]",
+                      "properties": {
+                        "roleDefinitionId": "[variables('storageBlobDataContributorRoleDefinitionId')]",
+                        "principalId": "[parameters('principalId')]",
+                        "principalType": "ServicePrincipal"
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Authorization/roleAssignments",
+                      "apiVersion": "2022-04-01",
+                      "scope": "[format('Microsoft.KeyVault/vaults/{0}', parameters('keyVaultName'))]",
+                      "name": "[guid(resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName')), parameters('principalId'), variables('keyVaultSecretsUserRoleDefinitionId'))]",
+                      "properties": {
+                        "roleDefinitionId": "[variables('keyVaultSecretsUserRoleDefinitionId')]",
+                        "principalId": "[parameters('principalId')]",
+                        "principalType": "ServicePrincipal"
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Authorization/roleAssignments",
+                      "apiVersion": "2022-04-01",
+                      "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', parameters('appConfigurationName'))]",
+                      "name": "[guid(resourceId('Microsoft.AppConfiguration/configurationStores', parameters('appConfigurationName')), parameters('principalId'), variables('appConfigurationDataReaderRoleDefinitionId'))]",
+                      "properties": {
+                        "roleDefinitionId": "[variables('appConfigurationDataReaderRoleDefinitionId')]",
+                        "principalId": "[parameters('principalId')]",
+                        "principalType": "ServicePrincipal"
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Authorization/roleAssignments",
+                      "apiVersion": "2022-04-01",
+                      "scope": "[format('Microsoft.Search/searchServices/{0}', parameters('azureAISearchName'))]",
+                      "name": "[guid(resourceId('Microsoft.Search/searchServices', parameters('azureAISearchName')), parameters('principalId'), variables('searchIndexDataContributorRoleDefinitionId'))]",
+                      "properties": {
+                        "roleDefinitionId": "[variables('searchIndexDataContributorRoleDefinitionId')]",
+                        "principalId": "[parameters('principalId')]",
+                        "principalType": "ServicePrincipal"
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Authorization/roleAssignments",
+                      "apiVersion": "2022-04-01",
+                      "scope": "[format('Microsoft.CognitiveServices/accounts/{0}', parameters('azureOpenAIName'))]",
+                      "name": "[guid(resourceId('Microsoft.CognitiveServices/accounts', parameters('azureOpenAIName')), parameters('principalId'), variables('cognitiveServicesOpenAIUserRoleDefinitionId'))]",
+                      "properties": {
+                        "roleDefinitionId": "[variables('cognitiveServicesOpenAIUserRoleDefinitionId')]",
+                        "principalId": "[parameters('principalId')]",
+                        "principalType": "ServicePrincipal"
+                      }
+                    }
+                  ],
+                  "outputs": {
+                    "assignedRoles": {
+                      "type": "array",
+                      "value": [
+                        "Storage Blob Data Contributor",
+                        "Key Vault Secrets User",
+                        "App Configuration Data Reader",
+                        "Search Index Data Contributor",
+                        "Cognitive Services OpenAI User"
+                      ]
+                    }
+                  }
+                }
+              },
+              "dependsOn": [
+                "ai",
+                "configuration",
+                "data",
+                "identity",
+                "networking",
+                "security"
+              ]
             }
           },
           "outputs": {
@@ -3782,6 +5588,54 @@
             "applicationInsightsConnectionString": {
               "type": "securestring",
               "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', format('ecap-monitoring-{0}', parameters('globals').environment)), '2022-09-01').applicationInsightsConnectionString]"
+            },
+            "appServiceName": {
+              "type": "string",
+              "value": "[reference('app').outputs.appServiceName.value]"
+            },
+            "appServiceResourceId": {
+              "type": "string",
+              "value": "[reference('app').outputs.appServiceResourceId.value]"
+            },
+            "appServiceDefaultHostName": {
+              "type": "string",
+              "value": "[reference('app').outputs.defaultHostName.value]"
+            },
+            "appServiceManagedIdentityPrincipalId": {
+              "type": "string",
+              "value": "[reference('app').outputs.managedIdentityPrincipalId.value]"
+            },
+            "appServiceManagedIdentityClientId": {
+              "type": "string",
+              "value": "[reference('app').outputs.managedIdentityClientId.value]"
+            },
+            "appServiceManagedIdentityTenantId": {
+              "type": "string",
+              "value": "[reference('app').outputs.managedIdentityTenantId.value]"
+            },
+            "identityPrincipalId": {
+              "type": "string",
+              "value": "[reference('identity').outputs.principalId.value]"
+            },
+            "identityClientId": {
+              "type": "string",
+              "value": "[reference('identity').outputs.clientId.value]"
+            },
+            "identityTenantId": {
+              "type": "string",
+              "value": "[reference('identity').outputs.tenantId.value]"
+            },
+            "assignedRbacRoles": {
+              "type": "array",
+              "value": "[reference('rbac').outputs.assignedRoles.value]"
+            },
+            "appServicePlanName": {
+              "type": "string",
+              "value": "[reference('app').outputs.appServicePlanName.value]"
+            },
+            "appServicePlanResourceId": {
+              "type": "string",
+              "value": "[reference('app').outputs.appServicePlanResourceId.value]"
             },
             "keyVaultResourceId": {
               "type": "string",
@@ -3850,6 +5704,54 @@
             "sqlDatabaseResourceId": {
               "type": "string",
               "value": "[reference('data').outputs.sqlDatabaseResourceId.value]"
+            },
+            "azureOpenAIResourceId": {
+              "type": "string",
+              "value": "[reference('ai').outputs.resourceId.value]"
+            },
+            "azureOpenAIName": {
+              "type": "string",
+              "value": "[reference('ai').outputs.name.value]"
+            },
+            "azureOpenAIEndpoint": {
+              "type": "string",
+              "value": "[reference('ai').outputs.endpoint.value]"
+            },
+            "azureOpenAILocation": {
+              "type": "string",
+              "value": "[reference('ai').outputs.location.value]"
+            },
+            "chatDeploymentName": {
+              "type": "string",
+              "value": "[reference('ai').outputs.chatDeploymentName.value]"
+            },
+            "embeddingDeploymentName": {
+              "type": "string",
+              "value": "[reference('ai').outputs.embeddingDeploymentName.value]"
+            },
+            "azureAISearchResourceId": {
+              "type": "string",
+              "value": "[reference('ai').outputs.azureAISearchResourceId.value]"
+            },
+            "azureAISearchName": {
+              "type": "string",
+              "value": "[reference('ai').outputs.azureAISearchName.value]"
+            },
+            "azureAISearchEndpoint": {
+              "type": "string",
+              "value": "[reference('ai').outputs.azureAISearchEndpoint.value]"
+            },
+            "azureAISearchLocation": {
+              "type": "string",
+              "value": "[reference('ai').outputs.azureAISearchLocation.value]"
+            },
+            "azureAISearchReplicaCount": {
+              "type": "int",
+              "value": "[reference('ai').outputs.azureAISearchReplicaCount.value]"
+            },
+            "azureAISearchPartitionCount": {
+              "type": "int",
+              "value": "[reference('ai').outputs.azureAISearchPartitionCount.value]"
             }
           }
         }
@@ -3960,6 +5862,102 @@
     "sqlDatabaseResourceId": {
       "type": "string",
       "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').sqlDatabaseResourceId]"
+    },
+    "appServiceName": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').appServiceName]"
+    },
+    "appServiceResourceId": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').appServiceResourceId]"
+    },
+    "appServiceDefaultHostName": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').appServiceDefaultHostName]"
+    },
+    "appServiceManagedIdentityPrincipalId": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').appServiceManagedIdentityPrincipalId]"
+    },
+    "appServiceManagedIdentityClientId": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').appServiceManagedIdentityClientId]"
+    },
+    "appServiceManagedIdentityTenantId": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').appServiceManagedIdentityTenantId]"
+    },
+    "identityPrincipalId": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').identityPrincipalId]"
+    },
+    "identityClientId": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').identityClientId]"
+    },
+    "identityTenantId": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').identityTenantId]"
+    },
+    "assignedRbacRoles": {
+      "type": "array",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').assignedRbacRoles]"
+    },
+    "appServicePlanName": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').appServicePlanName]"
+    },
+    "appServicePlanResourceId": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').appServicePlanResourceId]"
+    },
+    "azureOpenAIResourceId": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').azureOpenAIResourceId]"
+    },
+    "azureOpenAIName": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').azureOpenAIName]"
+    },
+    "azureOpenAIEndpoint": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').azureOpenAIEndpoint]"
+    },
+    "azureOpenAILocation": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').azureOpenAILocation]"
+    },
+    "chatDeploymentName": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').chatDeploymentName]"
+    },
+    "embeddingDeploymentName": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').embeddingDeploymentName]"
+    },
+    "azureAISearchResourceId": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').azureAISearchResourceId]"
+    },
+    "azureAISearchName": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').azureAISearchName]"
+    },
+    "azureAISearchEndpoint": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').azureAISearchEndpoint]"
+    },
+    "azureAISearchLocation": {
+      "type": "string",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').azureAISearchLocation]"
+    },
+    "azureAISearchReplicaCount": {
+      "type": "int",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').azureAISearchReplicaCount]"
+    },
+    "azureAISearchPartitionCount": {
+      "type": "int",
+      "value": "[listOutputsWithSecureValues(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', format('ecap-platform-{0}', parameters('environment'))), '2022-09-01').azureAISearchPartitionCount]"
     }
   }
 }

@@ -98,6 +98,47 @@ Networking enhancements such as Application Gateway, Private Endpoints, and Hub-
 
 ---
 
+# 3.1 Enterprise Infrastructure Lifecycle
+
+ECAP infrastructure moves through a controlled lifecycle before application
+development consumes the platform:
+
+```text
+Provision
+    ↓
+Configure
+    ↓
+Secure
+    ↓
+Validate
+    ↓
+Production Ready
+    ↓
+Application Development
+```
+
+**Provision** creates the resource group and approved Azure resources from the
+layered Bicep deployment. **Configure** applies enterprise names, tags,
+environment parameters, endpoint settings, diagnostics, and environment
+specific SKUs. **Secure** enables managed identity, Azure RBAC, TLS, HTTPS-only
+settings, secretless authentication, and Key Vault RBAC. **Validate** runs Bicep
+build validation, what-if review, resource verification, health checks, and
+security checks. The platform is **Production Ready** only after operational
+ownership, monitoring, backup, network, and deployment gates are accepted.
+
+Only then does **Application Development** consume the stable platform
+contracts for SQL, Storage, App Configuration, Key Vault, OpenAI, AI Search,
+monitoring, and hosting.
+
+EPIC 0 establishes this reusable Azure platform so subsequent EPICs can focus
+on business and AI capabilities instead of recreating infrastructure. Future
+EPICs inherit the naming, tagging, identity, RBAC, diagnostics, environment,
+and CI/CD contracts. Deferred capabilities such as private networking, policy
+assignment, and production alert thresholds are introduced through controlled
+extensions to these contracts rather than redesigning the foundation.
+
+---
+
 # 4. Infrastructure Components
 
 The platform infrastructure includes:

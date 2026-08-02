@@ -6,7 +6,7 @@
 | Name | Enterprise Platform Foundation |
 | Project | Enterprise Commerce & AI Platform (ECAP) |
 | Version | 1.0 |
-| Status | In Progress |
+| Status | Completed |
 | Owner | Principal Architect |
 | Last Updated | 2026-08-01 |
 
@@ -458,3 +458,68 @@ After EPIC 0:
 - EPIC 6 – Shipping
 - EPIC 7 – Customer Management
 - EPIC 8 – Enterprise AI Agents
+
+---
+
+## Production Readiness Checklist
+
+### Repository
+
+- [x] Standards, ADRs, architecture, and environment strategy are version controlled.
+- [x] Infrastructure and operational documentation are linked from the EPIC artifacts.
+
+### Infrastructure
+
+- [x] Layered Bicep deploys the approved Azure resource foundation.
+- [x] Names, tags, locations, SKUs, outputs, and environment parameters are centralized.
+- [x] Optional Resource Group locks are supported and disabled by default.
+
+### Security
+
+- [x] HTTPS-only, TLS requirements, managed identity, Azure RBAC, and secretless settings are configured.
+- [x] Key Vault uses RBAC authorization and no legacy access policies are deployed.
+- [x] No passwords, SQL logins, API keys, or embedded secrets are stored in infrastructure configuration.
+
+### Identity
+
+- [x] App Service system-assigned identity is exposed through reusable outputs.
+- [x] Resource-scoped Storage, Key Vault, App Configuration, OpenAI, and AI Search roles are defined.
+- [x] Azure SQL is prepared for Microsoft Entra authentication.
+
+### Monitoring and diagnostics
+
+- [x] Application Insights and Log Analytics are provisioned through shared modules.
+- [x] Resource diagnostic settings and App Service health checks are configured.
+- [ ] Production alert thresholds and action groups require workload-specific approval.
+
+### Networking
+
+- [x] Public networking is explicitly parameterized for the current sprint.
+- [x] Private endpoint, VNet Integration, and Private DNS contracts are documented for the next hardening phase.
+- [ ] Private networking must be deployed before production data is onboarded.
+
+### CI/CD
+
+- [x] Build, Bicep compiler validation, CI linting, what-if, deployment, and promotion gates are documented.
+- [x] Dev, QA, Stage, and Production parameter files are maintained.
+- [ ] Federated deployment identity and environment approvals must be enabled in the hosted pipeline.
+
+### Documentation
+
+- [x] Security review, infrastructure validation, production checklist, and completion report are maintained.
+- [x] EPIC 0 lifecycle and transition to EPIC 2 are documented.
+
+### Validation
+
+- [x] Bicep compilation succeeds; the remaining Search provider metadata warning is non-blocking.
+- [x] What-if, Azure CLI, PowerShell, Portal, and security verification procedures are documented.
+
+### Operational Readiness
+
+- [x] Ownership, validation evidence, known risks, and production exceptions are identified.
+- [ ] Backup restore, alert response, and disaster-recovery exercises require environment execution.
+
+### Future AI Readiness
+
+- [x] Azure OpenAI, AI Search, managed identity, configuration, monitoring, and App Service contracts are available to EPIC 2.
+- [ ] Prompt governance, embeddings, vector search, RAG, evaluation, and product-catalog AI are delivered by EPIC 2.

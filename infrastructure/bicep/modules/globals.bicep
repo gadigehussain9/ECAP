@@ -230,19 +230,19 @@ param azureOpenAIDisableLocalAuth bool = true
 param azureOpenAIChatDeploymentName string = 'chat'
 
 @description('Azure OpenAI chat model name.')
-param azureOpenAIChatModelName string = 'gpt-4o-mini'
+param azureOpenAIChatModelName string
 
 @description('Azure OpenAI chat model version.')
-param azureOpenAIChatModelVersion string = '2024-07-18'
+param azureOpenAIChatModelVersion string
 
 @description('Azure OpenAI embedding deployment name.')
-param azureOpenAIEmbeddingDeploymentName string = 'embedding'
+param azureOpenAIEmbeddingDeploymentName string = 'embeddings'
 
 @description('Azure OpenAI embedding model name.')
-param azureOpenAIEmbeddingModelName string = 'text-embedding-3-small'
+param azureOpenAIEmbeddingModelName string
 
 @description('Azure OpenAI embedding model version.')
-param azureOpenAIEmbeddingModelVersion string = '1'
+param azureOpenAIEmbeddingModelVersion string
 
 @description('Azure OpenAI account SKU.')
 param azureOpenAISkuName string = 'S0'
@@ -257,6 +257,45 @@ param azureOpenAIDeploymentSkuName string = 'GlobalStandard'
 @description('Azure OpenAI deployment capacity in thousands of tokens per minute.')
 param azureOpenAIDeploymentCapacity int = 1
 
+@description('Optional Azure AI Search service name. Defaults to the enterprise naming module output.')
+param azureAISearchName string = ''
+
+@description('Azure AI Search service SKU.')
+param azureAISearchSkuName string = 'standard'
+
+@description('Azure AI Search replica count.')
+@minValue(1)
+param azureAISearchReplicaCount int = 1
+
+@description('Azure AI Search partition count.')
+@minValue(1)
+param azureAISearchPartitionCount int = 1
+
+@description('Azure AI Search public network access mode.')
+@allowed([
+  'enabled'
+  'disabled'
+])
+param azureAISearchPublicNetworkAccess string = 'enabled'
+
+@description('Azure AI Search semantic ranking capability. Availability depends on SKU and region.')
+@allowed([
+  'disabled'
+  'free'
+  'standard'
+])
+param azureAISearchSemanticSearch string = 'free'
+
+@description('Azure AI Search authentication mode.')
+@allowed([
+  'aad'
+  'aadOrApiKey'
+])
+param azureAISearchAuthOptions string = 'aad'
+
+@description('Whether Azure AI Search local API-key authentication is disabled.')
+param azureAISearchDisableLocalAuth bool = true
+
 module naming './shared/naming.bicep' = {
   name: 'ecap-naming-${uniqueString(subscription().id, applicationName, environment)}'
   params: {
@@ -266,6 +305,17 @@ module naming './shared/naming.bicep' = {
     resourceGroupPrefix: resourceGroupPrefix
     optionalSuffix: namingSuffix
   }
+}
+
+var azureAISearchConfiguration = {
+  name: empty(azureAISearchName) ? naming.outputs.aiSearchName : azureAISearchName
+  skuName: azureAISearchSkuName
+  replicaCount: azureAISearchReplicaCount
+  partitionCount: azureAISearchPartitionCount
+  publicNetworkAccess: azureAISearchPublicNetworkAccess
+  semanticSearch: azureAISearchSemanticSearch
+  authOptions: azureAISearchAuthOptions
+  disableLocalAuth: azureAISearchDisableLocalAuth
 }
 
 var azureOpenAIConfiguration = {
@@ -345,6 +395,10 @@ var diagnosticSettings = {
   keyVaultLogCategories: [
     'AuditEvent'
   ]
+  azureAISearchLogCategories: [
+    'OperationLogs'
+    'QueryLogs'
+  ]
   azureOpenAILogCategories: [
     'Audit'
     'RequestResponse'
@@ -409,6 +463,7 @@ output globals object = {
   storageConfiguration: storageConfiguration
   sqlConfiguration: sqlConfiguration
   azureOpenAIConfiguration: azureOpenAIConfiguration
+  azureAISearchConfiguration: azureAISearchConfiguration
   allowedLocations: effectiveAllowedLocations
   namingOutputs: namingOutputs
   featureFlags: featureFlags
@@ -427,6 +482,7 @@ output diagnosticSettings object = diagnosticSettings
 output storageConfiguration object = storageConfiguration
 output sqlConfiguration object = sqlConfiguration
 output azureOpenAIConfiguration object = azureOpenAIConfiguration
+output azureAISearchConfiguration object = azureAISearchConfiguration
 output allowedLocations array = effectiveAllowedLocations
 output namingOutputs object = namingOutputs
 output featureFlags object = featureFlags

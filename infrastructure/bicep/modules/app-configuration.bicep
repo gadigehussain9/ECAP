@@ -9,9 +9,6 @@ param location string
 @description('Standard ECAP resource tags.')
 param tags object
 
-@description('Optional workload principal ID to receive App Configuration Data Reader permissions.')
-param principalId string = ''
-
 @description('Optional Log Analytics workspace resource ID for diagnostic settings.')
 param logAnalyticsWorkspaceResourceId string = ''
 
@@ -30,8 +27,6 @@ param diagnosticSettings object = {
   ]
 }
 
-var appConfigurationDataReaderRoleDefinitionId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '516239f1-63e1-4d78-a4de-a74fb236a071')
-
 resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2023-03-01' = {
   name: name
   location: location
@@ -45,16 +40,6 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2023-0
   properties: {
     disableLocalAuth: true
     publicNetworkAccess: 'Enabled'
-  }
-}
-
-resource appConfigurationDataReaderRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {
-  name: guid(appConfiguration.id, principalId, appConfigurationDataReaderRoleDefinitionId)
-  scope: appConfiguration
-  properties: {
-    roleDefinitionId: appConfigurationDataReaderRoleDefinitionId
-    principalId: principalId
-    principalType: 'ServicePrincipal'
   }
 }
 

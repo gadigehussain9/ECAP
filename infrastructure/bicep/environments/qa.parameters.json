@@ -58,6 +58,30 @@
     "applicationInsightsType": {
       "value": "web"
     },
+    "appServicePlanSkuName": {
+      "value": "P1v3"
+    },
+    "appServicePlanInstanceCount": {
+      "value": 1
+    },
+    "appServicePlanZoneRedundant": {
+      "value": false
+    },
+    "appServicePlanPerSiteScaling": {
+      "value": false
+    },
+    "appServiceRuntimeVersion": {
+      "value": "10.0"
+    },
+    "appServiceHealthCheckPath": {
+      "value": "/health"
+    },
+    "appServiceWebSocketsEnabled": {
+      "value": false
+    },
+    "appServicePublicNetworkAccess": {
+      "value": "Enabled"
+    },
     "keyVaultEnablePurgeProtection": {
       "value": false
     },
@@ -108,6 +132,27 @@
     },
     "azureOpenAIEmbeddingModelVersion": {
       "value": "1"
+    },
+    "azureAISearchSkuName": {
+      "value": "standard"
+    },
+    "azureAISearchReplicaCount": {
+      "value": 1
+    },
+    "azureAISearchPartitionCount": {
+      "value": 1
+    },
+    "azureAISearchPublicNetworkAccess": {
+      "value": "enabled"
+    },
+    "azureAISearchSemanticSearch": {
+      "value": "free"
+    },
+    "azureAISearchAuthOptions": {
+      "value": "aad"
+    },
+    "azureAISearchDisableLocalAuth": {
+      "value": true
     }
   }
 }

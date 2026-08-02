@@ -19,7 +19,7 @@ The following parameters are available on `main.bicep` and can be overridden in 
 - `azureOpenAIEmbeddingDeploymentName`, `azureOpenAIEmbeddingModelName`, `azureOpenAIEmbeddingModelVersion`.
 - `azureOpenAISkuName`, `azureOpenAIDeploymentSkuName`, and `azureOpenAIDeploymentCapacity`.
 
-Model names and versions are deliberately environment parameters because Azure OpenAI model availability and deployment SKU availability vary by region and subscription.
+Model names and versions are required environment parameters because Azure OpenAI model availability and deployment SKU availability vary by region and subscription. The deployment-name defaults are `chat` and `embeddings`; no GPT or embedding model is selected by Bicep defaults.
 
 ### Outputs
 
@@ -28,6 +28,7 @@ The root deployment exposes:
 - `azureOpenAIResourceId`
 - `azureOpenAIName`
 - `azureOpenAIEndpoint`
+- `azureOpenAILocation`
 - `chatDeploymentName`
 - `embeddingDeploymentName`
 
@@ -38,6 +39,8 @@ The account receives a system-assigned managed identity. Consumers should be gra
 - Shared naming and tags from `modules/globals.bicep`.
 - The Log Analytics workspace from `modules/monitoring.bicep`.
 - Existing platform composition in `modules/platform.bicep`.
+- `modules/azure-openai.bicep` for the account and diagnostics.
+- `modules/azure-openai-deployment.bicep` for reusable model deployments.
 - `Microsoft.CognitiveServices/accounts@2024-10-01` and its deployments child resource.
 
 Diagnostic settings send Audit, RequestResponse, Trace, and AllMetrics to the shared Log Analytics workspace when `diagnosticSettingsEnabled` is true.
@@ -61,6 +64,13 @@ The account is initially public-network enabled to match the current platform ne
 
 ```bash
 az deployment sub validate \
+  --name ecap-dev-azure-openai-validation \
+  --location eastus \
+  --template-file infrastructure/bicep/main.bicep \
+  --parameters @infrastructure/bicep/environments/dev.parameters.json
+
+az deployment sub what-if \
+  --name ecap-dev-azure-openai-whatif \
   --location eastus \
   --template-file infrastructure/bicep/main.bicep \
   --parameters @infrastructure/bicep/environments/dev.parameters.json
@@ -80,17 +90,27 @@ The repository deployment script performs authentication, subscription, paramete
 ./infrastructure/bicep/scripts/deploy.ps1 -Environment dev
 ```
 
+For a direct PowerShell what-if:
+
+```powershell
+az deployment sub what-if `
+  --name ecap-dev-azure-openai-whatif `
+  --location eastus `
+  --template-file infrastructure/bicep/main.bicep `
+  --parameters '@infrastructure/bicep/environments/dev.parameters.json'
+```
+
 ### Azure Portal verification checklist
 
 1. Open the resource group for the selected environment.
 2. Verify the Cognitive Services resource kind is `OpenAI`, its region matches the environment, and enterprise tags are present.
 3. Verify the system-assigned managed identity is enabled.
 4. Verify local authentication is disabled unless an approved exception is documented.
-5. Verify the chat and embedding deployments exist with the configured model names and versions.
+5. Verify the `chat` and `embeddings` deployments exist with the environment-configured model names and versions.
 6. Verify the endpoint is present and no API key was added to source control or parameter files.
 7. Open **Monitoring > Diagnostic settings** and verify the Azure OpenAI diagnostic setting targets the shared Log Analytics workspace.
 8. Confirm network access matches the environment posture; when private endpoint networking is enabled, verify public access is disabled and private DNS resolves the endpoint.
 
-## Future AI provider integration
+## Future AI provider and Azure AI Foundry integration
 
-The AI module exposes provider-neutral deployment outputs while keeping Azure OpenAI-specific resource creation isolated in `ai.bicep` and `azure-openai-deployment.bicep`. Future providers can be added as separate modules behind the same platform layer without rewriting existing data, monitoring, security, or compute modules.
+The AI module exposes provider-neutral deployment outputs while keeping Azure OpenAI-specific account creation isolated in `azure-openai.bicep` and deployments in `azure-openai-deployment.bicep`. Future providers can be added as separate modules behind the same platform layer without rewriting existing data, monitoring, security, or compute modules. Azure AI Foundry can later add projects, prompt flows, evaluations, and governance around these deployments without changing the `main.bicep` to `platform.bicep` boundary.

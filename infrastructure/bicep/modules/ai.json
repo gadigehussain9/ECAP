@@ -1,0 +1,634 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.35.1.17967",
+      "templateHash": "10458649051872945891"
+    }
+  },
+  "parameters": {
+    "globals": {
+      "type": "object",
+      "metadata": {
+        "description": "Centralized ECAP deployment configuration from the globals module."
+      }
+    },
+    "logAnalyticsWorkspaceResourceId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional Log Analytics workspace resource ID for diagnostic settings."
+      }
+    }
+  },
+  "variables": {
+    "azureOpenAIConfiguration": "[parameters('globals').azureOpenAIConfiguration]",
+    "azureAISearchConfiguration": "[parameters('globals').azureAISearchConfiguration]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "ecap-azure-openai-account",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "configuration": {
+            "value": "[variables('azureOpenAIConfiguration')]"
+          },
+          "location": {
+            "value": "[parameters('globals').location]"
+          },
+          "tags": {
+            "value": "[parameters('globals').standardTags]"
+          },
+          "logAnalyticsWorkspaceResourceId": {
+            "value": "[parameters('logAnalyticsWorkspaceResourceId')]"
+          },
+          "diagnosticSettings": {
+            "value": "[parameters('globals').diagnosticSettings]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "11219932753070669003"
+            }
+          },
+          "parameters": {
+            "configuration": {
+              "type": "object",
+              "metadata": {
+                "description": "Azure OpenAI account configuration from the centralized globals object."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure region for the Azure OpenAI account."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Standard ECAP resource tags."
+              }
+            },
+            "logAnalyticsWorkspaceResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional Log Analytics workspace resource ID for diagnostic settings."
+              }
+            },
+            "diagnosticSettings": {
+              "type": "object",
+              "defaultValue": {
+                "enabled": true,
+                "azureOpenAILogCategories": [
+                  "Audit",
+                  "RequestResponse",
+                  "Trace"
+                ],
+                "metricCategories": [
+                  "AllMetrics"
+                ]
+              },
+              "metadata": {
+                "description": "Centralized diagnostic settings configuration."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.CognitiveServices/accounts",
+              "apiVersion": "2024-10-01",
+              "name": "[parameters('configuration').name]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "kind": "OpenAI",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "sku": {
+                "name": "[parameters('configuration').skuName]"
+              },
+              "properties": {
+                "customSubDomainName": "[parameters('configuration').name]",
+                "publicNetworkAccess": "[parameters('configuration').publicNetworkAccess]",
+                "networkAcls": {
+                  "defaultAction": "Allow",
+                  "ipRules": [],
+                  "virtualNetworkRules": []
+                },
+                "disableLocalAuth": "[parameters('configuration').disableLocalAuth]"
+              }
+            },
+            {
+              "condition": "[and(not(empty(parameters('logAnalyticsWorkspaceResourceId'))), parameters('diagnosticSettings').enabled)]",
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.CognitiveServices/accounts/{0}', parameters('configuration').name)]",
+              "name": "azure-openai-diagnostics",
+              "properties": {
+                "copy": [
+                  {
+                    "name": "logs",
+                    "count": "[length(parameters('diagnosticSettings').azureOpenAILogCategories)]",
+                    "input": {
+                      "category": "[parameters('diagnosticSettings').azureOpenAILogCategories[copyIndex('logs')]]",
+                      "enabled": true
+                    }
+                  },
+                  {
+                    "name": "metrics",
+                    "count": "[length(parameters('diagnosticSettings').metricCategories)]",
+                    "input": {
+                      "category": "[parameters('diagnosticSettings').metricCategories[copyIndex('metrics')]]",
+                      "enabled": true
+                    }
+                  }
+                ],
+                "workspaceId": "[parameters('logAnalyticsWorkspaceResourceId')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.CognitiveServices/accounts', parameters('configuration').name)]"
+              ]
+            }
+          ],
+          "outputs": {
+            "resourceId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.CognitiveServices/accounts', parameters('configuration').name)]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('configuration').name]"
+            },
+            "endpoint": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', parameters('configuration').name), '2024-10-01').endpoint]"
+            },
+            "location": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', parameters('configuration').name), '2024-10-01', 'full').location]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "ecap-azure-ai-search",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "configuration": {
+            "value": "[variables('azureAISearchConfiguration')]"
+          },
+          "location": {
+            "value": "[parameters('globals').location]"
+          },
+          "tags": {
+            "value": "[parameters('globals').standardTags]"
+          },
+          "logAnalyticsWorkspaceResourceId": {
+            "value": "[parameters('logAnalyticsWorkspaceResourceId')]"
+          },
+          "diagnosticSettings": {
+            "value": "[parameters('globals').diagnosticSettings]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "12175713657761079628"
+            }
+          },
+          "parameters": {
+            "configuration": {
+              "type": "object",
+              "metadata": {
+                "description": "Azure AI Search service configuration from the centralized globals object."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure region for the Search service."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Standard ECAP resource tags."
+              }
+            },
+            "logAnalyticsWorkspaceResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional Log Analytics workspace resource ID for diagnostic settings."
+              }
+            },
+            "diagnosticSettings": {
+              "type": "object",
+              "defaultValue": {
+                "enabled": true,
+                "azureAISearchLogCategories": [
+                  "OperationLogs",
+                  "QueryLogs"
+                ],
+                "metricCategories": [
+                  "AllMetrics"
+                ]
+              },
+              "metadata": {
+                "description": "Centralized diagnostic settings configuration."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Search/searchServices",
+              "apiVersion": "2024-06-01",
+              "name": "[parameters('configuration').name]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "[parameters('configuration').skuName]"
+              },
+              "properties": {
+                "replicaCount": "[parameters('configuration').replicaCount]",
+                "partitionCount": "[parameters('configuration').partitionCount]",
+                "hostingMode": "default",
+                "publicNetworkAccess": "[parameters('configuration').publicNetworkAccess]",
+                "networkRuleSet": {
+                  "ipRules": [],
+                  "virtualNetworkRules": []
+                },
+                "semanticSearch": "[parameters('configuration').semanticSearch]",
+                "authOptions": "[parameters('configuration').authOptions]",
+                "disableLocalAuth": "[parameters('configuration').disableLocalAuth]"
+              }
+            },
+            {
+              "condition": "[and(not(empty(parameters('logAnalyticsWorkspaceResourceId'))), parameters('diagnosticSettings').enabled)]",
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.Search/searchServices/{0}', parameters('configuration').name)]",
+              "name": "azure-ai-search-diagnostics",
+              "properties": {
+                "copy": [
+                  {
+                    "name": "logs",
+                    "count": "[length(parameters('diagnosticSettings').azureAISearchLogCategories)]",
+                    "input": {
+                      "category": "[parameters('diagnosticSettings').azureAISearchLogCategories[copyIndex('logs')]]",
+                      "enabled": true
+                    }
+                  },
+                  {
+                    "name": "metrics",
+                    "count": "[length(parameters('diagnosticSettings').metricCategories)]",
+                    "input": {
+                      "category": "[parameters('diagnosticSettings').metricCategories[copyIndex('metrics')]]",
+                      "enabled": true
+                    }
+                  }
+                ],
+                "workspaceId": "[parameters('logAnalyticsWorkspaceResourceId')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Search/searchServices', parameters('configuration').name)]"
+              ]
+            }
+          ],
+          "outputs": {
+            "resourceId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Search/searchServices', parameters('configuration').name)]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('configuration').name]"
+            },
+            "endpoint": {
+              "type": "string",
+              "value": "[format('https://{0}.search.windows.net', parameters('configuration').name)]"
+            },
+            "location": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Search/searchServices', parameters('configuration').name), '2024-06-01', 'full').location]"
+            },
+            "replicaCount": {
+              "type": "int",
+              "value": "[reference(resourceId('Microsoft.Search/searchServices', parameters('configuration').name), '2024-06-01').replicaCount]"
+            },
+            "partitionCount": {
+              "type": "int",
+              "value": "[reference(resourceId('Microsoft.Search/searchServices', parameters('configuration').name), '2024-06-01').partitionCount]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "ecap-azure-openai-chat-deployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "accountName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account'), '2022-09-01').outputs.name.value]"
+          },
+          "deploymentName": {
+            "value": "[variables('azureOpenAIConfiguration').chatDeploymentName]"
+          },
+          "modelName": {
+            "value": "[variables('azureOpenAIConfiguration').chatModelName]"
+          },
+          "modelVersion": {
+            "value": "[variables('azureOpenAIConfiguration').chatModelVersion]"
+          },
+          "skuName": {
+            "value": "[variables('azureOpenAIConfiguration').deploymentSkuName]"
+          },
+          "capacity": {
+            "value": "[variables('azureOpenAIConfiguration').deploymentCapacity]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "6612841721265514555"
+            }
+          },
+          "parameters": {
+            "accountName": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure OpenAI account name that owns the deployment."
+              }
+            },
+            "deploymentName": {
+              "type": "string",
+              "metadata": {
+                "description": "Deployment name exposed to clients."
+              }
+            },
+            "modelName": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure OpenAI model name. Availability varies by region and subscription."
+              }
+            },
+            "modelVersion": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure OpenAI model version. Availability varies by region and subscription."
+              }
+            },
+            "skuName": {
+              "type": "string",
+              "defaultValue": "GlobalStandard",
+              "allowedValues": [
+                "GlobalStandard",
+                "Standard"
+              ],
+              "metadata": {
+                "description": "Deployment SKU name."
+              }
+            },
+            "capacity": {
+              "type": "int",
+              "defaultValue": 1,
+              "metadata": {
+                "description": "Deployment capacity in thousands of tokens per minute."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.CognitiveServices/accounts/deployments",
+              "apiVersion": "2024-10-01",
+              "name": "[format('{0}/{1}', parameters('accountName'), parameters('deploymentName'))]",
+              "sku": {
+                "name": "[parameters('skuName')]",
+                "capacity": "[parameters('capacity')]"
+              },
+              "properties": {
+                "model": {
+                  "format": "OpenAI",
+                  "name": "[parameters('modelName')]",
+                  "version": "[parameters('modelVersion')]"
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "name": {
+              "type": "string",
+              "value": "[parameters('deploymentName')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "ecap-azure-openai-embedding-deployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "accountName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account'), '2022-09-01').outputs.name.value]"
+          },
+          "deploymentName": {
+            "value": "[variables('azureOpenAIConfiguration').embeddingDeploymentName]"
+          },
+          "modelName": {
+            "value": "[variables('azureOpenAIConfiguration').embeddingModelName]"
+          },
+          "modelVersion": {
+            "value": "[variables('azureOpenAIConfiguration').embeddingModelVersion]"
+          },
+          "skuName": {
+            "value": "[variables('azureOpenAIConfiguration').deploymentSkuName]"
+          },
+          "capacity": {
+            "value": "[variables('azureOpenAIConfiguration').deploymentCapacity]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "6612841721265514555"
+            }
+          },
+          "parameters": {
+            "accountName": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure OpenAI account name that owns the deployment."
+              }
+            },
+            "deploymentName": {
+              "type": "string",
+              "metadata": {
+                "description": "Deployment name exposed to clients."
+              }
+            },
+            "modelName": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure OpenAI model name. Availability varies by region and subscription."
+              }
+            },
+            "modelVersion": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure OpenAI model version. Availability varies by region and subscription."
+              }
+            },
+            "skuName": {
+              "type": "string",
+              "defaultValue": "GlobalStandard",
+              "allowedValues": [
+                "GlobalStandard",
+                "Standard"
+              ],
+              "metadata": {
+                "description": "Deployment SKU name."
+              }
+            },
+            "capacity": {
+              "type": "int",
+              "defaultValue": 1,
+              "metadata": {
+                "description": "Deployment capacity in thousands of tokens per minute."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.CognitiveServices/accounts/deployments",
+              "apiVersion": "2024-10-01",
+              "name": "[format('{0}/{1}', parameters('accountName'), parameters('deploymentName'))]",
+              "sku": {
+                "name": "[parameters('skuName')]",
+                "capacity": "[parameters('capacity')]"
+              },
+              "properties": {
+                "model": {
+                  "format": "OpenAI",
+                  "name": "[parameters('modelName')]",
+                  "version": "[parameters('modelVersion')]"
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "name": {
+              "type": "string",
+              "value": "[parameters('deploymentName')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account')]"
+      ]
+    }
+  ],
+  "outputs": {
+    "inheritedTags": {
+      "type": "object",
+      "value": "[parameters('globals').standardTags]"
+    },
+    "resourceId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account'), '2022-09-01').outputs.resourceId.value]"
+    },
+    "name": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account'), '2022-09-01').outputs.name.value]"
+    },
+    "endpoint": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account'), '2022-09-01').outputs.endpoint.value]"
+    },
+    "location": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-account'), '2022-09-01').outputs.location.value]"
+    },
+    "chatDeploymentName": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-chat-deployment'), '2022-09-01').outputs.name.value]"
+    },
+    "embeddingDeploymentName": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-openai-embedding-deployment'), '2022-09-01').outputs.name.value]"
+    },
+    "azureAISearchResourceId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-ai-search'), '2022-09-01').outputs.resourceId.value]"
+    },
+    "azureAISearchName": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-ai-search'), '2022-09-01').outputs.name.value]"
+    },
+    "azureAISearchEndpoint": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-ai-search'), '2022-09-01').outputs.endpoint.value]"
+    },
+    "azureAISearchLocation": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-ai-search'), '2022-09-01').outputs.location.value]"
+    },
+    "azureAISearchReplicaCount": {
+      "type": "int",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-ai-search'), '2022-09-01').outputs.replicaCount.value]"
+    },
+    "azureAISearchPartitionCount": {
+      "type": "int",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'ecap-azure-ai-search'), '2022-09-01').outputs.partitionCount.value]"
+    }
+  }
+}

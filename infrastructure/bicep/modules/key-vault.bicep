@@ -9,9 +9,6 @@ param location string
 @description('Standard ECAP resource tags.')
 param tags object
 
-@description('Optional workload principal ID to receive Key Vault Secrets User permissions.')
-param principalId string = ''
-
 @description('Optional Log Analytics workspace resource ID for diagnostic settings.')
 param logAnalyticsWorkspaceResourceId string = ''
 
@@ -28,8 +25,6 @@ param diagnosticSettings object = {
     'AllMetrics'
   ]
 }
-
-var keyVaultSecretsUserRoleDefinitionId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: name
@@ -54,16 +49,6 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
       bypass: 'AzureServices'
       defaultAction: 'Allow'
     }
-  }
-}
-
-resource keyVaultSecretsUserRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {
-  name: guid(keyVault.id, principalId, keyVaultSecretsUserRoleDefinitionId)
-  scope: keyVault
-  properties: {
-    roleDefinitionId: keyVaultSecretsUserRoleDefinitionId
-    principalId: principalId
-    principalType: 'ServicePrincipal'
   }
 }
 

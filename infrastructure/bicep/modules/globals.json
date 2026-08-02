@@ -1,0 +1,1301 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.35.1.17967",
+      "templateHash": "8931137036216214904"
+    }
+  },
+  "parameters": {
+    "environment": {
+      "type": "string",
+      "metadata": {
+        "description": "Deployment environment, for example dev, qa, stage, or prod."
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure region for the environment resources."
+      }
+    },
+    "applicationName": {
+      "type": "string",
+      "metadata": {
+        "description": "Short application identifier used in resource names and tags."
+      }
+    },
+    "companyName": {
+      "type": "string",
+      "defaultValue": "ECAP",
+      "metadata": {
+        "description": "Company or organization name used by downstream governance consumers."
+      }
+    },
+    "project": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional ECAP project or product identifier."
+      }
+    },
+    "resourceGroupPrefix": {
+      "type": "string",
+      "defaultValue": "rg",
+      "metadata": {
+        "description": "Prefix used for the environment Resource Group name."
+      }
+    },
+    "namingSuffix": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional suffix applied by the centralized naming service."
+      }
+    },
+    "owner": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource owner or owning team."
+      }
+    },
+    "managedBy": {
+      "type": "string",
+      "metadata": {
+        "description": "Infrastructure management system."
+      }
+    },
+    "costCenter": {
+      "type": "string",
+      "metadata": {
+        "description": "Cost allocation identifier."
+      }
+    },
+    "businessUnit": {
+      "type": "string",
+      "metadata": {
+        "description": "Business unit responsible for the resources."
+      }
+    },
+    "criticality": {
+      "type": "string",
+      "metadata": {
+        "description": "Business criticality classification."
+      }
+    },
+    "createdBy": {
+      "type": "string",
+      "metadata": {
+        "description": "Identity that created or deployed the resources."
+      }
+    },
+    "infrastructureVersion": {
+      "type": "string",
+      "metadata": {
+        "description": "Version of the infrastructure contract."
+      }
+    },
+    "additionalTags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Additional resource tags."
+      }
+    },
+    "repository": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Source repository identifier."
+      }
+    },
+    "department": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Department responsible for the workload."
+      }
+    },
+    "supportContact": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Support contact or support team identifier."
+      }
+    },
+    "lifecycle": {
+      "type": "string",
+      "defaultValue": "Active",
+      "metadata": {
+        "description": "Workload lifecycle state."
+      }
+    },
+    "dataClassification": {
+      "type": "string",
+      "defaultValue": "Internal",
+      "metadata": {
+        "description": "Data classification applied to the resources."
+      }
+    },
+    "compliance": {
+      "type": "string",
+      "defaultValue": "None",
+      "metadata": {
+        "description": "Compliance classification or applicable control framework."
+      }
+    },
+    "businessOwner": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Business owner for the workload."
+      }
+    },
+    "technicalOwner": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Technical owner for the workload."
+      }
+    },
+    "workload": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Workload classification."
+      }
+    },
+    "deploymentDate": {
+      "type": "string",
+      "defaultValue": "[utcNow('yyyy-MM-dd')]",
+      "metadata": {
+        "description": "Deployment date in ISO 8601 date format."
+      }
+    },
+    "logAnalyticsSku": {
+      "type": "string",
+      "defaultValue": "PerGB2018",
+      "metadata": {
+        "description": "Log Analytics workspace SKU."
+      }
+    },
+    "logAnalyticsRetentionInDays": {
+      "type": "int",
+      "defaultValue": 30,
+      "metadata": {
+        "description": "Number of days to retain Log Analytics data."
+      }
+    },
+    "logAnalyticsPublicNetworkAccessForIngestion": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "metadata": {
+        "description": "Whether public Log Analytics ingestion is enabled."
+      }
+    },
+    "logAnalyticsPublicNetworkAccessForQuery": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "metadata": {
+        "description": "Whether public Log Analytics queries are enabled."
+      }
+    },
+    "applicationInsightsKind": {
+      "type": "string",
+      "defaultValue": "web",
+      "metadata": {
+        "description": "Application Insights resource kind."
+      }
+    },
+    "applicationInsightsType": {
+      "type": "string",
+      "defaultValue": "web",
+      "metadata": {
+        "description": "Application Insights application type."
+      }
+    },
+    "diagnosticSettingsEnabled": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether standard diagnostic settings are enabled."
+      }
+    },
+    "storageLargeFileSharesState": {
+      "type": "string",
+      "defaultValue": "Disabled",
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ],
+      "metadata": {
+        "description": "Whether Azure Files large file shares are enabled."
+      }
+    },
+    "storageAllowSharedKeyAccess": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Whether shared key authorization is allowed for the Storage Account."
+      }
+    },
+    "storagePublicNetworkAccess": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ],
+      "metadata": {
+        "description": "Whether public network access to the Storage Account is enabled."
+      }
+    },
+    "storageMinimumTlsVersion": {
+      "type": "string",
+      "defaultValue": "TLS1_2",
+      "allowedValues": [
+        "TLS1_2"
+      ],
+      "metadata": {
+        "description": "Minimum TLS version accepted by the Storage Account."
+      }
+    },
+    "storageNetworkAcls": {
+      "type": "object",
+      "defaultValue": {
+        "bypass": "AzureServices",
+        "defaultAction": "Allow",
+        "ipRules": [],
+        "virtualNetworkRules": []
+      },
+      "metadata": {
+        "description": "Storage Account network ACL configuration."
+      }
+    },
+    "storageSku": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS",
+        "Standard_RAGRS"
+      ],
+      "metadata": {
+        "description": "Storage Account replication SKU."
+      }
+    },
+    "storageBlobVersioningEnabled": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether Blob Service versioning is enabled."
+      }
+    },
+    "storageBlobSoftDeleteRetentionDays": {
+      "type": "int",
+      "defaultValue": 30,
+      "minValue": 1,
+      "maxValue": 365,
+      "metadata": {
+        "description": "Number of days deleted blobs are retained for recovery."
+      }
+    },
+    "storageContainerSoftDeleteRetentionDays": {
+      "type": "int",
+      "defaultValue": 30,
+      "minValue": 1,
+      "maxValue": 365,
+      "metadata": {
+        "description": "Number of days deleted containers are retained for recovery."
+      }
+    },
+    "sqlPublicNetworkAccess": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ],
+      "metadata": {
+        "description": "Whether public network access to the Azure SQL logical server is enabled."
+      }
+    },
+    "sqlAdministratorLogin": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Microsoft Entra administrator login/display name for Azure SQL."
+      }
+    },
+    "sqlAdministratorObjectId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Microsoft Entra administrator object ID for Azure SQL."
+      }
+    },
+    "sqlDatabaseSkuName": {
+      "type": "string",
+      "defaultValue": "GP_Gen5_2",
+      "metadata": {
+        "description": "Azure SQL database SKU name."
+      }
+    },
+    "sqlDatabaseSkuTier": {
+      "type": "string",
+      "defaultValue": "GeneralPurpose",
+      "metadata": {
+        "description": "Azure SQL database service tier."
+      }
+    },
+    "sqlDatabaseSkuFamily": {
+      "type": "string",
+      "defaultValue": "Gen5",
+      "metadata": {
+        "description": "Azure SQL database SKU family."
+      }
+    },
+    "sqlDatabaseSkuCapacity": {
+      "type": "int",
+      "defaultValue": 2,
+      "metadata": {
+        "description": "Azure SQL database vCore capacity."
+      }
+    },
+    "sqlDatabaseComputeModel": {
+      "type": "string",
+      "defaultValue": "Provisioned",
+      "allowedValues": [
+        "Provisioned",
+        "Serverless"
+      ],
+      "metadata": {
+        "description": "Azure SQL database compute model."
+      }
+    },
+    "sqlDatabaseAutoPauseDelayMinutes": {
+      "type": "int",
+      "defaultValue": 60,
+      "minValue": -1,
+      "metadata": {
+        "description": "Idle minutes before a serverless database is paused."
+      }
+    },
+    "sqlDatabaseZoneRedundant": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Whether Azure SQL database zone redundancy is enabled."
+      }
+    },
+    "sqlBackupRetentionDays": {
+      "type": "int",
+      "defaultValue": 7,
+      "minValue": 1,
+      "maxValue": 35,
+      "metadata": {
+        "description": "Point-in-time restore retention in days for Azure SQL."
+      }
+    },
+    "sqlDifferentialBackupIntervalHours": {
+      "type": "int",
+      "defaultValue": 12,
+      "allowedValues": [
+        12,
+        24
+      ],
+      "metadata": {
+        "description": "Differential backup interval in hours for Azure SQL."
+      }
+    },
+    "sqlBackupStorageRedundancy": {
+      "type": "string",
+      "defaultValue": "Local",
+      "allowedValues": [
+        "Local",
+        "Zone",
+        "Geo"
+      ],
+      "metadata": {
+        "description": "Requested Azure SQL backup storage redundancy."
+      }
+    },
+    "allowedLocations": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Locations approved by the platform policy. Defaults to the deployment location."
+      }
+    },
+    "featureFlags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Feature flags reserved for future platform capabilities."
+      }
+    },
+    "azureOpenAIName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional Azure OpenAI resource name. Defaults to the enterprise naming module output."
+      }
+    },
+    "azureOpenAIPublicNetworkAccess": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ],
+      "metadata": {
+        "description": "Azure OpenAI public network access mode. Disable after private endpoint networking is provisioned."
+      }
+    },
+    "azureOpenAIDisableLocalAuth": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether API key authentication is disabled. Microsoft Entra ID and Azure RBAC are preferred."
+      }
+    },
+    "azureOpenAIChatDeploymentName": {
+      "type": "string",
+      "defaultValue": "chat",
+      "metadata": {
+        "description": "Azure OpenAI chat deployment name."
+      }
+    },
+    "azureOpenAIChatModelName": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure OpenAI chat model name."
+      }
+    },
+    "azureOpenAIChatModelVersion": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure OpenAI chat model version."
+      }
+    },
+    "azureOpenAIEmbeddingDeploymentName": {
+      "type": "string",
+      "defaultValue": "embeddings",
+      "metadata": {
+        "description": "Azure OpenAI embedding deployment name."
+      }
+    },
+    "azureOpenAIEmbeddingModelName": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure OpenAI embedding model name."
+      }
+    },
+    "azureOpenAIEmbeddingModelVersion": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure OpenAI embedding model version."
+      }
+    },
+    "azureOpenAISkuName": {
+      "type": "string",
+      "defaultValue": "S0",
+      "metadata": {
+        "description": "Azure OpenAI account SKU."
+      }
+    },
+    "azureOpenAIDeploymentSkuName": {
+      "type": "string",
+      "defaultValue": "GlobalStandard",
+      "allowedValues": [
+        "GlobalStandard",
+        "Standard"
+      ],
+      "metadata": {
+        "description": "Azure OpenAI deployment SKU."
+      }
+    },
+    "azureOpenAIDeploymentCapacity": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "Azure OpenAI deployment capacity in thousands of tokens per minute."
+      }
+    },
+    "azureAISearchName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional Azure AI Search service name. Defaults to the enterprise naming module output."
+      }
+    },
+    "azureAISearchSkuName": {
+      "type": "string",
+      "defaultValue": "standard",
+      "metadata": {
+        "description": "Azure AI Search service SKU."
+      }
+    },
+    "azureAISearchReplicaCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "metadata": {
+        "description": "Azure AI Search replica count."
+      }
+    },
+    "azureAISearchPartitionCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "metadata": {
+        "description": "Azure AI Search partition count."
+      }
+    },
+    "azureAISearchPublicNetworkAccess": {
+      "type": "string",
+      "defaultValue": "enabled",
+      "allowedValues": [
+        "enabled",
+        "disabled"
+      ],
+      "metadata": {
+        "description": "Azure AI Search public network access mode."
+      }
+    },
+    "azureAISearchSemanticSearch": {
+      "type": "string",
+      "defaultValue": "free",
+      "allowedValues": [
+        "disabled",
+        "free",
+        "standard"
+      ],
+      "metadata": {
+        "description": "Azure AI Search semantic ranking capability. Availability depends on SKU and region."
+      }
+    },
+    "azureAISearchAuthOptions": {
+      "type": "string",
+      "defaultValue": "aad",
+      "allowedValues": [
+        "aad",
+        "aadOrApiKey"
+      ],
+      "metadata": {
+        "description": "Azure AI Search authentication mode."
+      }
+    },
+    "azureAISearchDisableLocalAuth": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether Azure AI Search local API-key authentication is disabled."
+      }
+    }
+  },
+  "variables": {
+    "sqlConfiguration": {
+      "publicNetworkAccess": "[parameters('sqlPublicNetworkAccess')]",
+      "administratorLogin": "[parameters('sqlAdministratorLogin')]",
+      "administratorObjectId": "[parameters('sqlAdministratorObjectId')]",
+      "databaseSkuName": "[parameters('sqlDatabaseSkuName')]",
+      "databaseSkuTier": "[parameters('sqlDatabaseSkuTier')]",
+      "databaseSkuFamily": "[parameters('sqlDatabaseSkuFamily')]",
+      "databaseSkuCapacity": "[parameters('sqlDatabaseSkuCapacity')]",
+      "databaseComputeModel": "[parameters('sqlDatabaseComputeModel')]",
+      "databaseAutoPauseDelayMinutes": "[parameters('sqlDatabaseAutoPauseDelayMinutes')]",
+      "databaseZoneRedundant": "[parameters('sqlDatabaseZoneRedundant')]",
+      "backupRetentionDays": "[parameters('sqlBackupRetentionDays')]",
+      "differentialBackupIntervalHours": "[parameters('sqlDifferentialBackupIntervalHours')]",
+      "backupStorageRedundancy": "[parameters('sqlBackupStorageRedundancy')]"
+    },
+    "effectiveProjectName": "[if(empty(parameters('project')), parameters('applicationName'), parameters('project'))]",
+    "effectiveAllowedLocations": "[if(empty(parameters('allowedLocations')), createArray(parameters('location')), parameters('allowedLocations'))]",
+    "defaultSkus": {
+      "logAnalytics": "[parameters('logAnalyticsSku')]",
+      "keyVault": "standard",
+      "appConfiguration": "standard"
+    },
+    "monitoringConfiguration": {
+      "logAnalyticsRetentionInDays": "[parameters('logAnalyticsRetentionInDays')]",
+      "logAnalyticsPublicNetworkAccessForIngestion": "[parameters('logAnalyticsPublicNetworkAccessForIngestion')]",
+      "logAnalyticsPublicNetworkAccessForQuery": "[parameters('logAnalyticsPublicNetworkAccessForQuery')]",
+      "applicationInsightsKind": "[parameters('applicationInsightsKind')]",
+      "applicationInsightsType": "[parameters('applicationInsightsType')]"
+    },
+    "diagnosticSettings": {
+      "enabled": "[parameters('diagnosticSettingsEnabled')]",
+      "keyVaultLogCategories": [
+        "AuditEvent"
+      ],
+      "azureAISearchLogCategories": [
+        "OperationLogs",
+        "QueryLogs"
+      ],
+      "azureOpenAILogCategories": [
+        "Audit",
+        "RequestResponse",
+        "Trace"
+      ],
+      "appConfigurationLogCategories": [
+        "HttpRequest",
+        "Audit"
+      ],
+      "storageAccountLogCategories": [
+        "StorageRead",
+        "StorageWrite",
+        "StorageDelete"
+      ],
+      "metricCategories": [
+        "AllMetrics"
+      ]
+    },
+    "storageConfiguration": {
+      "sku": "[parameters('storageSku')]",
+      "largeFileSharesState": "[parameters('storageLargeFileSharesState')]",
+      "allowSharedKeyAccess": "[parameters('storageAllowSharedKeyAccess')]",
+      "publicNetworkAccess": "[parameters('storagePublicNetworkAccess')]",
+      "minimumTlsVersion": "[parameters('storageMinimumTlsVersion')]",
+      "networkAcls": "[parameters('storageNetworkAcls')]",
+      "privateEndpoint": {
+        "enabled": false,
+        "subnetResourceId": "",
+        "privateDnsZoneResourceIds": []
+      },
+      "blobVersioningEnabled": "[parameters('storageBlobVersioningEnabled')]",
+      "blobSoftDeleteRetentionDays": "[parameters('storageBlobSoftDeleteRetentionDays')]",
+      "containerSoftDeleteRetentionDays": "[parameters('storageContainerSoftDeleteRetentionDays')]"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))]",
+      "location": "[deployment().location]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "applicationName": {
+            "value": "[parameters('applicationName')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "resourceGroupPrefix": {
+            "value": "[parameters('resourceGroupPrefix')]"
+          },
+          "optionalSuffix": {
+            "value": "[parameters('namingSuffix')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "5157906783754054123"
+            }
+          },
+          "parameters": {
+            "applicationName": {
+              "type": "string",
+              "metadata": {
+                "description": "Short application identifier used in ECAP resource names."
+              }
+            },
+            "environment": {
+              "type": "string",
+              "metadata": {
+                "description": "Deployment environment, for example dev, qa, stage, or prod."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure region used to make globally unique names deterministic per deployment location."
+              }
+            },
+            "resourceGroupPrefix": {
+              "type": "string",
+              "defaultValue": "rg",
+              "metadata": {
+                "description": "Prefix used for the environment Resource Group name."
+              }
+            },
+            "optionalSuffix": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional suffix appended to the normalized application and environment name."
+              }
+            },
+            "resourceType": {
+              "type": "string",
+              "defaultValue": "resourceGroup",
+              "allowedValues": [
+                "resourceGroup",
+                "appService",
+                "appServicePlan",
+                "storageAccount",
+                "sqlServer",
+                "sqlDatabase",
+                "keyVault",
+                "azureOpenAI",
+                "aiSearch",
+                "managedIdentity",
+                "logAnalytics",
+                "applicationInsights",
+                "appConfiguration"
+              ],
+              "metadata": {
+                "description": "Resource type to return through the generic resourceName output."
+              }
+            }
+          },
+          "variables": {
+            "normalizedApplicationName": "[toLower(parameters('applicationName'))]",
+            "normalizedEnvironment": "[toLower(parameters('environment'))]",
+            "normalizedOptionalSuffix": "[toLower(replace(parameters('optionalSuffix'), ' ', '-'))]",
+            "nameBase": "[format('{0}-{1}', variables('normalizedApplicationName'), variables('normalizedEnvironment'))]",
+            "qualifiedName": "[if(empty(variables('normalizedOptionalSuffix')), variables('nameBase'), format('{0}-{1}', variables('nameBase'), variables('normalizedOptionalSuffix')))]",
+            "locationToken": "[toLower(replace(parameters('location'), ' ', ''))]",
+            "globalUniqueToken": "[take(uniqueString(subscription().id, variables('qualifiedName'), variables('locationToken')), 6)]",
+            "compactQualifiedName": "[replace(variables('qualifiedName'), '-', '')]",
+            "resourceGroupName": "[format('{0}-{1}', toLower(parameters('resourceGroupPrefix')), variables('qualifiedName'))]",
+            "appServiceName": "[format('{0}-{1}', take(format('app-{0}', variables('qualifiedName')), 53), variables('globalUniqueToken'))]",
+            "appServicePlanName": "[take(format('asp-{0}', variables('qualifiedName')), 40)]",
+            "storageAccountName": "[format('st{0}{1}', take(variables('compactQualifiedName'), 16), variables('globalUniqueToken'))]",
+            "sqlServerName": "[format('{0}-{1}', take(format('sql-{0}', variables('qualifiedName')), 56), variables('globalUniqueToken'))]",
+            "sqlDatabaseName": "[take(format('sqldb-{0}', variables('qualifiedName')), 128)]",
+            "keyVaultName": "[format('{0}-{1}', take(format('kv-{0}', variables('qualifiedName')), 17), variables('globalUniqueToken'))]",
+            "azureOpenAIName": "[format('{0}-{1}', take(format('aoai-{0}', variables('qualifiedName')), 57), variables('globalUniqueToken'))]",
+            "aiSearchName": "[format('{0}-{1}', take(format('aisearch-{0}', variables('qualifiedName')), 53), variables('globalUniqueToken'))]",
+            "managedIdentityName": "[take(format('mi-{0}', variables('qualifiedName')), 128)]",
+            "logAnalyticsWorkspaceName": "[take(format('law-{0}', variables('qualifiedName')), 63)]",
+            "applicationInsightsName": "[take(format('appi-{0}', variables('qualifiedName')), 255)]",
+            "appConfigurationName": "[format('{0}-{1}', take(format('appcfg-{0}', variables('qualifiedName')), 43), variables('globalUniqueToken'))]",
+            "names": {
+              "resourceGroup": "[variables('resourceGroupName')]",
+              "appService": "[variables('appServiceName')]",
+              "appServicePlan": "[variables('appServicePlanName')]",
+              "storageAccount": "[variables('storageAccountName')]",
+              "sqlServer": "[variables('sqlServerName')]",
+              "sqlDatabase": "[variables('sqlDatabaseName')]",
+              "keyVault": "[variables('keyVaultName')]",
+              "azureOpenAI": "[variables('azureOpenAIName')]",
+              "aiSearch": "[variables('aiSearchName')]",
+              "managedIdentity": "[variables('managedIdentityName')]",
+              "logAnalytics": "[variables('logAnalyticsWorkspaceName')]",
+              "applicationInsights": "[variables('applicationInsightsName')]",
+              "appConfiguration": "[variables('appConfigurationName')]"
+            }
+          },
+          "resources": [],
+          "outputs": {
+            "resourceGroupName": {
+              "type": "string",
+              "value": "[variables('resourceGroupName')]"
+            },
+            "appServiceName": {
+              "type": "string",
+              "value": "[variables('appServiceName')]"
+            },
+            "appServicePlanName": {
+              "type": "string",
+              "value": "[variables('appServicePlanName')]"
+            },
+            "storageAccountName": {
+              "type": "string",
+              "value": "[variables('storageAccountName')]"
+            },
+            "sqlServerName": {
+              "type": "string",
+              "value": "[variables('sqlServerName')]"
+            },
+            "sqlDatabaseName": {
+              "type": "string",
+              "value": "[variables('sqlDatabaseName')]"
+            },
+            "keyVaultName": {
+              "type": "string",
+              "value": "[variables('keyVaultName')]"
+            },
+            "azureOpenAIName": {
+              "type": "string",
+              "value": "[variables('azureOpenAIName')]"
+            },
+            "aiSearchName": {
+              "type": "string",
+              "value": "[variables('aiSearchName')]"
+            },
+            "managedIdentityName": {
+              "type": "string",
+              "value": "[variables('managedIdentityName')]"
+            },
+            "logAnalyticsWorkspaceName": {
+              "type": "string",
+              "value": "[variables('logAnalyticsWorkspaceName')]"
+            },
+            "applicationInsightsName": {
+              "type": "string",
+              "value": "[variables('applicationInsightsName')]"
+            },
+            "appConfigurationName": {
+              "type": "string",
+              "value": "[variables('appConfigurationName')]"
+            },
+            "resourceName": {
+              "type": "string",
+              "value": "[variables('names')[parameters('resourceType')]]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('ecap-tags-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))]",
+      "location": "[deployment().location]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "application": {
+            "value": "[parameters('applicationName')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "owner": {
+            "value": "[parameters('owner')]"
+          },
+          "managedBy": {
+            "value": "[parameters('managedBy')]"
+          },
+          "costCenter": {
+            "value": "[parameters('costCenter')]"
+          },
+          "businessUnit": {
+            "value": "[parameters('businessUnit')]"
+          },
+          "criticality": {
+            "value": "[parameters('criticality')]"
+          },
+          "createdBy": {
+            "value": "[parameters('createdBy')]"
+          },
+          "version": {
+            "value": "[parameters('infrastructureVersion')]"
+          },
+          "project": {
+            "value": "[parameters('project')]"
+          },
+          "repository": {
+            "value": "[parameters('repository')]"
+          },
+          "department": {
+            "value": "[parameters('department')]"
+          },
+          "supportContact": {
+            "value": "[parameters('supportContact')]"
+          },
+          "lifecycle": {
+            "value": "[parameters('lifecycle')]"
+          },
+          "dataClassification": {
+            "value": "[parameters('dataClassification')]"
+          },
+          "compliance": {
+            "value": "[parameters('compliance')]"
+          },
+          "businessOwner": {
+            "value": "[parameters('businessOwner')]"
+          },
+          "technicalOwner": {
+            "value": "[parameters('technicalOwner')]"
+          },
+          "workload": {
+            "value": "[parameters('workload')]"
+          },
+          "deploymentDate": {
+            "value": "[parameters('deploymentDate')]"
+          },
+          "additionalTags": {
+            "value": "[parameters('additionalTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "3799450851013056120"
+            }
+          },
+          "parameters": {
+            "application": {
+              "type": "string",
+              "metadata": {
+                "description": "Application name used for resource governance and cost reporting."
+              }
+            },
+            "environment": {
+              "type": "string",
+              "metadata": {
+                "description": "Deployment environment."
+              }
+            },
+            "owner": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource owner or owning team."
+              }
+            },
+            "managedBy": {
+              "type": "string",
+              "metadata": {
+                "description": "Infrastructure management system."
+              }
+            },
+            "costCenter": {
+              "type": "string",
+              "metadata": {
+                "description": "Cost allocation identifier."
+              }
+            },
+            "businessUnit": {
+              "type": "string",
+              "metadata": {
+                "description": "Business unit responsible for the resource."
+              }
+            },
+            "criticality": {
+              "type": "string",
+              "metadata": {
+                "description": "Business criticality classification."
+              }
+            },
+            "createdBy": {
+              "type": "string",
+              "metadata": {
+                "description": "Identity that created or deployed the resource."
+              }
+            },
+            "version": {
+              "type": "string",
+              "metadata": {
+                "description": "Version of the infrastructure contract."
+              }
+            },
+            "project": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "ECAP project or product identifier. Defaults to the application when omitted."
+              }
+            },
+            "repository": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Source repository identifier. Defaults to the application when omitted."
+              }
+            },
+            "department": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Department responsible for the workload. Defaults to the business unit when omitted."
+              }
+            },
+            "supportContact": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Support contact or support team identifier. Defaults to the resource owner when omitted."
+              }
+            },
+            "lifecycle": {
+              "type": "string",
+              "defaultValue": "Active",
+              "metadata": {
+                "description": "Workload lifecycle state."
+              }
+            },
+            "dataClassification": {
+              "type": "string",
+              "defaultValue": "Internal",
+              "metadata": {
+                "description": "Data classification applied to the resources."
+              }
+            },
+            "compliance": {
+              "type": "string",
+              "defaultValue": "None",
+              "metadata": {
+                "description": "Compliance classification or applicable control framework."
+              }
+            },
+            "businessOwner": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Business owner for the workload. Defaults to the resource owner when omitted."
+              }
+            },
+            "technicalOwner": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Technical owner for the workload. Defaults to the resource owner when omitted."
+              }
+            },
+            "workload": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Workload classification. Defaults to the application when omitted."
+              }
+            },
+            "deploymentDate": {
+              "type": "string",
+              "defaultValue": "[utcNow('yyyy-MM-dd')]",
+              "metadata": {
+                "description": "Deployment date in ISO 8601 date format. Defaults to the current deployment date."
+              }
+            },
+            "additionalTags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Additional tags. Required ECAP tags always take precedence."
+              }
+            }
+          },
+          "variables": {
+            "projectTag": "[if(empty(parameters('project')), parameters('application'), parameters('project'))]",
+            "repositoryTag": "[if(empty(parameters('repository')), parameters('application'), parameters('repository'))]",
+            "departmentTag": "[if(empty(parameters('department')), parameters('businessUnit'), parameters('department'))]",
+            "supportContactTag": "[if(empty(parameters('supportContact')), parameters('owner'), parameters('supportContact'))]",
+            "businessOwnerTag": "[if(empty(parameters('businessOwner')), parameters('owner'), parameters('businessOwner'))]",
+            "technicalOwnerTag": "[if(empty(parameters('technicalOwner')), parameters('owner'), parameters('technicalOwner'))]",
+            "workloadTag": "[if(empty(parameters('workload')), parameters('application'), parameters('workload'))]"
+          },
+          "resources": [],
+          "outputs": {
+            "standardTags": {
+              "type": "object",
+              "value": "[union(parameters('additionalTags'), createObject('Application', parameters('application'), 'Environment', parameters('environment'), 'Owner', parameters('owner'), 'ManagedBy', parameters('managedBy'), 'CostCenter', parameters('costCenter'), 'BusinessUnit', parameters('businessUnit'), 'Criticality', parameters('criticality'), 'Project', variables('projectTag'), 'Repository', variables('repositoryTag'), 'Department', variables('departmentTag'), 'SupportContact', variables('supportContactTag'), 'Lifecycle', parameters('lifecycle'), 'DataClassification', parameters('dataClassification'), 'Compliance', parameters('compliance'), 'BusinessOwner', variables('businessOwnerTag'), 'TechnicalOwner', variables('technicalOwnerTag'), 'Workload', variables('workloadTag'), 'DeploymentDate', parameters('deploymentDate'), 'CreatedBy', parameters('createdBy'), 'Version', parameters('version')))]"
+            },
+            "requiredTagKeys": {
+              "type": "array",
+              "value": [
+                "Application",
+                "Environment",
+                "Owner",
+                "ManagedBy",
+                "CostCenter",
+                "BusinessUnit",
+                "Criticality",
+                "Project",
+                "Repository",
+                "Department",
+                "SupportContact",
+                "Lifecycle",
+                "Version",
+                "CreatedBy",
+                "DataClassification",
+                "Compliance",
+                "BusinessOwner",
+                "TechnicalOwner",
+                "Workload",
+                "DeploymentDate"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "globals": {
+      "type": "object",
+      "value": {
+        "environment": "[parameters('environment')]",
+        "location": "[parameters('location')]",
+        "applicationName": "[parameters('applicationName')]",
+        "companyName": "[parameters('companyName')]",
+        "projectName": "[variables('effectiveProjectName')]",
+        "resourcePrefix": "[parameters('resourceGroupPrefix')]",
+        "standardTags": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-tags-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.standardTags.value]",
+        "defaultSkus": "[variables('defaultSkus')]",
+        "monitoringConfiguration": "[variables('monitoringConfiguration')]",
+        "diagnosticSettings": "[variables('diagnosticSettings')]",
+        "storageConfiguration": "[variables('storageConfiguration')]",
+        "sqlConfiguration": "[variables('sqlConfiguration')]",
+        "azureOpenAIConfiguration": {
+          "name": "[if(empty(parameters('azureOpenAIName')), reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.azureOpenAIName.value, parameters('azureOpenAIName'))]",
+          "publicNetworkAccess": "[parameters('azureOpenAIPublicNetworkAccess')]",
+          "disableLocalAuth": "[parameters('azureOpenAIDisableLocalAuth')]",
+          "skuName": "[parameters('azureOpenAISkuName')]",
+          "deploymentSkuName": "[parameters('azureOpenAIDeploymentSkuName')]",
+          "deploymentCapacity": "[parameters('azureOpenAIDeploymentCapacity')]",
+          "chatDeploymentName": "[parameters('azureOpenAIChatDeploymentName')]",
+          "chatModelName": "[parameters('azureOpenAIChatModelName')]",
+          "chatModelVersion": "[parameters('azureOpenAIChatModelVersion')]",
+          "embeddingDeploymentName": "[parameters('azureOpenAIEmbeddingDeploymentName')]",
+          "embeddingModelName": "[parameters('azureOpenAIEmbeddingModelName')]",
+          "embeddingModelVersion": "[parameters('azureOpenAIEmbeddingModelVersion')]"
+        },
+        "azureAISearchConfiguration": {
+          "name": "[if(empty(parameters('azureAISearchName')), reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.aiSearchName.value, parameters('azureAISearchName'))]",
+          "skuName": "[parameters('azureAISearchSkuName')]",
+          "replicaCount": "[parameters('azureAISearchReplicaCount')]",
+          "partitionCount": "[parameters('azureAISearchPartitionCount')]",
+          "publicNetworkAccess": "[parameters('azureAISearchPublicNetworkAccess')]",
+          "semanticSearch": "[parameters('azureAISearchSemanticSearch')]",
+          "authOptions": "[parameters('azureAISearchAuthOptions')]",
+          "disableLocalAuth": "[parameters('azureAISearchDisableLocalAuth')]"
+        },
+        "allowedLocations": "[variables('effectiveAllowedLocations')]",
+        "namingOutputs": {
+          "resourceGroupName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.resourceGroupName.value]",
+          "appServiceName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.appServiceName.value]",
+          "appServicePlanName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.appServicePlanName.value]",
+          "storageAccountName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.storageAccountName.value]",
+          "sqlServerName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.sqlServerName.value]",
+          "sqlDatabaseName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.sqlDatabaseName.value]",
+          "keyVaultName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.keyVaultName.value]",
+          "azureOpenAIName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.azureOpenAIName.value]",
+          "aiSearchName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.aiSearchName.value]",
+          "managedIdentityName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.managedIdentityName.value]",
+          "logAnalyticsWorkspaceName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.logAnalyticsWorkspaceName.value]",
+          "applicationInsightsName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.applicationInsightsName.value]",
+          "appConfigurationName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.appConfigurationName.value]"
+        },
+        "featureFlags": "[parameters('featureFlags')]"
+      }
+    },
+    "environment": {
+      "type": "string",
+      "value": "[parameters('environment')]"
+    },
+    "location": {
+      "type": "string",
+      "value": "[parameters('location')]"
+    },
+    "applicationName": {
+      "type": "string",
+      "value": "[parameters('applicationName')]"
+    },
+    "companyName": {
+      "type": "string",
+      "value": "[parameters('companyName')]"
+    },
+    "projectName": {
+      "type": "string",
+      "value": "[variables('effectiveProjectName')]"
+    },
+    "resourcePrefix": {
+      "type": "string",
+      "value": "[parameters('resourceGroupPrefix')]"
+    },
+    "standardTags": {
+      "type": "object",
+      "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-tags-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.standardTags.value]"
+    },
+    "defaultSkus": {
+      "type": "object",
+      "value": "[variables('defaultSkus')]"
+    },
+    "monitoringConfiguration": {
+      "type": "object",
+      "value": "[variables('monitoringConfiguration')]"
+    },
+    "diagnosticSettings": {
+      "type": "object",
+      "value": "[variables('diagnosticSettings')]"
+    },
+    "storageConfiguration": {
+      "type": "object",
+      "value": "[variables('storageConfiguration')]"
+    },
+    "sqlConfiguration": {
+      "type": "object",
+      "value": "[variables('sqlConfiguration')]"
+    },
+    "azureOpenAIConfiguration": {
+      "type": "object",
+      "value": {
+        "name": "[if(empty(parameters('azureOpenAIName')), reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.azureOpenAIName.value, parameters('azureOpenAIName'))]",
+        "publicNetworkAccess": "[parameters('azureOpenAIPublicNetworkAccess')]",
+        "disableLocalAuth": "[parameters('azureOpenAIDisableLocalAuth')]",
+        "skuName": "[parameters('azureOpenAISkuName')]",
+        "deploymentSkuName": "[parameters('azureOpenAIDeploymentSkuName')]",
+        "deploymentCapacity": "[parameters('azureOpenAIDeploymentCapacity')]",
+        "chatDeploymentName": "[parameters('azureOpenAIChatDeploymentName')]",
+        "chatModelName": "[parameters('azureOpenAIChatModelName')]",
+        "chatModelVersion": "[parameters('azureOpenAIChatModelVersion')]",
+        "embeddingDeploymentName": "[parameters('azureOpenAIEmbeddingDeploymentName')]",
+        "embeddingModelName": "[parameters('azureOpenAIEmbeddingModelName')]",
+        "embeddingModelVersion": "[parameters('azureOpenAIEmbeddingModelVersion')]"
+      }
+    },
+    "azureAISearchConfiguration": {
+      "type": "object",
+      "value": {
+        "name": "[if(empty(parameters('azureAISearchName')), reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.aiSearchName.value, parameters('azureAISearchName'))]",
+        "skuName": "[parameters('azureAISearchSkuName')]",
+        "replicaCount": "[parameters('azureAISearchReplicaCount')]",
+        "partitionCount": "[parameters('azureAISearchPartitionCount')]",
+        "publicNetworkAccess": "[parameters('azureAISearchPublicNetworkAccess')]",
+        "semanticSearch": "[parameters('azureAISearchSemanticSearch')]",
+        "authOptions": "[parameters('azureAISearchAuthOptions')]",
+        "disableLocalAuth": "[parameters('azureAISearchDisableLocalAuth')]"
+      }
+    },
+    "allowedLocations": {
+      "type": "array",
+      "value": "[variables('effectiveAllowedLocations')]"
+    },
+    "namingOutputs": {
+      "type": "object",
+      "value": {
+        "resourceGroupName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.resourceGroupName.value]",
+        "appServiceName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.appServiceName.value]",
+        "appServicePlanName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.appServicePlanName.value]",
+        "storageAccountName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.storageAccountName.value]",
+        "sqlServerName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.sqlServerName.value]",
+        "sqlDatabaseName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.sqlDatabaseName.value]",
+        "keyVaultName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.keyVaultName.value]",
+        "azureOpenAIName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.azureOpenAIName.value]",
+        "aiSearchName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.aiSearchName.value]",
+        "managedIdentityName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.managedIdentityName.value]",
+        "logAnalyticsWorkspaceName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.logAnalyticsWorkspaceName.value]",
+        "applicationInsightsName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.applicationInsightsName.value]",
+        "appConfigurationName": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('ecap-naming-{0}', uniqueString(subscription().id, parameters('applicationName'), parameters('environment')))), '2022-09-01').outputs.appConfigurationName.value]"
+      }
+    },
+    "featureFlags": {
+      "type": "object",
+      "value": "[parameters('featureFlags')]"
+    }
+  }
+}

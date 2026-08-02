@@ -7,34 +7,34 @@ param globals object
 param logAnalyticsWorkspaceResourceId string = ''
 
 var azureOpenAIConfiguration = globals.azureOpenAIConfiguration
+var azureAISearchConfiguration = globals.azureAISearchConfiguration
 
-resource azureOpenAI 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
-  name: azureOpenAIConfiguration.name
-  location: globals.location
-  tags: globals.standardTags
-  kind: 'OpenAI'
-  identity: {
-    type: 'SystemAssigned'
+module azureOpenAI './azure-openai.bicep' = {
+  name: 'ecap-azure-openai-account'
+  params: {
+    configuration: azureOpenAIConfiguration
+    location: globals.location
+    tags: globals.standardTags
+    logAnalyticsWorkspaceResourceId: logAnalyticsWorkspaceResourceId
+    diagnosticSettings: globals.diagnosticSettings
   }
-  sku: {
-    name: azureOpenAIConfiguration.skuName
-  }
-  properties: {
-    customSubDomainName: azureOpenAIConfiguration.name
-    publicNetworkAccess: azureOpenAIConfiguration.publicNetworkAccess
-    networkAcls: {
-      defaultAction: 'Allow'
-      ipRules: []
-      virtualNetworkRules: []
-    }
-    disableLocalAuth: azureOpenAIConfiguration.disableLocalAuth
+}
+
+module azureAISearch './azure-ai-search.bicep' = {
+  name: 'ecap-azure-ai-search'
+  params: {
+    configuration: azureAISearchConfiguration
+    location: globals.location
+    tags: globals.standardTags
+    logAnalyticsWorkspaceResourceId: logAnalyticsWorkspaceResourceId
+    diagnosticSettings: globals.diagnosticSettings
   }
 }
 
 module chatDeployment './azure-openai-deployment.bicep' = {
   name: 'ecap-azure-openai-chat-deployment'
   params: {
-    accountName: azureOpenAI.name
+    accountName: azureOpenAI.outputs.name
     deploymentName: azureOpenAIConfiguration.chatDeploymentName
     modelName: azureOpenAIConfiguration.chatModelName
     modelVersion: azureOpenAIConfiguration.chatModelVersion
@@ -46,7 +46,7 @@ module chatDeployment './azure-openai-deployment.bicep' = {
 module embeddingDeployment './azure-openai-deployment.bicep' = {
   name: 'ecap-azure-openai-embedding-deployment'
   params: {
-    accountName: azureOpenAI.name
+    accountName: azureOpenAI.outputs.name
     deploymentName: azureOpenAIConfiguration.embeddingDeploymentName
     modelName: azureOpenAIConfiguration.embeddingModelName
     modelVersion: azureOpenAIConfiguration.embeddingModelVersion
@@ -55,25 +55,16 @@ module embeddingDeployment './azure-openai-deployment.bicep' = {
   }
 }
 
-resource azureOpenAIDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (!empty(logAnalyticsWorkspaceResourceId) && globals.diagnosticSettings.enabled) {
-  name: 'azure-openai-diagnostics'
-  scope: azureOpenAI
-  properties: {
-    workspaceId: logAnalyticsWorkspaceResourceId
-    logs: [for category in globals.diagnosticSettings.azureOpenAILogCategories: {
-      category: category
-      enabled: true
-    }]
-    metrics: [for category in globals.diagnosticSettings.metricCategories: {
-      category: category
-      enabled: true
-    }]
-  }
-}
-
 output inheritedTags object = globals.standardTags
-output resourceId string = azureOpenAI.id
-output name string = azureOpenAI.name
-output endpoint string = azureOpenAI.properties.endpoint
+output resourceId string = azureOpenAI.outputs.resourceId
+output name string = azureOpenAI.outputs.name
+output endpoint string = azureOpenAI.outputs.endpoint
+output location string = azureOpenAI.outputs.location
 output chatDeploymentName string = chatDeployment.outputs.name
 output embeddingDeploymentName string = embeddingDeployment.outputs.name
+output azureAISearchResourceId string = azureAISearch.outputs.resourceId
+output azureAISearchName string = azureAISearch.outputs.name
+output azureAISearchEndpoint string = azureAISearch.outputs.endpoint
+output azureAISearchLocation string = azureAISearch.outputs.location
+output azureAISearchReplicaCount int = azureAISearch.outputs.replicaCount
+output azureAISearchPartitionCount int = azureAISearch.outputs.partitionCount

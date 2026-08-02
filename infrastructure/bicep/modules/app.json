@@ -1,0 +1,170 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.35.1.17967",
+      "templateHash": "13038758529652721788"
+    }
+  },
+  "parameters": {
+    "configuration": {
+      "type": "object",
+      "metadata": {
+        "description": "Centralized App Service configuration from the globals module."
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure region for the App Service resources."
+      }
+    },
+    "tags": {
+      "type": "object",
+      "metadata": {
+        "description": "Standard ECAP resource tags."
+      }
+    },
+    "logAnalyticsWorkspaceResourceId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional Log Analytics workspace resource ID for diagnostic settings."
+      }
+    },
+    "applicationInsightsConnectionString": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Application Insights connection string for platform telemetry."
+      }
+    },
+    "diagnosticSettings": {
+      "type": "object",
+      "defaultValue": {
+        "enabled": true,
+        "appServiceLogCategories": [
+          "AppServiceHTTPLogs",
+          "AppServiceConsoleLogs",
+          "AppServiceAppLogs",
+          "AppServiceAuditLogs"
+        ],
+        "metricCategories": [
+          "AllMetrics"
+        ]
+      },
+      "metadata": {
+        "description": "Centralized diagnostic settings configuration."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2024-04-01",
+      "name": "[parameters('configuration').planName]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
+      "kind": "linux",
+      "sku": {
+        "name": "[parameters('configuration').skuName]",
+        "tier": "[parameters('configuration').skuTier]",
+        "capacity": "[parameters('configuration').instanceCount]"
+      },
+      "properties": {
+        "reserved": true,
+        "zoneRedundant": "[parameters('configuration').zoneRedundant]",
+        "perSiteScaling": "[parameters('configuration').perSiteScaling]"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2024-04-01",
+      "name": "[parameters('configuration').appName]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
+      "kind": "app,linux",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('configuration').planName)]",
+        "httpsOnly": true,
+        "publicNetworkAccess": "[parameters('configuration').publicNetworkAccess]",
+        "clientAffinityEnabled": false,
+        "siteConfig": {
+          "linuxFxVersion": "[parameters('configuration').linuxFxVersion]",
+          "alwaysOn": "[parameters('configuration').alwaysOn]",
+          "healthCheckPath": "[parameters('configuration').healthCheckPath]",
+          "http20Enabled": "[parameters('configuration').http20Enabled]",
+          "minTlsVersion": "[parameters('configuration').minimumTlsVersion]",
+          "ftpsState": "Disabled",
+          "webSocketsEnabled": "[parameters('configuration').webSocketsEnabled]",
+          "appSettings": "[flatten(createArray(createArray(createObject('name', 'APPLICATIONINSIGHTS_CONNECTION_STRING', 'value', parameters('applicationInsightsConnectionString')), createObject('name', 'AzureOpenAI__Endpoint', 'value', ''), createObject('name', 'AzureOpenAI__Authentication', 'value', 'ManagedIdentity'), createObject('name', 'AzureAISearch__Endpoint', 'value', ''), createObject('name', 'AzureAISearch__Authentication', 'value', 'ManagedIdentity'), createObject('name', 'AzureSql__Connection', 'value', ''), createObject('name', 'AzureSql__Authentication', 'value', 'Active Directory Managed Identity'), createObject('name', 'Storage__Account', 'value', ''), createObject('name', 'Storage__Authentication', 'value', 'ManagedIdentity'), createObject('name', 'AppConfiguration__Endpoint', 'value', ''), createObject('name', 'KeyVault__Uri', 'value', ''), createObject('name', 'KeyVault__ReferencePrefix', 'value', '')), parameters('configuration').additionalAppSettings))]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('configuration').planName)]"
+      ]
+    },
+    {
+      "condition": "[and(not(empty(parameters('logAnalyticsWorkspaceResourceId'))), parameters('diagnosticSettings').enabled)]",
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "apiVersion": "2021-05-01-preview",
+      "scope": "[format('Microsoft.Web/sites/{0}', parameters('configuration').appName)]",
+      "name": "app-service-diagnostics",
+      "properties": {
+        "copy": [
+          {
+            "name": "logs",
+            "count": "[length(parameters('diagnosticSettings').appServiceLogCategories)]",
+            "input": {
+              "category": "[parameters('diagnosticSettings').appServiceLogCategories[copyIndex('logs')]]",
+              "enabled": true
+            }
+          },
+          {
+            "name": "metrics",
+            "count": "[length(parameters('diagnosticSettings').metricCategories)]",
+            "input": {
+              "category": "[parameters('diagnosticSettings').metricCategories[copyIndex('metrics')]]",
+              "enabled": true
+            }
+          }
+        ],
+        "workspaceId": "[parameters('logAnalyticsWorkspaceResourceId')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('configuration').appName)]"
+      ]
+    }
+  ],
+  "outputs": {
+    "appServiceName": {
+      "type": "string",
+      "value": "[parameters('configuration').appName]"
+    },
+    "appServiceResourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Web/sites', parameters('configuration').appName)]"
+    },
+    "defaultHostName": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Web/sites', parameters('configuration').appName), '2024-04-01').defaultHostName]"
+    },
+    "managedIdentityPrincipalId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Web/sites', parameters('configuration').appName), '2024-04-01', 'full').identity.principalId]"
+    },
+    "appServicePlanName": {
+      "type": "string",
+      "value": "[parameters('configuration').planName]"
+    },
+    "appServicePlanResourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Web/serverfarms', parameters('configuration').planName)]"
+    }
+  }
+}

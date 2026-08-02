@@ -45,7 +45,7 @@ The implementation is divided into sequential EPICs.
 
 | EPIC | Description | Status |
 |------|-------------|--------|
-| EPIC 0 | Enterprise Foundation | In Progress |
+| EPIC 0 | Enterprise Foundation | Completed |
 | EPIC 1 | Product Catalog | Completed |
 | EPIC 2 | AI Platform | Planned |
 | EPIC 3 | Inventory | Planned |
@@ -56,6 +56,35 @@ The implementation is divided into sequential EPICs.
 | EPIC 8 | Identity & Security | Planned |
 | EPIC 9 | Observability | Planned |
 | EPIC 10 | Production Readiness | Planned |
+
+---
+
+# 3.1 Enterprise Foundation Complete
+
+EPIC 0 is complete as the reusable enterprise infrastructure foundation for
+ECAP. The completion milestone delivered:
+
+- Repository foundation and engineering standards
+- Layered Bicep infrastructure and environment parameterization
+- Enterprise naming and standard tags
+- Azure Key Vault and App Configuration
+- Storage and Azure SQL foundations
+- Azure OpenAI and Azure AI Search
+- App Service hosting
+- System-assigned managed identity and Azure RBAC
+- Application Insights, Log Analytics, and resource diagnostics
+- CI/CD validation, what-if, promotion, and readiness documentation
+
+The platform is ready for application and AI workloads subject to the known
+production limitations documented in the EPIC 0 completion report, including
+the future private networking and policy work.
+
+## Next Milestone
+
+**EPIC 2 – Enterprise AI Platform**
+
+EPIC 2 will consume the EPIC 0 contracts for Azure OpenAI, AI Search, managed
+identity, configuration, monitoring, and App Service deployment.
 
 ---
 

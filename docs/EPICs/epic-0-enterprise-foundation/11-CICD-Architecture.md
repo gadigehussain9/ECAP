@@ -286,6 +286,56 @@ Deployment proceeds only if all gates succeed.
 
 ---
 
+# 11.1 EPIC 0 Promotion Flow
+
+The infrastructure promotion flow is intentionally sequential:
+
+```text
+Validate
+    ↓
+Bicep Lint
+    ↓
+What-If
+    ↓
+Deploy Dev
+    ↓
+Infrastructure Validation
+    ↓
+Deploy QA
+    ↓
+Deploy Stage
+    ↓
+Deploy Production
+```
+
+`Validate` checks parameter files, repository contracts, and deployment
+prerequisites. `Bicep Lint` runs the configured Bicep linter in CI alongside
+compiler validation. `What-If` is reviewed for unexpected resource replacement,
+network exposure, role changes, locks, or environment drift before deployment.
+
+Dev is the first deployment target and is used for smoke verification. The
+Infrastructure Validation gate then confirms resource provisioning, naming,
+tags, managed identity, RBAC, endpoint configuration, diagnostics, health
+checks, and monitoring. QA, Stage, and Production are promoted only after the
+previous environment has passed its validation and required approval gates.
+Artifacts are built once and promoted without rebuilding.
+
+## 11.2 Infrastructure Validation Gate
+
+Infrastructure Validation exists before promotion because a successful ARM
+deployment only proves that Azure accepted the template. It does not prove
+that the application identity can read Key Vault or App Configuration, that
+Storage and AI data-plane roles are correct, that diagnostic settings route to
+Log Analytics, or that the health endpoint is operational. The gate catches
+these configuration and authorization defects before they reach QA, Stage, or
+Production and provides auditable evidence for the release decision.
+
+The gate uses the commands and portal checks in
+`infrastructure-validation.md`, records the what-if and validation results,
+and blocks promotion when mandatory checks fail.
+
+---
+
 # 12. Security Validation
 
 Pipelines should perform:

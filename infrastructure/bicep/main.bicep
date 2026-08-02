@@ -42,6 +42,14 @@ param infrastructureVersion string
 @description('Additional resource tags.')
 param additionalTags object = {}
 
+@description('Optional lock applied to the environment Resource Group. Leave empty by default; supported values are CanNotDelete and ReadOnly.')
+@allowed([
+  ''
+  'CanNotDelete'
+  'ReadOnly'
+])
+param resourceLockLevel string = ''
+
 @description('ECAP project or product identifier.')
 param project string = ''
 
@@ -93,9 +101,6 @@ param applicationInsightsKind string = 'web'
 @description('Application Insights application type.')
 param applicationInsightsType string = 'web'
 
-@description('Optional workload principal ID used for Key Vault and App Configuration RBAC assignments.')
-param workloadPrincipalId string = ''
-
 @description('Whether Key Vault purge protection is enabled. This cannot be disabled after it is enabled.')
 param keyVaultEnablePurgeProtection bool = false
 
@@ -104,6 +109,55 @@ param appConfigurationPrivateEndpointSubnetResourceId string = ''
 
 @description('Whether standard diagnostic settings are enabled.')
 param diagnosticSettingsEnabled bool = true
+
+@description('App Service Plan SKU name. Premium v3 is the enterprise default.')
+@allowed([
+  'P1v3'
+  'P2v3'
+  'P3v3'
+])
+param appServicePlanSkuName string = 'P1v3'
+
+@description('App Service Plan SKU tier.')
+@allowed([
+  'PremiumV3'
+])
+param appServicePlanSkuTier string = 'PremiumV3'
+
+@description('Initial App Service Plan instance count.')
+@minValue(1)
+param appServicePlanInstanceCount int = 1
+
+@description('Whether the App Service Plan uses availability zones.')
+param appServicePlanZoneRedundant bool = false
+
+@description('Whether per-site scaling is enabled on the App Service Plan.')
+param appServicePlanPerSiteScaling bool = false
+
+@description('App Service .NET runtime version, for example 10.0.')
+param appServiceRuntimeVersion string = '10.0'
+
+@description('Whether the App Service is kept warm without an incoming request.')
+param appServiceAlwaysOn bool = true
+
+@description('Health check endpoint path exposed by the hosted application.')
+param appServiceHealthCheckPath string = '/health'
+
+@description('Whether HTTP/2 is enabled for the App Service.')
+param appServiceHttp20Enabled bool = true
+
+@description('Whether WebSockets are enabled for the App Service.')
+param appServiceWebSocketsEnabled bool = false
+
+@description('Whether public network access is enabled for the App Service.')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param appServicePublicNetworkAccess string = 'Enabled'
+
+@description('Additional non-secret App Service application settings reserved for workload integrations.')
+param appServiceAdditionalAppSettings object = {}
 
 @description('Whether Azure Files large file shares are enabled.')
 @allowed([
@@ -134,6 +188,15 @@ param storageNetworkAcls object = {
   defaultAction: 'Allow'
   ipRules: []
   virtualNetworkRules: []
+}
+
+module resourceLock './modules/resource-lock.bicep' = if (!empty(resourceLockLevel)) {
+  name: 'ecap-resource-lock-${environment}'
+  scope: resourceGroup
+  params: {
+    lockLevel: resourceLockLevel
+    environment: environment
+  }
 }
 
 @description('Storage Account replication SKU.')
@@ -239,19 +302,19 @@ param azureOpenAIDisableLocalAuth bool = true
 param azureOpenAIChatDeploymentName string = 'chat'
 
 @description('Azure OpenAI chat model name.')
-param azureOpenAIChatModelName string = 'gpt-4o-mini'
+param azureOpenAIChatModelName string
 
 @description('Azure OpenAI chat model version.')
-param azureOpenAIChatModelVersion string = '2024-07-18'
+param azureOpenAIChatModelVersion string
 
 @description('Azure OpenAI embedding deployment name.')
-param azureOpenAIEmbeddingDeploymentName string = 'embedding'
+param azureOpenAIEmbeddingDeploymentName string = 'embeddings'
 
 @description('Azure OpenAI embedding model name.')
-param azureOpenAIEmbeddingModelName string = 'text-embedding-3-small'
+param azureOpenAIEmbeddingModelName string
 
 @description('Azure OpenAI embedding model version.')
-param azureOpenAIEmbeddingModelVersion string = '1'
+param azureOpenAIEmbeddingModelVersion string
 
 @description('Azure OpenAI account SKU.')
 param azureOpenAISkuName string = 'S0'
@@ -265,6 +328,45 @@ param azureOpenAIDeploymentSkuName string = 'GlobalStandard'
 
 @description('Azure OpenAI deployment capacity in thousands of tokens per minute.')
 param azureOpenAIDeploymentCapacity int = 1
+
+@description('Optional Azure AI Search service name. Defaults to the enterprise naming module output.')
+param azureAISearchName string = ''
+
+@description('Azure AI Search service SKU.')
+param azureAISearchSkuName string = 'standard'
+
+@description('Azure AI Search replica count.')
+@minValue(1)
+param azureAISearchReplicaCount int = 1
+
+@description('Azure AI Search partition count.')
+@minValue(1)
+param azureAISearchPartitionCount int = 1
+
+@description('Azure AI Search public network access mode.')
+@allowed([
+  'enabled'
+  'disabled'
+])
+param azureAISearchPublicNetworkAccess string = 'enabled'
+
+@description('Azure AI Search semantic ranking capability.')
+@allowed([
+  'disabled'
+  'free'
+  'standard'
+])
+param azureAISearchSemanticSearch string = 'free'
+
+@description('Azure AI Search authentication mode.')
+@allowed([
+  'aad'
+  'aadOrApiKey'
+])
+param azureAISearchAuthOptions string = 'aad'
+
+@description('Whether Azure AI Search local API-key authentication is disabled.')
+param azureAISearchDisableLocalAuth bool = true
 
 var normalizedNamingSuffix = toLower(replace(namingSuffix, ' ', '-'))
 var namingBase = '${toLower(applicationName)}-${toLower(environment)}'
@@ -372,6 +474,14 @@ module globals './modules/globals.bicep' = {
     azureOpenAISkuName: azureOpenAISkuName
     azureOpenAIDeploymentSkuName: azureOpenAIDeploymentSkuName
     azureOpenAIDeploymentCapacity: azureOpenAIDeploymentCapacity
+    azureAISearchName: azureAISearchName
+    azureAISearchSkuName: azureAISearchSkuName
+    azureAISearchReplicaCount: azureAISearchReplicaCount
+    azureAISearchPartitionCount: azureAISearchPartitionCount
+    azureAISearchPublicNetworkAccess: azureAISearchPublicNetworkAccess
+    azureAISearchSemanticSearch: azureAISearchSemanticSearch
+    azureAISearchAuthOptions: azureAISearchAuthOptions
+    azureAISearchDisableLocalAuth: azureAISearchDisableLocalAuth
   }
 }
 
@@ -387,8 +497,19 @@ module platform './modules/platform.bicep' = {
   params: {
     globals: globals.outputs.globals
     keyVaultEnablePurgeProtection: keyVaultEnablePurgeProtection
-    workloadPrincipalId: workloadPrincipalId
     appConfigurationPrivateEndpointSubnetResourceId: appConfigurationPrivateEndpointSubnetResourceId
+    appServicePlanSkuName: appServicePlanSkuName
+    appServicePlanSkuTier: appServicePlanSkuTier
+    appServicePlanInstanceCount: appServicePlanInstanceCount
+    appServicePlanZoneRedundant: appServicePlanZoneRedundant
+    appServicePlanPerSiteScaling: appServicePlanPerSiteScaling
+    appServiceRuntimeVersion: appServiceRuntimeVersion
+    appServiceAlwaysOn: appServiceAlwaysOn
+    appServiceHealthCheckPath: appServiceHealthCheckPath
+    appServiceHttp20Enabled: appServiceHttp20Enabled
+    appServiceWebSocketsEnabled: appServiceWebSocketsEnabled
+    appServicePublicNetworkAccess: appServicePublicNetworkAccess
+    appServiceAdditionalAppSettings: appServiceAdditionalAppSettings
   }
 }
 
@@ -418,8 +539,27 @@ output sqlServerResourceId string = platform.outputs.sqlServerResourceId
 output sqlServerFullyQualifiedDomainName string = platform.outputs.sqlServerFullyQualifiedDomainName
 output sqlDatabaseName string = platform.outputs.sqlDatabaseName
 output sqlDatabaseResourceId string = platform.outputs.sqlDatabaseResourceId
+output appServiceName string = platform.outputs.appServiceName
+output appServiceResourceId string = platform.outputs.appServiceResourceId
+output appServiceDefaultHostName string = platform.outputs.appServiceDefaultHostName
+output appServiceManagedIdentityPrincipalId string = platform.outputs.appServiceManagedIdentityPrincipalId
+output appServiceManagedIdentityClientId string = platform.outputs.appServiceManagedIdentityClientId
+output appServiceManagedIdentityTenantId string = platform.outputs.appServiceManagedIdentityTenantId
+output identityPrincipalId string = platform.outputs.identityPrincipalId
+output identityClientId string = platform.outputs.identityClientId
+output identityTenantId string = platform.outputs.identityTenantId
+output assignedRbacRoles array = platform.outputs.assignedRbacRoles
+output appServicePlanName string = platform.outputs.appServicePlanName
+output appServicePlanResourceId string = platform.outputs.appServicePlanResourceId
 output azureOpenAIResourceId string = platform.outputs.azureOpenAIResourceId
 output azureOpenAIName string = platform.outputs.azureOpenAIName
 output azureOpenAIEndpoint string = platform.outputs.azureOpenAIEndpoint
+output azureOpenAILocation string = platform.outputs.azureOpenAILocation
 output chatDeploymentName string = platform.outputs.chatDeploymentName
 output embeddingDeploymentName string = platform.outputs.embeddingDeploymentName
+output azureAISearchResourceId string = platform.outputs.azureAISearchResourceId
+output azureAISearchName string = platform.outputs.azureAISearchName
+output azureAISearchEndpoint string = platform.outputs.azureAISearchEndpoint
+output azureAISearchLocation string = platform.outputs.azureAISearchLocation
+output azureAISearchReplicaCount int = platform.outputs.azureAISearchReplicaCount
+output azureAISearchPartitionCount int = platform.outputs.azureAISearchPartitionCount
