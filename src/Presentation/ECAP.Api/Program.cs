@@ -8,6 +8,7 @@ using ECAP.Infrastructure.ExternalServices;
 using ECAP.Infrastructure.Identity;
 using ECAP.Infrastructure.Messaging;
 using ECAP.Infrastructure.Persistence;
+using ECAP.Infrastructure.Persistence.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
@@ -156,6 +157,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+await app.InitializeDatabaseAsync();
 
 // Configure the HTTP request pipeline
 

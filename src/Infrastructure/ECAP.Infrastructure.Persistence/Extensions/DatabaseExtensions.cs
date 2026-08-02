@@ -1,3 +1,4 @@
+using ECAP.Domain.Entities.Products;
 using ECAP.Infrastructure.Persistence.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,18 +65,85 @@ public static class DatabaseExtensions
     /// Seeds initial data for development and testing.
     /// In production, use migrations or separate seeding scripts.
     /// </summary>
-    private static Task SeedDataAsync(ApplicationDbContext _, ILogger __)
+    private static async Task SeedDataAsync(ApplicationDbContext context, ILogger logger)
     {
-        // Add initial seed data here when needed
-        // Example:
-        // if (!await context.Users.AnyAsync())
-        // {
-        //     logger.LogInformation("Seeding initial data...");
-        //     // Add seed data
-        //     await context.SaveChangesAsync();
-        // }
+        if (await context.Products.AnyAsync())
+        {
+            return;
+        }
 
-        return Task.CompletedTask;
+        var brandNames = new[] { "Northstar", "Contoso", "Fabrikam", "Adventure Works", "Tailspin" };
+        var categoryNames = new[]
+        {
+            "Electronics", "Home & Kitchen", "Office", "Outdoor", "Sports",
+            "Apparel", "Books", "Toys", "Beauty", "Automotive"
+        };
+
+        var brands = await context.Brands.ToListAsync();
+        foreach (var brandName in brandNames)
+        {
+            var brand = brands.FirstOrDefault(b => b.Name == brandName);
+            if (brand is null)
+            {
+                var result = Brand.Create(brandName, $"{brandName} test brand");
+                if (result.IsFailure)
+                {
+                    throw new InvalidOperationException(result.Error?.Message ?? $"Unable to create brand {brandName}.");
+                }
+
+                brand = result.Value!;
+                context.Brands.Add(brand);
+                brands.Add(brand);
+            }
+        }
+
+        var categories = await context.Categories.ToListAsync();
+        foreach (var categoryName in categoryNames)
+        {
+            var category = categories.FirstOrDefault(c => c.Name == categoryName);
+            if (category is null)
+            {
+                var result = Category.Create(categoryName, $"{categoryName} test category");
+                if (result.IsFailure)
+                {
+                    throw new InvalidOperationException(result.Error?.Message ?? $"Unable to create category {categoryName}.");
+                }
+
+                category = result.Value!;
+                context.Categories.Add(category);
+                categories.Add(category);
+            }
+        }
+
+        await context.SaveChangesAsync();
+
+        var products = new List<Product>(capacity: 50);
+        for (var index = 0; index < 50; index++)
+        {
+            var productResult = Product.Create(
+                sku: $"TEST-PROD-{index + 1:000}",
+                name: $"Test Product {index + 1:00}",
+                description: $"Initial test product {index + 1:00} for development and integration testing.",
+                brandId: brands[index % brandNames.Length].Id,
+                categoryId: categories[index % categoryNames.Length].Id,
+                price: 9.99m + index * 5.00m,
+                createdBy: "SeedData");
+
+            if (productResult.IsFailure)
+            {
+                throw new InvalidOperationException(productResult.Error?.Message ?? $"Unable to create product {index + 1}.");
+            }
+
+            var product = productResult.Value!;
+            product.Activate("SeedData");
+            product.SetInventorySummary(25 + index * 5, index % 4);
+            products.Add(product);
+        }
+
+        context.Products.AddRange(products);
+        await context.SaveChangesAsync();
+
+        logger.LogInformation("Seeded {Count} initial test products.", products.Count);
     }
 
     /// <summary>

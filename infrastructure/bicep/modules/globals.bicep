@@ -96,6 +96,23 @@ param applicationInsightsType string = 'web'
 @description('Whether standard diagnostic settings are enabled.')
 param diagnosticSettingsEnabled bool = true
 
+@description('Whether Azure Files large file shares are enabled.')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param storageLargeFileSharesState string = 'Disabled'
+
+@description('Whether shared key authorization is allowed for the Storage Account.')
+param storageAllowSharedKeyAccess bool = false
+
+@description('Whether public network access to the Storage Account is enabled.')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param storagePublicNetworkAccess string = 'Enabled'
+
 @description('Locations approved by the platform policy. Defaults to the deployment location.')
 param allowedLocations array = []
 
@@ -163,9 +180,19 @@ var diagnosticSettings = {
     'HttpRequest'
     'Audit'
   ]
+  storageAccountLogCategories: [
+    'StorageRead'
+    'StorageWrite'
+    'StorageDelete'
+  ]
   metricCategories: [
     'AllMetrics'
   ]
+}
+var storageConfiguration = {
+  largeFileSharesState: storageLargeFileSharesState
+  allowSharedKeyAccess: storageAllowSharedKeyAccess
+  publicNetworkAccess: storagePublicNetworkAccess
 }
 var namingOutputs = {
   resourceGroupName: naming.outputs.resourceGroupName
@@ -194,6 +221,7 @@ output globals object = {
   defaultSkus: defaultSkus
   monitoringConfiguration: monitoringConfiguration
   diagnosticSettings: diagnosticSettings
+  storageConfiguration: storageConfiguration
   allowedLocations: effectiveAllowedLocations
   namingOutputs: namingOutputs
   featureFlags: featureFlags
@@ -209,6 +237,7 @@ output standardTags object = tagging.outputs.standardTags
 output defaultSkus object = defaultSkus
 output monitoringConfiguration object = monitoringConfiguration
 output diagnosticSettings object = diagnosticSettings
+output storageConfiguration object = storageConfiguration
 output allowedLocations array = effectiveAllowedLocations
 output namingOutputs object = namingOutputs
 output featureFlags object = featureFlags

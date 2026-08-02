@@ -330,6 +330,56 @@ Bicep does not implicitly inherit parameters across module boundaries. ECAP impl
 
 Required/governed keys are merged after `additionalTags`, so callers can add custom metadata but cannot override ECAP governance values accidentally.
 
+## Enterprise Storage Account
+
+### Purpose
+
+The data layer deploys one environment-scoped StorageV2 account as ECAP's shared foundation for Blob, Queue, Table, and File workloads. The account uses the centralized naming and tagging modules and is ready for future private endpoint integration.
+
+### Security and observability defaults
+
+- TLS 1.2 and HTTPS-only traffic are enforced.
+- Public blob access and shared-key authorization are disabled by default.
+- A system-assigned managed identity is enabled for Azure RBAC integrations.
+- Infrastructure encryption and service encryption are enabled.
+- Large file shares and public network access are parameterized for environment policy.
+- Storage read, write, delete, and metric diagnostics are sent to the existing Log Analytics workspace when diagnostics are enabled.
+
+### Inputs and outputs
+
+The root template exposes `storageLargeFileSharesState`, `storageAllowSharedKeyAccess`, and `storagePublicNetworkAccess`. The module receives its name, location, and tags from `globals`; it also receives the monitoring workspace ID from the platform monitoring module.
+
+The root deployment outputs `storageAccountName`, `storageAccountResourceId`, `blobEndpoint`, `queueEndpoint`, `tableEndpoint`, and `fileEndpoint`. No access keys, SAS tokens, or secrets are output.
+
+### Validation and deployment
+
+Azure CLI:
+
+```powershell
+az bicep build --file infrastructure/bicep/main.bicep
+az deployment sub validate --location eastus --template-file infrastructure/bicep/main.bicep --parameters infrastructure/bicep/environments/dev.parameters.json
+az deployment sub what-if --location eastus --template-file infrastructure/bicep/main.bicep --parameters infrastructure/bicep/environments/dev.parameters.json
+az deployment sub create --location eastus --template-file infrastructure/bicep/main.bicep --parameters infrastructure/bicep/environments/dev.parameters.json
+```
+
+PowerShell deployment wrapper:
+
+```powershell
+./infrastructure/bicep/scripts/deploy.ps1 -Environment dev
+```
+
+Replace `dev` with `qa`, `stage`, or `prod` and use the target subscription context. Run build, validate, and what-if before an approved deployment.
+
+### Azure Portal verification
+
+1. Open the environment Resource Group and confirm the Storage Account name matches the naming output.
+2. In **Configuration**, verify Secure transfer required, Minimum TLS version `1.2`, Allow Blob anonymous access disabled, and Shared key access disabled unless explicitly enabled for the environment.
+3. In **Data protection** and **Encryption**, verify StorageV2 encryption and infrastructure encryption.
+4. In **Endpoints**, confirm Blob, Queue, Table, and File endpoints are present.
+5. In **Identity**, confirm the system-assigned managed identity is enabled.
+6. In **Networking**, confirm public network access matches the environment parameter and that private endpoint integration remains available for the networking layer.
+7. In **Monitoring > Diagnostic settings**, confirm StorageRead, StorageWrite, StorageDelete, and AllMetrics route to Log Analytics.
+
 ### Example usage
 
 The root deployment supplies business context once:

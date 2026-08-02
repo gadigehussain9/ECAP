@@ -49,6 +49,7 @@ module data './data.bicep' = {
   ]
   params: {
     globals: globals
+    logAnalyticsWorkspaceResourceId: monitoring.outputs.logAnalyticsWorkspaceId
   }
 }
 
@@ -95,3 +96,9 @@ output keyVaultUri string = security.outputs.vaultUri
 output appConfigurationResourceId string = configuration.outputs.resourceId
 output appConfigurationName string = configuration.outputs.name
 output appConfigurationEndpoint string = configuration.outputs.endpoint
+output storageAccountName string = data.outputs.storageAccountName
+output storageAccountResourceId string = data.outputs.storageAccountResourceId
+output blobEndpoint string = data.outputs.blobEndpoint
+output queueEndpoint string = data.outputs.queueEndpoint
+output tableEndpoint string = data.outputs.tableEndpoint
+output fileEndpoint string = data.outputs.fileEndpoint

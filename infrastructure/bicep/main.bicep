@@ -105,6 +105,23 @@ param appConfigurationPrivateEndpointSubnetResourceId string = ''
 @description('Whether standard diagnostic settings are enabled.')
 param diagnosticSettingsEnabled bool = true
 
+@description('Whether Azure Files large file shares are enabled.')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param storageLargeFileSharesState string = 'Disabled'
+
+@description('Whether shared key authorization is allowed for the Storage Account.')
+param storageAllowSharedKeyAccess bool = false
+
+@description('Whether public network access to the Storage Account is enabled.')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param storagePublicNetworkAccess string = 'Enabled'
+
 @description('Locations approved by the platform policy. Defaults to the deployment location.')
 param allowedLocations array = []
 
@@ -181,6 +198,9 @@ module globals './modules/globals.bicep' = {
     applicationInsightsKind: applicationInsightsKind
     applicationInsightsType: applicationInsightsType
     diagnosticSettingsEnabled: diagnosticSettingsEnabled
+    storageLargeFileSharesState: storageLargeFileSharesState
+    storageAllowSharedKeyAccess: storageAllowSharedKeyAccess
+    storagePublicNetworkAccess: storagePublicNetworkAccess
     allowedLocations: allowedLocations
     featureFlags: featureFlags
   }
@@ -218,3 +238,9 @@ output keyVaultUri string = platform.outputs.keyVaultUri
 output appConfigurationResourceId string = platform.outputs.appConfigurationResourceId
 output appConfigurationName string = platform.outputs.appConfigurationName
 output appConfigurationEndpoint string = platform.outputs.appConfigurationEndpoint
+output storageAccountName string = platform.outputs.storageAccountName
+output storageAccountResourceId string = platform.outputs.storageAccountResourceId
+output blobEndpoint string = platform.outputs.blobEndpoint
+output queueEndpoint string = platform.outputs.queueEndpoint
+output tableEndpoint string = platform.outputs.tableEndpoint
+output fileEndpoint string = platform.outputs.fileEndpoint
