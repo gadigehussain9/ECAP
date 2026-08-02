@@ -16,6 +16,14 @@ param tags object
 ])
 param largeFileSharesState string = 'Disabled'
 
+@description('Storage Account replication SKU.')
+@allowed([
+  'Standard_LRS'
+  'Standard_GRS'
+  'Standard_RAGRS'
+])
+param sku string = 'Standard_LRS'
+
 @description('Whether shared key authorization is allowed. Azure RBAC is preferred.')
 param allowSharedKeyAccess bool = false
 
@@ -25,6 +33,33 @@ param allowSharedKeyAccess bool = false
   'Disabled'
 ])
 param publicNetworkAccess string = 'Enabled'
+
+@description('Minimum TLS version accepted by the Storage Account.')
+@allowed([
+  'TLS1_2'
+])
+param minimumTlsVersion string = 'TLS1_2'
+
+@description('Storage network ACL configuration reserved for future network restrictions.')
+param networkAcls object = {
+  bypass: 'AzureServices'
+  defaultAction: 'Allow'
+  ipRules: []
+  virtualNetworkRules: []
+}
+
+@description('Whether Blob Service versioning is enabled.')
+param blobVersioningEnabled bool = true
+
+@description('Number of days deleted blobs are retained for recovery.')
+@minValue(1)
+@maxValue(365)
+param blobSoftDeleteRetentionDays int = 30
+
+@description('Number of days deleted containers are retained for recovery.')
+@minValue(1)
+@maxValue(365)
+param containerSoftDeleteRetentionDays int = 30
 
 @description('Optional Log Analytics workspace resource ID for diagnostic settings.')
 param logAnalyticsWorkspaceResourceId string = ''
@@ -47,12 +82,9 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   location: location
   tags: tags
   sku: {
-    name: 'Standard_RAGRS'
+    name: sku
   }
   kind: 'StorageV2'
-  identity: {
-    type: 'SystemAssigned'
-  }
   properties: {
     accessTier: 'Hot'
     allowBlobPublicAccess: false
@@ -83,13 +115,31 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
       }
     }
     largeFileSharesState: largeFileSharesState
-    minimumTlsVersion: 'TLS1_2'
+    minimumTlsVersion: minimumTlsVersion
     networkAcls: {
-      bypass: 'AzureServices'
-      defaultAction: 'Allow'
+      bypass: networkAcls.bypass
+      defaultAction: networkAcls.defaultAction
+      ipRules: networkAcls.ipRules
+      virtualNetworkRules: networkAcls.virtualNetworkRules
     }
     publicNetworkAccess: publicNetworkAccess
     supportsHttpsTrafficOnly: true
+  }
+}
+
+resource blobServices 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01' = {
+  name: 'default'
+  parent: storageAccount
+  properties: {
+    isVersioningEnabled: blobVersioningEnabled
+    deleteRetentionPolicy: {
+      allowPermanentDelete: false
+      days: blobSoftDeleteRetentionDays
+    }
+    containerDeleteRetentionPolicy: {
+      enabled: true
+      days: containerSoftDeleteRetentionDays
+    }
   }
 }
 

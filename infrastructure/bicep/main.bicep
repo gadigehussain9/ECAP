@@ -122,6 +122,100 @@ param storageAllowSharedKeyAccess bool = false
 ])
 param storagePublicNetworkAccess string = 'Enabled'
 
+@description('Minimum TLS version accepted by the Storage Account.')
+@allowed([
+  'TLS1_2'
+])
+param storageMinimumTlsVersion string = 'TLS1_2'
+
+@description('Storage Account network ACL configuration. Keep the default open until private endpoint networking is provisioned.')
+param storageNetworkAcls object = {
+  bypass: 'AzureServices'
+  defaultAction: 'Allow'
+  ipRules: []
+  virtualNetworkRules: []
+}
+
+@description('Storage Account replication SKU.')
+@allowed([
+  'Standard_LRS'
+  'Standard_GRS'
+  'Standard_RAGRS'
+])
+param storageSku string = 'Standard_LRS'
+
+@description('Whether Blob Service versioning is enabled.')
+param storageBlobVersioningEnabled bool = true
+
+@description('Number of days deleted blobs are retained for recovery.')
+@minValue(1)
+@maxValue(365)
+param storageBlobSoftDeleteRetentionDays int = 30
+
+@description('Number of days deleted containers are retained for recovery.')
+@minValue(1)
+@maxValue(365)
+param storageContainerSoftDeleteRetentionDays int = 30
+
+@description('Whether public network access to the Azure SQL logical server is enabled. Disable when Private Endpoint networking is provisioned.')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param sqlPublicNetworkAccess string = 'Enabled'
+
+@description('Microsoft Entra administrator login/display name for Azure SQL. No SQL login credentials are used.')
+param sqlAdministratorLogin string = ''
+
+@description('Microsoft Entra administrator object ID for Azure SQL.')
+param sqlAdministratorObjectId string = ''
+
+@description('Azure SQL database SKU name, such as GP_Gen5_2 or GP_S_Gen5_1.')
+param sqlDatabaseSkuName string = 'GP_Gen5_2'
+
+@description('Azure SQL database service tier.')
+param sqlDatabaseSkuTier string = 'GeneralPurpose'
+
+@description('Azure SQL database SKU family.')
+param sqlDatabaseSkuFamily string = 'Gen5'
+
+@description('Azure SQL database vCore capacity.')
+param sqlDatabaseSkuCapacity int = 2
+
+@description('Azure SQL database compute model.')
+@allowed([
+  'Provisioned'
+  'Serverless'
+])
+param sqlDatabaseComputeModel string = 'Provisioned'
+
+@description('Idle minutes before a serverless database is paused.')
+@minValue(-1)
+param sqlDatabaseAutoPauseDelayMinutes int = 60
+
+@description('Whether Azure SQL database zone redundancy is enabled.')
+param sqlDatabaseZoneRedundant bool = false
+
+@description('Point-in-time restore retention in days for Azure SQL.')
+@minValue(1)
+@maxValue(35)
+param sqlBackupRetentionDays int = 7
+
+@description('Differential backup interval in hours for Azure SQL.')
+@allowed([
+  12
+  24
+])
+param sqlDifferentialBackupIntervalHours int = 12
+
+@description('Requested Azure SQL backup storage redundancy.')
+@allowed([
+  'Local'
+  'Zone'
+  'Geo'
+])
+param sqlBackupStorageRedundancy string = 'Local'
+
 @description('Locations approved by the platform policy. Defaults to the deployment location.')
 param allowedLocations array = []
 
@@ -201,6 +295,25 @@ module globals './modules/globals.bicep' = {
     storageLargeFileSharesState: storageLargeFileSharesState
     storageAllowSharedKeyAccess: storageAllowSharedKeyAccess
     storagePublicNetworkAccess: storagePublicNetworkAccess
+    storageMinimumTlsVersion: storageMinimumTlsVersion
+    storageNetworkAcls: storageNetworkAcls
+    storageSku: storageSku
+    storageBlobVersioningEnabled: storageBlobVersioningEnabled
+    storageBlobSoftDeleteRetentionDays: storageBlobSoftDeleteRetentionDays
+    storageContainerSoftDeleteRetentionDays: storageContainerSoftDeleteRetentionDays
+    sqlPublicNetworkAccess: sqlPublicNetworkAccess
+    sqlAdministratorLogin: sqlAdministratorLogin
+    sqlAdministratorObjectId: sqlAdministratorObjectId
+    sqlDatabaseSkuName: sqlDatabaseSkuName
+    sqlDatabaseSkuTier: sqlDatabaseSkuTier
+    sqlDatabaseSkuFamily: sqlDatabaseSkuFamily
+    sqlDatabaseSkuCapacity: sqlDatabaseSkuCapacity
+    sqlDatabaseComputeModel: sqlDatabaseComputeModel
+    sqlDatabaseAutoPauseDelayMinutes: sqlDatabaseAutoPauseDelayMinutes
+    sqlDatabaseZoneRedundant: sqlDatabaseZoneRedundant
+    sqlBackupRetentionDays: sqlBackupRetentionDays
+    sqlDifferentialBackupIntervalHours: sqlDifferentialBackupIntervalHours
+    sqlBackupStorageRedundancy: sqlBackupStorageRedundancy
     allowedLocations: allowedLocations
     featureFlags: featureFlags
   }
@@ -244,3 +357,8 @@ output blobEndpoint string = platform.outputs.blobEndpoint
 output queueEndpoint string = platform.outputs.queueEndpoint
 output tableEndpoint string = platform.outputs.tableEndpoint
 output fileEndpoint string = platform.outputs.fileEndpoint
+output sqlServerName string = platform.outputs.sqlServerName
+output sqlServerResourceId string = platform.outputs.sqlServerResourceId
+output sqlServerFullyQualifiedDomainName string = platform.outputs.sqlServerFullyQualifiedDomainName
+output sqlDatabaseName string = platform.outputs.sqlDatabaseName
+output sqlDatabaseResourceId string = platform.outputs.sqlDatabaseResourceId

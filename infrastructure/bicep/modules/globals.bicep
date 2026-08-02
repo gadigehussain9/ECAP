@@ -113,6 +113,100 @@ param storageAllowSharedKeyAccess bool = false
 ])
 param storagePublicNetworkAccess string = 'Enabled'
 
+@description('Minimum TLS version accepted by the Storage Account.')
+@allowed([
+  'TLS1_2'
+])
+param storageMinimumTlsVersion string = 'TLS1_2'
+
+@description('Storage Account network ACL configuration.')
+param storageNetworkAcls object = {
+  bypass: 'AzureServices'
+  defaultAction: 'Allow'
+  ipRules: []
+  virtualNetworkRules: []
+}
+
+@description('Storage Account replication SKU.')
+@allowed([
+  'Standard_LRS'
+  'Standard_GRS'
+  'Standard_RAGRS'
+])
+param storageSku string = 'Standard_LRS'
+
+@description('Whether Blob Service versioning is enabled.')
+param storageBlobVersioningEnabled bool = true
+
+@description('Number of days deleted blobs are retained for recovery.')
+@minValue(1)
+@maxValue(365)
+param storageBlobSoftDeleteRetentionDays int = 30
+
+@description('Number of days deleted containers are retained for recovery.')
+@minValue(1)
+@maxValue(365)
+param storageContainerSoftDeleteRetentionDays int = 30
+
+@description('Whether public network access to the Azure SQL logical server is enabled.')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param sqlPublicNetworkAccess string = 'Enabled'
+
+@description('Microsoft Entra administrator login/display name for Azure SQL.')
+param sqlAdministratorLogin string = ''
+
+@description('Microsoft Entra administrator object ID for Azure SQL.')
+param sqlAdministratorObjectId string = ''
+
+@description('Azure SQL database SKU name.')
+param sqlDatabaseSkuName string = 'GP_Gen5_2'
+
+@description('Azure SQL database service tier.')
+param sqlDatabaseSkuTier string = 'GeneralPurpose'
+
+@description('Azure SQL database SKU family.')
+param sqlDatabaseSkuFamily string = 'Gen5'
+
+@description('Azure SQL database vCore capacity.')
+param sqlDatabaseSkuCapacity int = 2
+
+@description('Azure SQL database compute model.')
+@allowed([
+  'Provisioned'
+  'Serverless'
+])
+param sqlDatabaseComputeModel string = 'Provisioned'
+
+@description('Idle minutes before a serverless database is paused.')
+@minValue(-1)
+param sqlDatabaseAutoPauseDelayMinutes int = 60
+
+@description('Whether Azure SQL database zone redundancy is enabled.')
+param sqlDatabaseZoneRedundant bool = false
+
+@description('Point-in-time restore retention in days for Azure SQL.')
+@minValue(1)
+@maxValue(35)
+param sqlBackupRetentionDays int = 7
+
+@description('Differential backup interval in hours for Azure SQL.')
+@allowed([
+  12
+  24
+])
+param sqlDifferentialBackupIntervalHours int = 12
+
+@description('Requested Azure SQL backup storage redundancy.')
+@allowed([
+  'Local'
+  'Zone'
+  'Geo'
+])
+param sqlBackupStorageRedundancy string = 'Local'
+
 @description('Locations approved by the platform policy. Defaults to the deployment location.')
 param allowedLocations array = []
 
@@ -128,6 +222,22 @@ module naming './shared/naming.bicep' = {
     resourceGroupPrefix: resourceGroupPrefix
     optionalSuffix: namingSuffix
   }
+}
+
+var sqlConfiguration = {
+  publicNetworkAccess: sqlPublicNetworkAccess
+  administratorLogin: sqlAdministratorLogin
+  administratorObjectId: sqlAdministratorObjectId
+  databaseSkuName: sqlDatabaseSkuName
+  databaseSkuTier: sqlDatabaseSkuTier
+  databaseSkuFamily: sqlDatabaseSkuFamily
+  databaseSkuCapacity: sqlDatabaseSkuCapacity
+  databaseComputeModel: sqlDatabaseComputeModel
+  databaseAutoPauseDelayMinutes: sqlDatabaseAutoPauseDelayMinutes
+  databaseZoneRedundant: sqlDatabaseZoneRedundant
+  backupRetentionDays: sqlBackupRetentionDays
+  differentialBackupIntervalHours: sqlDifferentialBackupIntervalHours
+  backupStorageRedundancy: sqlBackupStorageRedundancy
 }
 
 module tagging './shared/tags.bicep' = {
@@ -190,9 +300,20 @@ var diagnosticSettings = {
   ]
 }
 var storageConfiguration = {
+  sku: storageSku
   largeFileSharesState: storageLargeFileSharesState
   allowSharedKeyAccess: storageAllowSharedKeyAccess
   publicNetworkAccess: storagePublicNetworkAccess
+  minimumTlsVersion: storageMinimumTlsVersion
+  networkAcls: storageNetworkAcls
+  privateEndpoint: {
+    enabled: false
+    subnetResourceId: ''
+    privateDnsZoneResourceIds: []
+  }
+  blobVersioningEnabled: storageBlobVersioningEnabled
+  blobSoftDeleteRetentionDays: storageBlobSoftDeleteRetentionDays
+  containerSoftDeleteRetentionDays: storageContainerSoftDeleteRetentionDays
 }
 var namingOutputs = {
   resourceGroupName: naming.outputs.resourceGroupName
@@ -222,6 +343,7 @@ output globals object = {
   monitoringConfiguration: monitoringConfiguration
   diagnosticSettings: diagnosticSettings
   storageConfiguration: storageConfiguration
+  sqlConfiguration: sqlConfiguration
   allowedLocations: effectiveAllowedLocations
   namingOutputs: namingOutputs
   featureFlags: featureFlags
@@ -238,6 +360,7 @@ output defaultSkus object = defaultSkus
 output monitoringConfiguration object = monitoringConfiguration
 output diagnosticSettings object = diagnosticSettings
 output storageConfiguration object = storageConfiguration
+output sqlConfiguration object = sqlConfiguration
 output allowedLocations array = effectiveAllowedLocations
 output namingOutputs object = namingOutputs
 output featureFlags object = featureFlags

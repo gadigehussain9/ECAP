@@ -60,6 +60,42 @@
     },
     "keyVaultEnablePurgeProtection": {
       "value": false
+    },
+    "storageSku": {
+      "value": "Standard_LRS"
+    },
+    "storageBlobVersioningEnabled": {
+      "value": true
+    },
+    "storageBlobSoftDeleteRetentionDays": {
+      "value": 30
+    },
+    "storageContainerSoftDeleteRetentionDays": {
+      "value": 30
+    },
+    "sqlAdministratorLogin": {
+      "value": ""
+    },
+    "sqlAdministratorObjectId": {
+      "value": ""
+    },
+    "sqlDatabaseSkuName": {
+      "value": "GP_S_Gen5_1"
+    },
+    "sqlDatabaseSkuCapacity": {
+      "value": 1
+    },
+    "sqlDatabaseComputeModel": {
+      "value": "Serverless"
+    },
+    "sqlDatabaseAutoPauseDelayMinutes": {
+      "value": 60
+    },
+    "sqlBackupRetentionDays": {
+      "value": 7
+    },
+    "sqlBackupStorageRedundancy": {
+      "value": "Local"
     }
   }
 }

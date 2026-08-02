@@ -6,6 +6,164 @@ The original subscription-scoped main.bicep created the environment Resource Gro
 
 The requested docs/handbook/epic-0-enterprise-foundation/ and docs/standards/ paths are absent. The authoritative sources used are docs/EPICs/epic-0-enterprise-foundation/ and docs/architecture/adr/.
 
+## US-014 storage architecture review
+
+The Storage Account remains a `StorageV2` resource with HTTPS-only access,
+explicit TLS 1.2, disabled public blob access, infrastructure encryption, and
+shared-key access disabled by default. The Storage Account system-assigned
+identity was removed because the current ECAP design uses the App Service
+system-assigned identity as the workload identity and no customer-managed-key
+dependency is documented. Azure RBAC should be granted to that workload
+identity by the consuming workload deployment.
+
+### Storage configuration
+
+The root deployment retains the existing storage parameters and exposes the
+following settings through the shared `storageConfiguration` object:
+
+| Parameter | Default | Purpose |
+|-----------|---------|---------|
+| `storageSku` | `Standard_LRS` | Selects the allowed replication SKU: `Standard_LRS`, `Standard_GRS`, or `Standard_RAGRS`. |
+| `storageMinimumTlsVersion` | `TLS1_2` | Explicitly enforces the enterprise minimum TLS version. Only `TLS1_2` is currently permitted. |
+| `storageNetworkAcls` | Azure Services / Allow | Configures bypass, default action, IP rules, and virtual network rules for future network restriction. |
+| `storageBlobVersioningEnabled` | `true` | Keeps prior blob versions available after overwrite. |
+| `storageBlobSoftDeleteRetentionDays` | `30` | Retains deleted blobs for recovery. |
+| `storageContainerSoftDeleteRetentionDays` | `30` | Retains deleted containers for recovery. |
+
+The environment recommendations are Standard LRS for development and QA,
+Standard GRS for stage, and Standard RAGRS for production. LRS is the lowest
+cost option and protects against local hardware failures. GRS replicates to a
+secondary region for regional disaster recovery at additional cost and with
+asynchronous replication. RAGRS adds read access to the secondary region,
+improving read availability during a primary-region outage, but costs more and
+does not provide synchronous writes or zero data-loss recovery. Production may
+use GRS when secondary read access is not a business requirement.
+
+Blob versioning protects against accidental overwrite and application update
+errors. Blob soft delete protects against accidental blob deletion, while
+container soft delete protects against deletion of an entire container. These
+features improve recovery capability but increase storage consumption and
+should be aligned with retention, privacy, and cost policies.
+
+Public endpoints remain enabled for this sprint. The structured storage
+configuration carries network ACL settings (`bypass`, `defaultAction`, IP
+rules, and virtual network rules), plus a disabled `privateEndpoint` placeholder
+for a future subnet and Private DNS Zone resource contract. ACL restrictions
+can therefore be introduced without changing the Storage Account module
+contract. Private Endpoint and Private DNS Zone resources are intentionally not
+deployed yet; the future networking layer must provision them and change public
+access to disabled as part of the same controlled transition.
+
+Lifecycle Management is intentionally not deployed. A future child resource
+`Microsoft.Storage/storageAccounts/managementPolicies` can consume the same
+storage account and add rules to move blobs to Cool or Archive tiers and delete
+expired data. Such policies should be introduced only with workload-specific
+age, prefix, and retention requirements.
+
+### Storage validation and deployment
+
+```powershell
+# Compile and lint the complete Bicep graph.
+az bicep build --file infrastructure/bicep/main.bicep
+
+# Validate a deployment without changing Azure resources.
+az deployment sub validate --location eastus --template-file infrastructure/bicep/main.bicep --parameters infrastructure/bicep/environments/dev.parameters.json
+
+# Preview the change set.
+az deployment sub what-if --location eastus --template-file infrastructure/bicep/main.bicep --parameters infrastructure/bicep/environments/dev.parameters.json
+
+# Deploy with Azure CLI after validation and approval.
+az deployment sub create --location eastus --template-file infrastructure/bicep/main.bicep --parameters infrastructure/bicep/environments/dev.parameters.json
+
+# Deploy with PowerShell after validation and approval.
+New-AzSubscriptionDeployment -Location eastus -TemplateFile infrastructure/bicep/main.bicep -TemplateParameterFile infrastructure/bicep/environments/dev.parameters.json
+```
+
+Repeat validation, what-if, and deployment with the `qa`, `stage`, and `prod`
+parameter files as appropriate. Verify the resulting Storage Account has the
+expected SKU, TLS 1.2, HTTPS-only traffic, disabled public blob access, blob
+versioning, and both soft-delete retention policies. In the Azure portal,
+inspect Storage Account > Configuration for the SKU, minimum TLS version,
+HTTPS-only traffic, shared-key access, and public blob access; inspect Data
+protection for versioning and retention settings; and inspect Networking for
+the ACL values. Do not deploy Private Endpoints or lifecycle policies as part
+of this sprint.
+
+## US-015 Azure SQL foundation
+
+The data layer deploys a reusable Azure SQL logical server and one Azure SQL
+Database using the centralized names and tags from `globals.bicep`:
+
+```text
+modules/data.bicep
+  |-- sql-server.bicep
+  |     |-- Microsoft.Sql/servers
+  |     |-- Microsoft.Sql/servers/administrators (when Entra values are supplied)
+  |     +-- Microsoft.Insights/diagnosticSettings
+  +-- sql-database.bicep
+        |-- Microsoft.Sql/servers/databases
+        |-- backupShortTermRetentionPolicies
+        |-- transparentDataEncryption (Enabled)
+        +-- Microsoft.Insights/diagnosticSettings
+```
+
+### Inputs
+
+The root deployment accepts SQL network, Microsoft Entra administrator, SKU,
+compute model, zone redundancy, backup retention, and backup redundancy
+parameters. Development and QA use General Purpose Serverless with local
+backup storage and auto-pause; Stage and Production use provisioned compute,
+zone redundancy, geo-redundant backups, and longer retention. All values can
+be overridden by an environment parameter file or deployment pipeline.
+
+`sqlAdministratorLogin` and `sqlAdministratorObjectId` are intentionally empty
+in committed environment files. Supply both through a protected deployment
+variable or secret store. The deployment never configures SQL authentication
+credentials or commits a password.
+
+### Outputs and dependencies
+
+The deployment exposes `sqlServerResourceId`, `sqlServerName`,
+`sqlServerFullyQualifiedDomainName`, `sqlDatabaseResourceId`, and
+`sqlDatabaseName`. The SQL modules depend on the centralized globals contract,
+standard tags, and the Log Analytics workspace created by the monitoring
+layer. Public access is configurable and can be disabled when the future
+networking layer provisions Private Endpoint and Private DNS resources.
+
+### Validation and deployment
+
+```powershell
+# Compile the complete Bicep graph.
+az bicep build --file infrastructure/bicep/main.bicep
+
+# Validate without changing Azure resources.
+az deployment sub validate --location eastus --template-file infrastructure/bicep/main.bicep --parameters @infrastructure/bicep/environments/dev.parameters.json --parameters sqlAdministratorLogin=$env:ECAP_SQL_ADMIN_LOGIN sqlAdministratorObjectId=$env:ECAP_SQL_ADMIN_OBJECT_ID
+
+# Preview changes.
+az deployment sub what-if --location eastus --template-file infrastructure/bicep/main.bicep --parameters @infrastructure/bicep/environments/dev.parameters.json --parameters sqlAdministratorLogin=$env:ECAP_SQL_ADMIN_LOGIN sqlAdministratorObjectId=$env:ECAP_SQL_ADMIN_OBJECT_ID
+
+# Deploy after validation and approval.
+az deployment sub create --location eastus --template-file infrastructure/bicep/main.bicep --parameters @infrastructure/bicep/environments/dev.parameters.json --parameters sqlAdministratorLogin=$env:ECAP_SQL_ADMIN_LOGIN sqlAdministratorObjectId=$env:ECAP_SQL_ADMIN_OBJECT_ID
+
+# Equivalent PowerShell deployment.
+New-AzSubscriptionDeployment -Location eastus -TemplateFile infrastructure/bicep/main.bicep -TemplateParameterFile infrastructure/bicep/environments/dev.parameters.json -sqlAdministratorLogin $env:ECAP_SQL_ADMIN_LOGIN -sqlAdministratorObjectId $env:ECAP_SQL_ADMIN_OBJECT_ID
+```
+
+Use `infrastructure/bicep/scripts/validate.ps1 -Environment <environment>` for
+the repository's complete build, parameter, Azure validation, and What-If
+workflow. Provide the Entra values through the pipeline's parameter mechanism
+when running a deployment; do not place them in source control.
+
+### Azure portal verification
+
+- Confirm the SQL logical server name, region, standard tags, and system-assigned identity.
+- Confirm Microsoft Entra administrator configuration and the expected tenant/object ID.
+- Confirm minimum TLS version is 1.2 and public network access matches the environment policy.
+- Confirm the database SKU, provisioned/serverless compute behavior, zone redundancy, and backup retention/storage redundancy.
+- Confirm Transparent Data Encryption is enabled.
+- Confirm SQL server and database diagnostic settings send logs and metrics to the shared Log Analytics workspace.
+- Confirm no broad firewall rules or SQL login credentials were introduced; disable public access when Private Endpoint networking is ready.
+
 ## Target architecture
 
 ```text

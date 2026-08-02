@@ -29,8 +29,18 @@ function Write-Status {
 function Invoke-AzJson {
     param([string[]] $Arguments)
     # Run Azure CLI with JSON output so validation results can be processed consistently.
-    $response = (& az @Arguments --output json 2>&1 | Out-String).Trim()
-    if ($LASTEXITCODE -ne 0) { throw "Azure CLI failed ($LASTEXITCODE): $response" }
+    $errorFile = [IO.Path]::GetTempFileName()
+    try {
+        $response = (& az @Arguments --output json 2> $errorFile | Out-String)
+        if ($null -eq $response) { $response = '' } else { $response = $response.Trim() }
+        $exitCode = $LASTEXITCODE
+        $errorOutput = [string](Get-Content -LiteralPath $errorFile -Raw -ErrorAction SilentlyContinue)
+        if ($null -eq $errorOutput) { $errorOutput = '' } else { $errorOutput = $errorOutput.Trim() }
+    }
+    finally {
+        Remove-Item -LiteralPath $errorFile -Force -ErrorAction SilentlyContinue
+    }
+    if ($exitCode -ne 0) { throw "Azure CLI failed ($exitCode): $errorOutput $response" }
     if ([string]::IsNullOrWhiteSpace($response)) { return $null }
     try { return ($response | ConvertFrom-Json) } catch { throw "Azure CLI returned invalid JSON: $response" }
 }
@@ -38,8 +48,18 @@ function Invoke-AzJson {
 function Invoke-AzCommand {
     param([string[]] $Arguments)
     # Run a text-producing Azure CLI command and fail when the CLI returns a nonzero exit code.
-    $response = (& az @Arguments 2>&1 | Out-String).Trim()
-    if ($LASTEXITCODE -ne 0) { throw "Azure CLI failed ($LASTEXITCODE): $response" }
+    $errorFile = [IO.Path]::GetTempFileName()
+    try {
+        $response = (& az @Arguments 2> $errorFile | Out-String)
+        if ($null -eq $response) { $response = '' } else { $response = $response.Trim() }
+        $exitCode = $LASTEXITCODE
+        $errorOutput = [string](Get-Content -LiteralPath $errorFile -Raw -ErrorAction SilentlyContinue)
+        if ($null -eq $errorOutput) { $errorOutput = '' } else { $errorOutput = $errorOutput.Trim() }
+    }
+    finally {
+        Remove-Item -LiteralPath $errorFile -Force -ErrorAction SilentlyContinue
+    }
+    if ($exitCode -ne 0) { throw "Azure CLI failed ($exitCode): $errorOutput $response" }
     return $response
 }
 
@@ -91,7 +111,7 @@ try {
     Invoke-AzJson @('deployment', 'sub', 'validate', '--location', [string] $values.location.value, '--template-file', $TemplateFile, '--parameters', "@$ParameterFile") | Out-Null
     Write-Status 'azure-validation' 'succeeded'
     # Ask Azure Resource Manager to calculate changes; What-If does not create or modify resources.
-    Invoke-AzJson @('deployment', 'sub', 'what-if', '--location', [string] $values.location.value, '--template-file', $TemplateFile, '--parameters', "@$ParameterFile") | Out-Null
+    Invoke-AzCommand @('deployment', 'sub', 'what-if', '--location', [string] $values.location.value, '--template-file', $TemplateFile, '--parameters', "@$ParameterFile") | Out-Null
     Write-Status 'what-if-validation' 'succeeded'
     Write-Status 'validation-summary' 'succeeded' @{ environment = $Environment; templateFile = $TemplateFile; parameterFile = $ParameterFile }
     exit 0
