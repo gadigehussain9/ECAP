@@ -222,6 +222,50 @@ param allowedLocations array = []
 @description('Feature flags reserved for future platform capabilities.')
 param featureFlags object = {}
 
+@description('Optional Azure OpenAI resource name. Defaults to the enterprise naming module output.')
+param azureOpenAIName string = ''
+
+@description('Azure OpenAI public network access mode.')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param azureOpenAIPublicNetworkAccess string = 'Enabled'
+
+@description('Whether Azure OpenAI API key authentication is disabled.')
+param azureOpenAIDisableLocalAuth bool = true
+
+@description('Azure OpenAI chat deployment name.')
+param azureOpenAIChatDeploymentName string = 'chat'
+
+@description('Azure OpenAI chat model name.')
+param azureOpenAIChatModelName string = 'gpt-4o-mini'
+
+@description('Azure OpenAI chat model version.')
+param azureOpenAIChatModelVersion string = '2024-07-18'
+
+@description('Azure OpenAI embedding deployment name.')
+param azureOpenAIEmbeddingDeploymentName string = 'embedding'
+
+@description('Azure OpenAI embedding model name.')
+param azureOpenAIEmbeddingModelName string = 'text-embedding-3-small'
+
+@description('Azure OpenAI embedding model version.')
+param azureOpenAIEmbeddingModelVersion string = '1'
+
+@description('Azure OpenAI account SKU.')
+param azureOpenAISkuName string = 'S0'
+
+@description('Azure OpenAI deployment SKU.')
+@allowed([
+  'GlobalStandard'
+  'Standard'
+])
+param azureOpenAIDeploymentSkuName string = 'GlobalStandard'
+
+@description('Azure OpenAI deployment capacity in thousands of tokens per minute.')
+param azureOpenAIDeploymentCapacity int = 1
+
 var normalizedNamingSuffix = toLower(replace(namingSuffix, ' ', '-'))
 var namingBase = '${toLower(applicationName)}-${toLower(environment)}'
 var qualifiedNamingBase = empty(normalizedNamingSuffix) ? namingBase : '${namingBase}-${normalizedNamingSuffix}'
@@ -316,6 +360,18 @@ module globals './modules/globals.bicep' = {
     sqlBackupStorageRedundancy: sqlBackupStorageRedundancy
     allowedLocations: allowedLocations
     featureFlags: featureFlags
+    azureOpenAIName: azureOpenAIName
+    azureOpenAIPublicNetworkAccess: azureOpenAIPublicNetworkAccess
+    azureOpenAIDisableLocalAuth: azureOpenAIDisableLocalAuth
+    azureOpenAIChatDeploymentName: azureOpenAIChatDeploymentName
+    azureOpenAIChatModelName: azureOpenAIChatModelName
+    azureOpenAIChatModelVersion: azureOpenAIChatModelVersion
+    azureOpenAIEmbeddingDeploymentName: azureOpenAIEmbeddingDeploymentName
+    azureOpenAIEmbeddingModelName: azureOpenAIEmbeddingModelName
+    azureOpenAIEmbeddingModelVersion: azureOpenAIEmbeddingModelVersion
+    azureOpenAISkuName: azureOpenAISkuName
+    azureOpenAIDeploymentSkuName: azureOpenAIDeploymentSkuName
+    azureOpenAIDeploymentCapacity: azureOpenAIDeploymentCapacity
   }
 }
 
@@ -362,3 +418,8 @@ output sqlServerResourceId string = platform.outputs.sqlServerResourceId
 output sqlServerFullyQualifiedDomainName string = platform.outputs.sqlServerFullyQualifiedDomainName
 output sqlDatabaseName string = platform.outputs.sqlDatabaseName
 output sqlDatabaseResourceId string = platform.outputs.sqlDatabaseResourceId
+output azureOpenAIResourceId string = platform.outputs.azureOpenAIResourceId
+output azureOpenAIName string = platform.outputs.azureOpenAIName
+output azureOpenAIEndpoint string = platform.outputs.azureOpenAIEndpoint
+output chatDeploymentName string = platform.outputs.chatDeploymentName
+output embeddingDeploymentName string = platform.outputs.embeddingDeploymentName

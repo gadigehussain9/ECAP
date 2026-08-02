@@ -60,6 +60,7 @@ module ai './ai.bicep' = {
   ]
   params: {
     globals: globals
+    logAnalyticsWorkspaceResourceId: monitoring.outputs.logAnalyticsWorkspaceId
   }
 }
 
@@ -107,3 +108,8 @@ output sqlServerResourceId string = data.outputs.sqlServerResourceId
 output sqlServerFullyQualifiedDomainName string = data.outputs.sqlServerFullyQualifiedDomainName
 output sqlDatabaseName string = data.outputs.sqlDatabaseName
 output sqlDatabaseResourceId string = data.outputs.sqlDatabaseResourceId
+output azureOpenAIResourceId string = ai.outputs.resourceId
+output azureOpenAIName string = ai.outputs.name
+output azureOpenAIEndpoint string = ai.outputs.endpoint
+output chatDeploymentName string = ai.outputs.chatDeploymentName
+output embeddingDeploymentName string = ai.outputs.embeddingDeploymentName

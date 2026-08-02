@@ -93,6 +93,18 @@
     },
     "sqlBackupStorageRedundancy": {
       "value": "Geo"
+    },
+    "azureOpenAIChatModelName": {
+      "value": "gpt-4o-mini"
+    },
+    "azureOpenAIChatModelVersion": {
+      "value": "2024-07-18"
+    },
+    "azureOpenAIEmbeddingModelName": {
+      "value": "text-embedding-3-small"
+    },
+    "azureOpenAIEmbeddingModelVersion": {
+      "value": "1"
     }
   }
 }

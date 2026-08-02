@@ -213,6 +213,50 @@ param allowedLocations array = []
 @description('Feature flags reserved for future platform capabilities.')
 param featureFlags object = {}
 
+@description('Optional Azure OpenAI resource name. Defaults to the enterprise naming module output.')
+param azureOpenAIName string = ''
+
+@description('Azure OpenAI public network access mode. Disable after private endpoint networking is provisioned.')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param azureOpenAIPublicNetworkAccess string = 'Enabled'
+
+@description('Whether API key authentication is disabled. Microsoft Entra ID and Azure RBAC are preferred.')
+param azureOpenAIDisableLocalAuth bool = true
+
+@description('Azure OpenAI chat deployment name.')
+param azureOpenAIChatDeploymentName string = 'chat'
+
+@description('Azure OpenAI chat model name.')
+param azureOpenAIChatModelName string = 'gpt-4o-mini'
+
+@description('Azure OpenAI chat model version.')
+param azureOpenAIChatModelVersion string = '2024-07-18'
+
+@description('Azure OpenAI embedding deployment name.')
+param azureOpenAIEmbeddingDeploymentName string = 'embedding'
+
+@description('Azure OpenAI embedding model name.')
+param azureOpenAIEmbeddingModelName string = 'text-embedding-3-small'
+
+@description('Azure OpenAI embedding model version.')
+param azureOpenAIEmbeddingModelVersion string = '1'
+
+@description('Azure OpenAI account SKU.')
+param azureOpenAISkuName string = 'S0'
+
+@description('Azure OpenAI deployment SKU.')
+@allowed([
+  'GlobalStandard'
+  'Standard'
+])
+param azureOpenAIDeploymentSkuName string = 'GlobalStandard'
+
+@description('Azure OpenAI deployment capacity in thousands of tokens per minute.')
+param azureOpenAIDeploymentCapacity int = 1
+
 module naming './shared/naming.bicep' = {
   name: 'ecap-naming-${uniqueString(subscription().id, applicationName, environment)}'
   params: {
@@ -222,6 +266,21 @@ module naming './shared/naming.bicep' = {
     resourceGroupPrefix: resourceGroupPrefix
     optionalSuffix: namingSuffix
   }
+}
+
+var azureOpenAIConfiguration = {
+  name: empty(azureOpenAIName) ? naming.outputs.azureOpenAIName : azureOpenAIName
+  publicNetworkAccess: azureOpenAIPublicNetworkAccess
+  disableLocalAuth: azureOpenAIDisableLocalAuth
+  skuName: azureOpenAISkuName
+  deploymentSkuName: azureOpenAIDeploymentSkuName
+  deploymentCapacity: azureOpenAIDeploymentCapacity
+  chatDeploymentName: azureOpenAIChatDeploymentName
+  chatModelName: azureOpenAIChatModelName
+  chatModelVersion: azureOpenAIChatModelVersion
+  embeddingDeploymentName: azureOpenAIEmbeddingDeploymentName
+  embeddingModelName: azureOpenAIEmbeddingModelName
+  embeddingModelVersion: azureOpenAIEmbeddingModelVersion
 }
 
 var sqlConfiguration = {
@@ -286,6 +345,11 @@ var diagnosticSettings = {
   keyVaultLogCategories: [
     'AuditEvent'
   ]
+  azureOpenAILogCategories: [
+    'Audit'
+    'RequestResponse'
+    'Trace'
+  ]
   appConfigurationLogCategories: [
     'HttpRequest'
     'Audit'
@@ -344,6 +408,7 @@ output globals object = {
   diagnosticSettings: diagnosticSettings
   storageConfiguration: storageConfiguration
   sqlConfiguration: sqlConfiguration
+  azureOpenAIConfiguration: azureOpenAIConfiguration
   allowedLocations: effectiveAllowedLocations
   namingOutputs: namingOutputs
   featureFlags: featureFlags
@@ -361,6 +426,7 @@ output monitoringConfiguration object = monitoringConfiguration
 output diagnosticSettings object = diagnosticSettings
 output storageConfiguration object = storageConfiguration
 output sqlConfiguration object = sqlConfiguration
+output azureOpenAIConfiguration object = azureOpenAIConfiguration
 output allowedLocations array = effectiveAllowedLocations
 output namingOutputs object = namingOutputs
 output featureFlags object = featureFlags
