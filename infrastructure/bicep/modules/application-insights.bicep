@@ -24,6 +24,11 @@ param applicationType string = 'web'
 @description('Standard ECAP resource tags.')
 param tags object
 
+@description('Percentage of telemetry retained by adaptive sampling.')
+@minValue(0)
+@maxValue(100)
+param samplingPercentage int = 100
+
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: applicationInsightsName
   location: location
@@ -31,6 +36,7 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   tags: tags
   properties: {
     Application_Type: applicationType
+    SamplingPercentage: samplingPercentage
     WorkspaceResourceId: workspaceResourceId
   }
 }

@@ -24,6 +24,7 @@ module applicationInsights './application-insights.bicep' = {
     workspaceResourceId: logAnalytics.outputs.resourceId
     kind: globals.monitoringConfiguration.applicationInsightsKind
     applicationType: globals.monitoringConfiguration.applicationInsightsType
+    samplingPercentage: globals.monitoringConfiguration.applicationInsightsSamplingPercentage
     tags: globals.standardTags
   }
 }

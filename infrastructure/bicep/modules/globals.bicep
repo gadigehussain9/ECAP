@@ -1,7 +1,19 @@
 targetScope = 'subscription'
 
 @description('Deployment environment, for example dev, qa, stage, or prod.')
+@allowed([
+  'dev'
+  'qa'
+  'stage'
+  'prod'
+])
 param environment string
+
+@description('Whether centralized environment sizing is enabled.')
+param environmentSkuStrategyEnabled bool = true
+
+@description('Centralized environment-specific sizing settings.')
+param environmentSettings object = {}
 
 @description('Azure region for the environment resources.')
 param location string
@@ -92,6 +104,11 @@ param applicationInsightsKind string = 'web'
 
 @description('Application Insights application type.')
 param applicationInsightsType string = 'web'
+
+@description('Application Insights telemetry sampling percentage.')
+@minValue(0)
+@maxValue(100)
+param applicationInsightsSamplingPercentage int = 100
 
 @description('Whether standard diagnostic settings are enabled.')
 param diagnosticSettingsEnabled bool = true
@@ -309,11 +326,11 @@ module naming './shared/naming.bicep' = {
 
 var azureAISearchConfiguration = {
   name: empty(azureAISearchName) ? naming.outputs.aiSearchName : azureAISearchName
-  skuName: azureAISearchSkuName
-  replicaCount: azureAISearchReplicaCount
-  partitionCount: azureAISearchPartitionCount
+  skuName: effectiveSearchSkuName
+  replicaCount: effectiveSearchReplicaCount
+  partitionCount: effectiveSearchPartitionCount
   publicNetworkAccess: azureAISearchPublicNetworkAccess
-  semanticSearch: azureAISearchSemanticSearch
+  semanticSearch: effectiveSearchSemanticSearch
   authOptions: azureAISearchAuthOptions
   disableLocalAuth: azureAISearchDisableLocalAuth
 }
@@ -324,7 +341,7 @@ var azureOpenAIConfiguration = {
   disableLocalAuth: azureOpenAIDisableLocalAuth
   skuName: azureOpenAISkuName
   deploymentSkuName: azureOpenAIDeploymentSkuName
-  deploymentCapacity: azureOpenAIDeploymentCapacity
+  deploymentCapacity: effectiveOpenAIDeploymentCapacity
   chatDeploymentName: azureOpenAIChatDeploymentName
   chatModelName: azureOpenAIChatModelName
   chatModelVersion: azureOpenAIChatModelVersion
@@ -333,20 +350,32 @@ var azureOpenAIConfiguration = {
   embeddingModelVersion: azureOpenAIEmbeddingModelVersion
 }
 
+var environmentConfiguration = {
+  enabled: environmentSkuStrategyEnabled
+  appServicePlanSkuName: environmentSkuStrategyEnabled ? environmentSettings.appServicePlanSkuName : ''
+  appServicePlanInstanceCount: environmentSkuStrategyEnabled ? environmentSettings.appServicePlanInstanceCount : 0
+  appServicePlanZoneRedundant: environmentSkuStrategyEnabled ? environmentSettings.appServicePlanZoneRedundant : false
+  storageSku: effectiveStorageSku
+  sqlDatabaseSkuName: effectiveSqlDatabaseSkuName
+  azureAISearchSkuName: effectiveSearchSkuName
+  azureOpenAIDeploymentCapacity: effectiveOpenAIDeploymentCapacity
+  logAnalyticsRetentionInDays: effectiveLogAnalyticsRetentionInDays
+}
+
 var sqlConfiguration = {
   publicNetworkAccess: sqlPublicNetworkAccess
   administratorLogin: sqlAdministratorLogin
   administratorObjectId: sqlAdministratorObjectId
-  databaseSkuName: sqlDatabaseSkuName
-  databaseSkuTier: sqlDatabaseSkuTier
-  databaseSkuFamily: sqlDatabaseSkuFamily
-  databaseSkuCapacity: sqlDatabaseSkuCapacity
-  databaseComputeModel: sqlDatabaseComputeModel
-  databaseAutoPauseDelayMinutes: sqlDatabaseAutoPauseDelayMinutes
-  databaseZoneRedundant: sqlDatabaseZoneRedundant
-  backupRetentionDays: sqlBackupRetentionDays
+  databaseSkuName: effectiveSqlDatabaseSkuName
+  databaseSkuTier: effectiveSqlDatabaseSkuTier
+  databaseSkuFamily: effectiveSqlDatabaseSkuFamily
+  databaseSkuCapacity: effectiveSqlDatabaseSkuCapacity
+  databaseComputeModel: effectiveSqlDatabaseComputeModel
+  databaseAutoPauseDelayMinutes: effectiveSqlDatabaseAutoPauseDelayMinutes
+  databaseZoneRedundant: effectiveSqlDatabaseZoneRedundant
+  backupRetentionDays: effectiveSqlBackupRetentionDays
   differentialBackupIntervalHours: sqlDifferentialBackupIntervalHours
-  backupStorageRedundancy: sqlBackupStorageRedundancy
+  backupStorageRedundancy: effectiveSqlBackupStorageRedundancy
 }
 
 module tagging './shared/tags.bicep' = {
@@ -378,17 +407,36 @@ module tagging './shared/tags.bicep' = {
 
 var effectiveProjectName = empty(project) ? applicationName : project
 var effectiveAllowedLocations = empty(allowedLocations) ? [location] : allowedLocations
+var effectiveStorageSku = environmentSkuStrategyEnabled ? environmentSettings.storageSku : storageSku
+var effectiveSqlDatabaseSkuName = environmentSkuStrategyEnabled ? environmentSettings.sqlDatabaseSkuName : sqlDatabaseSkuName
+var effectiveSqlDatabaseSkuTier = environmentSkuStrategyEnabled ? environmentSettings.sqlDatabaseSkuTier : sqlDatabaseSkuTier
+var effectiveSqlDatabaseSkuFamily = environmentSkuStrategyEnabled ? environmentSettings.sqlDatabaseSkuFamily : sqlDatabaseSkuFamily
+var effectiveSqlDatabaseSkuCapacity = environmentSkuStrategyEnabled ? environmentSettings.sqlDatabaseSkuCapacity : sqlDatabaseSkuCapacity
+var effectiveSqlDatabaseComputeModel = environmentSkuStrategyEnabled ? environmentSettings.sqlDatabaseComputeModel : sqlDatabaseComputeModel
+var effectiveSqlDatabaseAutoPauseDelayMinutes = environmentSkuStrategyEnabled ? environmentSettings.sqlDatabaseAutoPauseDelayMinutes : sqlDatabaseAutoPauseDelayMinutes
+var effectiveSqlDatabaseZoneRedundant = environmentSkuStrategyEnabled ? environmentSettings.sqlDatabaseZoneRedundant : sqlDatabaseZoneRedundant
+var effectiveSqlBackupRetentionDays = environmentSkuStrategyEnabled ? environmentSettings.sqlBackupRetentionDays : sqlBackupRetentionDays
+var effectiveSqlBackupStorageRedundancy = environmentSkuStrategyEnabled ? environmentSettings.sqlBackupStorageRedundancy : sqlBackupStorageRedundancy
+var effectiveSearchSkuName = environmentSkuStrategyEnabled ? environmentSettings.azureAISearchSkuName : azureAISearchSkuName
+var effectiveSearchReplicaCount = environmentSkuStrategyEnabled ? environmentSettings.azureAISearchReplicaCount : azureAISearchReplicaCount
+var effectiveSearchPartitionCount = environmentSkuStrategyEnabled ? environmentSettings.azureAISearchPartitionCount : azureAISearchPartitionCount
+var effectiveSearchSemanticSearch = environmentSkuStrategyEnabled ? environmentSettings.azureAISearchSemanticSearch : azureAISearchSemanticSearch
+var effectiveOpenAIDeploymentCapacity = environmentSkuStrategyEnabled ? environmentSettings.azureOpenAIDeploymentCapacity : azureOpenAIDeploymentCapacity
+var effectiveLogAnalyticsRetentionInDays = environmentSkuStrategyEnabled ? environmentSettings.logAnalyticsRetentionInDays : logAnalyticsRetentionInDays
+var effectiveApplicationInsightsSamplingPercentage = environmentSkuStrategyEnabled ? environmentSettings.applicationInsightsSamplingPercentage : applicationInsightsSamplingPercentage
+
 var defaultSkus = {
   logAnalytics: logAnalyticsSku
   keyVault: 'standard'
   appConfiguration: 'standard'
 }
 var monitoringConfiguration = {
-  logAnalyticsRetentionInDays: logAnalyticsRetentionInDays
+  logAnalyticsRetentionInDays: effectiveLogAnalyticsRetentionInDays
   logAnalyticsPublicNetworkAccessForIngestion: logAnalyticsPublicNetworkAccessForIngestion
   logAnalyticsPublicNetworkAccessForQuery: logAnalyticsPublicNetworkAccessForQuery
   applicationInsightsKind: applicationInsightsKind
   applicationInsightsType: applicationInsightsType
+  applicationInsightsSamplingPercentage: effectiveApplicationInsightsSamplingPercentage
 }
 var diagnosticSettings = {
   enabled: diagnosticSettingsEnabled
@@ -418,7 +466,7 @@ var diagnosticSettings = {
   ]
 }
 var storageConfiguration = {
-  sku: storageSku
+  sku: effectiveStorageSku
   largeFileSharesState: storageLargeFileSharesState
   allowSharedKeyAccess: storageAllowSharedKeyAccess
   publicNetworkAccess: storagePublicNetworkAccess
@@ -467,6 +515,7 @@ output globals object = {
   allowedLocations: effectiveAllowedLocations
   namingOutputs: namingOutputs
   featureFlags: featureFlags
+  environmentConfiguration: environmentConfiguration
 }
 
 output environment string = environment
@@ -486,3 +535,4 @@ output azureAISearchConfiguration object = azureAISearchConfiguration
 output allowedLocations array = effectiveAllowedLocations
 output namingOutputs object = namingOutputs
 output featureFlags object = featureFlags
+output environmentConfiguration object = environmentConfiguration

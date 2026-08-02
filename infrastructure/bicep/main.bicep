@@ -7,7 +7,16 @@ param applicationName string
 param companyName string = 'ECAP'
 
 @description('Deployment environment, for example dev, qa, stage, or prod.')
+@allowed([
+  'dev'
+  'qa'
+  'stage'
+  'prod'
+])
 param environment string
+
+@description('Whether the centralized environment SKU strategy supplies resource sizing defaults. Set false to retain legacy parameter-driven sizing.')
+param environmentSkuStrategyEnabled bool = true
 
 @description('Azure region for the environment resources.')
 param location string
@@ -100,6 +109,11 @@ param applicationInsightsKind string = 'web'
 
 @description('Application Insights application type.')
 param applicationInsightsType string = 'web'
+
+@description('Application Insights telemetry sampling percentage. Environment profiles may reduce this for cost control.')
+@minValue(0)
+@maxValue(100)
+param applicationInsightsSamplingPercentage int = 100
 
 @description('Whether Key Vault purge protection is enabled. This cannot be disabled after it is enabled.')
 param keyVaultEnablePurgeProtection bool = false
@@ -195,6 +209,14 @@ module resourceLock './modules/resource-lock.bicep' = if (!empty(resourceLockLev
   scope: resourceGroup
   params: {
     lockLevel: resourceLockLevel
+    environment: environment
+  }
+}
+
+module environmentSettings './modules/environment-settings.bicep' = {
+  name: 'ecap-environment-settings-${environment}'
+  scope: subscription()
+  params: {
     environment: environment
   }
 }
@@ -407,6 +429,8 @@ module globals './modules/globals.bicep' = {
   scope: subscription()
   params: {
     environment: environment
+    environmentSkuStrategyEnabled: environmentSkuStrategyEnabled
+    environmentSettings: environmentSettings.outputs.settings
     location: location
     applicationName: applicationName
     companyName: companyName
@@ -437,6 +461,7 @@ module globals './modules/globals.bicep' = {
     logAnalyticsPublicNetworkAccessForQuery: logAnalyticsPublicNetworkAccessForQuery
     applicationInsightsKind: applicationInsightsKind
     applicationInsightsType: applicationInsightsType
+    applicationInsightsSamplingPercentage: applicationInsightsSamplingPercentage
     diagnosticSettingsEnabled: diagnosticSettingsEnabled
     storageLargeFileSharesState: storageLargeFileSharesState
     storageAllowSharedKeyAccess: storageAllowSharedKeyAccess
@@ -549,6 +574,7 @@ output identityPrincipalId string = platform.outputs.identityPrincipalId
 output identityClientId string = platform.outputs.identityClientId
 output identityTenantId string = platform.outputs.identityTenantId
 output assignedRbacRoles array = platform.outputs.assignedRbacRoles
+output environmentConfiguration object = globals.outputs.environmentConfiguration
 output appServicePlanName string = platform.outputs.appServicePlanName
 output appServicePlanResourceId string = platform.outputs.appServicePlanResourceId
 output azureOpenAIResourceId string = platform.outputs.azureOpenAIResourceId

@@ -45,6 +45,10 @@ param appServicePublicNetworkAccess string = 'Enabled'
 @description('Additional non-secret App Service application settings.')
 param appServiceAdditionalAppSettings object = {}
 
+var effectiveAppServicePlanSkuName = globals.environmentConfiguration.enabled ? globals.environmentConfiguration.appServicePlanSkuName : appServicePlanSkuName
+var effectiveAppServicePlanInstanceCount = globals.environmentConfiguration.enabled ? globals.environmentConfiguration.appServicePlanInstanceCount : appServicePlanInstanceCount
+var effectiveAppServicePlanZoneRedundant = globals.environmentConfiguration.enabled ? globals.environmentConfiguration.appServicePlanZoneRedundant : appServicePlanZoneRedundant
+
 module monitoring './monitoring.bicep' = {
   name: 'ecap-monitoring-${globals.environment}'
   params: {
@@ -58,10 +62,10 @@ module app './app.bicep' = {
     configuration: {
       planName: globals.namingOutputs.appServicePlanName
       appName: globals.namingOutputs.appServiceName
-      skuName: appServicePlanSkuName
+      skuName: effectiveAppServicePlanSkuName
       skuTier: appServicePlanSkuTier
-      instanceCount: appServicePlanInstanceCount
-      zoneRedundant: appServicePlanZoneRedundant
+      instanceCount: effectiveAppServicePlanInstanceCount
+      zoneRedundant: effectiveAppServicePlanZoneRedundant
       perSiteScaling: appServicePlanPerSiteScaling
       linuxFxVersion: 'DOTNETCORE|${appServiceRuntimeVersion}'
       alwaysOn: appServiceAlwaysOn

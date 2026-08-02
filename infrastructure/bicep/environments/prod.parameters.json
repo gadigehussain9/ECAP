@@ -44,7 +44,7 @@
       "value": "PerGB2018"
     },
     "logAnalyticsRetentionInDays": {
-      "value": 30
+      "value": 90
     },
     "logAnalyticsPublicNetworkAccessForIngestion": {
       "value": "Enabled"
@@ -104,7 +104,7 @@
       "value": ""
     },
     "sqlDatabaseSkuName": {
-      "value": "GP_Gen5_2"
+      "value": "GP_Gen5_4"
     },
     "sqlDatabaseComputeModel": {
       "value": "Provisioned"
@@ -134,7 +134,7 @@
       "value": "standard"
     },
     "azureAISearchReplicaCount": {
-      "value": 2
+      "value": 3
     },
     "azureAISearchPartitionCount": {
       "value": 1
