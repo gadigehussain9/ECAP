@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.35.1.17967",
-      "templateHash": "11632702351676008500"
+      "templateHash": "430807762557440493"
     }
   },
   "parameters": {
@@ -33,13 +33,6 @@
       ],
       "metadata": {
         "description": "Deployment environment, for example dev, qa, stage, or prod."
-      }
-    },
-    "environmentSkuStrategyEnabled": {
-      "type": "bool",
-      "defaultValue": true,
-      "metadata": {
-        "description": "Whether the centralized environment SKU strategy supplies resource sizing defaults. Set false to retain legacy parameter-driven sizing."
       }
     },
     "location": {
@@ -206,13 +199,6 @@
         "description": "Log Analytics workspace SKU."
       }
     },
-    "logAnalyticsRetentionInDays": {
-      "type": "int",
-      "defaultValue": 30,
-      "metadata": {
-        "description": "Number of days to retain Log Analytics data."
-      }
-    },
     "logAnalyticsPublicNetworkAccessForIngestion": {
       "type": "string",
       "defaultValue": "Enabled",
@@ -253,50 +239,6 @@
       "defaultValue": "",
       "metadata": {
         "description": "Optional subnet resource ID for an App Configuration private endpoint."
-      }
-    },
-    "diagnosticSettingsEnabled": {
-      "type": "bool",
-      "defaultValue": true,
-      "metadata": {
-        "description": "Whether standard diagnostic settings are enabled."
-      }
-    },
-    "appServicePlanSkuName": {
-      "type": "string",
-      "defaultValue": "P1v3",
-      "allowedValues": [
-        "P1v3",
-        "P2v3",
-        "P3v3"
-      ],
-      "metadata": {
-        "description": "App Service Plan SKU name. Premium v3 is the enterprise default."
-      }
-    },
-    "appServicePlanSkuTier": {
-      "type": "string",
-      "defaultValue": "PremiumV3",
-      "allowedValues": [
-        "PremiumV3"
-      ],
-      "metadata": {
-        "description": "App Service Plan SKU tier."
-      }
-    },
-    "appServicePlanInstanceCount": {
-      "type": "int",
-      "defaultValue": 1,
-      "minValue": 1,
-      "metadata": {
-        "description": "Initial App Service Plan instance count."
-      }
-    },
-    "appServicePlanZoneRedundant": {
-      "type": "bool",
-      "defaultValue": false,
-      "metadata": {
-        "description": "Whether the App Service Plan uses availability zones."
       }
     },
     "appServicePlanPerSiteScaling": {
@@ -410,18 +352,6 @@
         "description": "Storage Account network ACL configuration. Keep the default open until private endpoint networking is provisioned."
       }
     },
-    "storageSku": {
-      "type": "string",
-      "defaultValue": "Standard_LRS",
-      "allowedValues": [
-        "Standard_LRS",
-        "Standard_GRS",
-        "Standard_RAGRS"
-      ],
-      "metadata": {
-        "description": "Storage Account replication SKU."
-      }
-    },
     "storageBlobVersioningEnabled": {
       "type": "bool",
       "defaultValue": true,
@@ -472,69 +402,6 @@
         "description": "Microsoft Entra administrator object ID for Azure SQL."
       }
     },
-    "sqlDatabaseSkuName": {
-      "type": "string",
-      "defaultValue": "GP_Gen5_2",
-      "metadata": {
-        "description": "Azure SQL database SKU name, such as GP_Gen5_2 or GP_S_Gen5_1."
-      }
-    },
-    "sqlDatabaseSkuTier": {
-      "type": "string",
-      "defaultValue": "GeneralPurpose",
-      "metadata": {
-        "description": "Azure SQL database service tier."
-      }
-    },
-    "sqlDatabaseSkuFamily": {
-      "type": "string",
-      "defaultValue": "Gen5",
-      "metadata": {
-        "description": "Azure SQL database SKU family."
-      }
-    },
-    "sqlDatabaseSkuCapacity": {
-      "type": "int",
-      "defaultValue": 2,
-      "metadata": {
-        "description": "Azure SQL database vCore capacity."
-      }
-    },
-    "sqlDatabaseComputeModel": {
-      "type": "string",
-      "defaultValue": "Provisioned",
-      "allowedValues": [
-        "Provisioned",
-        "Serverless"
-      ],
-      "metadata": {
-        "description": "Azure SQL database compute model."
-      }
-    },
-    "sqlDatabaseAutoPauseDelayMinutes": {
-      "type": "int",
-      "defaultValue": 60,
-      "minValue": -1,
-      "metadata": {
-        "description": "Idle minutes before a serverless database is paused."
-      }
-    },
-    "sqlDatabaseZoneRedundant": {
-      "type": "bool",
-      "defaultValue": false,
-      "metadata": {
-        "description": "Whether Azure SQL database zone redundancy is enabled."
-      }
-    },
-    "sqlBackupRetentionDays": {
-      "type": "int",
-      "defaultValue": 7,
-      "minValue": 1,
-      "maxValue": 35,
-      "metadata": {
-        "description": "Point-in-time restore retention in days for Azure SQL."
-      }
-    },
     "sqlDifferentialBackupIntervalHours": {
       "type": "int",
       "defaultValue": 12,
@@ -544,18 +411,6 @@
       ],
       "metadata": {
         "description": "Differential backup interval in hours for Azure SQL."
-      }
-    },
-    "sqlBackupStorageRedundancy": {
-      "type": "string",
-      "defaultValue": "Local",
-      "allowedValues": [
-        "Local",
-        "Zone",
-        "Geo"
-      ],
-      "metadata": {
-        "description": "Requested Azure SQL backup storage redundancy."
       }
     },
     "allowedLocations": {
@@ -653,41 +508,11 @@
         "description": "Azure OpenAI deployment SKU."
       }
     },
-    "azureOpenAIDeploymentCapacity": {
-      "type": "int",
-      "defaultValue": 1,
-      "metadata": {
-        "description": "Azure OpenAI deployment capacity in thousands of tokens per minute."
-      }
-    },
     "azureAISearchName": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
         "description": "Optional Azure AI Search service name. Defaults to the enterprise naming module output."
-      }
-    },
-    "azureAISearchSkuName": {
-      "type": "string",
-      "defaultValue": "standard",
-      "metadata": {
-        "description": "Azure AI Search service SKU."
-      }
-    },
-    "azureAISearchReplicaCount": {
-      "type": "int",
-      "defaultValue": 1,
-      "minValue": 1,
-      "metadata": {
-        "description": "Azure AI Search replica count."
-      }
-    },
-    "azureAISearchPartitionCount": {
-      "type": "int",
-      "defaultValue": 1,
-      "minValue": 1,
-      "metadata": {
-        "description": "Azure AI Search partition count."
       }
     },
     "azureAISearchPublicNetworkAccess": {
@@ -699,18 +524,6 @@
       ],
       "metadata": {
         "description": "Azure AI Search public network access mode."
-      }
-    },
-    "azureAISearchSemanticSearch": {
-      "type": "string",
-      "defaultValue": "free",
-      "allowedValues": [
-        "disabled",
-        "free",
-        "standard"
-      ],
-      "metadata": {
-        "description": "Azure AI Search semantic ranking capability."
       }
     },
     "azureAISearchAuthOptions": {
@@ -837,7 +650,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "14517739067700697296"
+              "templateHash": "8688488918975781286"
             }
           },
           "parameters": {
@@ -858,6 +671,7 @@
             "settings": {
               "dev": {
                 "appServicePlanSkuName": "P1v3",
+                "appServicePlanSkuTier": "PremiumV3",
                 "appServicePlanInstanceCount": 1,
                 "appServicePlanZoneRedundant": false,
                 "storageSku": "Standard_LRS",
@@ -875,10 +689,21 @@
                 "azureAISearchPartitionCount": 1,
                 "azureAISearchSemanticSearch": "free",
                 "azureOpenAIDeploymentCapacity": 1,
-                "logAnalyticsRetentionInDays": 7
+                "logAnalyticsRetentionInDays": 30,
+                "applicationInsightsSamplingPercentage": 50,
+                "applicationInsightsRetentionInDays": 30,
+                "diagnosticSettingsEnabled": true,
+                "diagnosticVerbosity": "minimal",
+                "future": {
+                  "privateEndpoints": false,
+                  "networkIsolation": false,
+                  "autoscaling": false,
+                  "geoReplication": false
+                }
               },
               "qa": {
                 "appServicePlanSkuName": "P1v3",
+                "appServicePlanSkuTier": "PremiumV3",
                 "appServicePlanInstanceCount": 1,
                 "appServicePlanZoneRedundant": false,
                 "storageSku": "Standard_LRS",
@@ -896,10 +721,21 @@
                 "azureAISearchPartitionCount": 1,
                 "azureAISearchSemanticSearch": "free",
                 "azureOpenAIDeploymentCapacity": 2,
-                "logAnalyticsRetentionInDays": 14
+                "logAnalyticsRetentionInDays": 30,
+                "applicationInsightsSamplingPercentage": 25,
+                "applicationInsightsRetentionInDays": 30,
+                "diagnosticSettingsEnabled": true,
+                "diagnosticVerbosity": "standard",
+                "future": {
+                  "privateEndpoints": false,
+                  "networkIsolation": false,
+                  "autoscaling": false,
+                  "geoReplication": false
+                }
               },
               "stage": {
                 "appServicePlanSkuName": "P2v3",
+                "appServicePlanSkuTier": "PremiumV3",
                 "appServicePlanInstanceCount": 2,
                 "appServicePlanZoneRedundant": true,
                 "storageSku": "Standard_GRS",
@@ -917,10 +753,21 @@
                 "azureAISearchPartitionCount": 1,
                 "azureAISearchSemanticSearch": "standard",
                 "azureOpenAIDeploymentCapacity": 5,
-                "logAnalyticsRetentionInDays": 30
+                "logAnalyticsRetentionInDays": 30,
+                "applicationInsightsSamplingPercentage": 15,
+                "applicationInsightsRetentionInDays": 30,
+                "diagnosticSettingsEnabled": true,
+                "diagnosticVerbosity": "verbose",
+                "future": {
+                  "privateEndpoints": false,
+                  "networkIsolation": false,
+                  "autoscaling": false,
+                  "geoReplication": false
+                }
               },
               "prod": {
                 "appServicePlanSkuName": "P3v3",
+                "appServicePlanSkuTier": "PremiumV3",
                 "appServicePlanInstanceCount": 3,
                 "appServicePlanZoneRedundant": true,
                 "storageSku": "Standard_RAGRS",
@@ -938,7 +785,17 @@
                 "azureAISearchPartitionCount": 1,
                 "azureAISearchSemanticSearch": "standard",
                 "azureOpenAIDeploymentCapacity": 10,
-                "logAnalyticsRetentionInDays": 90
+                "logAnalyticsRetentionInDays": 90,
+                "applicationInsightsSamplingPercentage": 10,
+                "applicationInsightsRetentionInDays": 90,
+                "diagnosticSettingsEnabled": true,
+                "diagnosticVerbosity": "verbose",
+                "future": {
+                  "privateEndpoints": false,
+                  "networkIsolation": false,
+                  "autoscaling": false,
+                  "geoReplication": false
+                }
               }
             }
           },
@@ -969,9 +826,6 @@
         "parameters": {
           "environment": {
             "value": "[parameters('environment')]"
-          },
-          "environmentSkuStrategyEnabled": {
-            "value": "[parameters('environmentSkuStrategyEnabled')]"
           },
           "environmentSettings": {
             "value": "[reference('environmentSettings').outputs.settings.value]"
@@ -1051,9 +905,6 @@
           "logAnalyticsSku": {
             "value": "[parameters('logAnalyticsSku')]"
           },
-          "logAnalyticsRetentionInDays": {
-            "value": "[parameters('logAnalyticsRetentionInDays')]"
-          },
           "logAnalyticsPublicNetworkAccessForIngestion": {
             "value": "[parameters('logAnalyticsPublicNetworkAccessForIngestion')]"
           },
@@ -1065,9 +916,6 @@
           },
           "applicationInsightsType": {
             "value": "[parameters('applicationInsightsType')]"
-          },
-          "diagnosticSettingsEnabled": {
-            "value": "[parameters('diagnosticSettingsEnabled')]"
           },
           "storageLargeFileSharesState": {
             "value": "[parameters('storageLargeFileSharesState')]"
@@ -1083,9 +931,6 @@
           },
           "storageNetworkAcls": {
             "value": "[parameters('storageNetworkAcls')]"
-          },
-          "storageSku": {
-            "value": "[parameters('storageSku')]"
           },
           "storageBlobVersioningEnabled": {
             "value": "[parameters('storageBlobVersioningEnabled')]"
@@ -1105,35 +950,8 @@
           "sqlAdministratorObjectId": {
             "value": "[parameters('sqlAdministratorObjectId')]"
           },
-          "sqlDatabaseSkuName": {
-            "value": "[parameters('sqlDatabaseSkuName')]"
-          },
-          "sqlDatabaseSkuTier": {
-            "value": "[parameters('sqlDatabaseSkuTier')]"
-          },
-          "sqlDatabaseSkuFamily": {
-            "value": "[parameters('sqlDatabaseSkuFamily')]"
-          },
-          "sqlDatabaseSkuCapacity": {
-            "value": "[parameters('sqlDatabaseSkuCapacity')]"
-          },
-          "sqlDatabaseComputeModel": {
-            "value": "[parameters('sqlDatabaseComputeModel')]"
-          },
-          "sqlDatabaseAutoPauseDelayMinutes": {
-            "value": "[parameters('sqlDatabaseAutoPauseDelayMinutes')]"
-          },
-          "sqlDatabaseZoneRedundant": {
-            "value": "[parameters('sqlDatabaseZoneRedundant')]"
-          },
-          "sqlBackupRetentionDays": {
-            "value": "[parameters('sqlBackupRetentionDays')]"
-          },
           "sqlDifferentialBackupIntervalHours": {
             "value": "[parameters('sqlDifferentialBackupIntervalHours')]"
-          },
-          "sqlBackupStorageRedundancy": {
-            "value": "[parameters('sqlBackupStorageRedundancy')]"
           },
           "allowedLocations": {
             "value": "[parameters('allowedLocations')]"
@@ -1174,26 +992,11 @@
           "azureOpenAIDeploymentSkuName": {
             "value": "[parameters('azureOpenAIDeploymentSkuName')]"
           },
-          "azureOpenAIDeploymentCapacity": {
-            "value": "[parameters('azureOpenAIDeploymentCapacity')]"
-          },
           "azureAISearchName": {
             "value": "[parameters('azureAISearchName')]"
           },
-          "azureAISearchSkuName": {
-            "value": "[parameters('azureAISearchSkuName')]"
-          },
-          "azureAISearchReplicaCount": {
-            "value": "[parameters('azureAISearchReplicaCount')]"
-          },
-          "azureAISearchPartitionCount": {
-            "value": "[parameters('azureAISearchPartitionCount')]"
-          },
           "azureAISearchPublicNetworkAccess": {
             "value": "[parameters('azureAISearchPublicNetworkAccess')]"
-          },
-          "azureAISearchSemanticSearch": {
-            "value": "[parameters('azureAISearchSemanticSearch')]"
           },
           "azureAISearchAuthOptions": {
             "value": "[parameters('azureAISearchAuthOptions')]"
@@ -1209,7 +1012,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "14666396990093867365"
+              "templateHash": "3616110775650046929"
             }
           },
           "parameters": {
@@ -1223,13 +1026,6 @@
               ],
               "metadata": {
                 "description": "Deployment environment, for example dev, qa, stage, or prod."
-              }
-            },
-            "environmentSkuStrategyEnabled": {
-              "type": "bool",
-              "defaultValue": true,
-              "metadata": {
-                "description": "Whether centralized environment sizing is enabled."
               }
             },
             "environmentSettings": {
@@ -1405,13 +1201,6 @@
                 "description": "Log Analytics workspace SKU."
               }
             },
-            "logAnalyticsRetentionInDays": {
-              "type": "int",
-              "defaultValue": 30,
-              "metadata": {
-                "description": "Number of days to retain Log Analytics data."
-              }
-            },
             "logAnalyticsPublicNetworkAccessForIngestion": {
               "type": "string",
               "defaultValue": "Enabled",
@@ -1438,13 +1227,6 @@
               "defaultValue": "web",
               "metadata": {
                 "description": "Application Insights application type."
-              }
-            },
-            "diagnosticSettingsEnabled": {
-              "type": "bool",
-              "defaultValue": true,
-              "metadata": {
-                "description": "Whether standard diagnostic settings are enabled."
               }
             },
             "storageLargeFileSharesState": {
@@ -1498,18 +1280,6 @@
                 "description": "Storage Account network ACL configuration."
               }
             },
-            "storageSku": {
-              "type": "string",
-              "defaultValue": "Standard_LRS",
-              "allowedValues": [
-                "Standard_LRS",
-                "Standard_GRS",
-                "Standard_RAGRS"
-              ],
-              "metadata": {
-                "description": "Storage Account replication SKU."
-              }
-            },
             "storageBlobVersioningEnabled": {
               "type": "bool",
               "defaultValue": true,
@@ -1560,69 +1330,6 @@
                 "description": "Microsoft Entra administrator object ID for Azure SQL."
               }
             },
-            "sqlDatabaseSkuName": {
-              "type": "string",
-              "defaultValue": "GP_Gen5_2",
-              "metadata": {
-                "description": "Azure SQL database SKU name."
-              }
-            },
-            "sqlDatabaseSkuTier": {
-              "type": "string",
-              "defaultValue": "GeneralPurpose",
-              "metadata": {
-                "description": "Azure SQL database service tier."
-              }
-            },
-            "sqlDatabaseSkuFamily": {
-              "type": "string",
-              "defaultValue": "Gen5",
-              "metadata": {
-                "description": "Azure SQL database SKU family."
-              }
-            },
-            "sqlDatabaseSkuCapacity": {
-              "type": "int",
-              "defaultValue": 2,
-              "metadata": {
-                "description": "Azure SQL database vCore capacity."
-              }
-            },
-            "sqlDatabaseComputeModel": {
-              "type": "string",
-              "defaultValue": "Provisioned",
-              "allowedValues": [
-                "Provisioned",
-                "Serverless"
-              ],
-              "metadata": {
-                "description": "Azure SQL database compute model."
-              }
-            },
-            "sqlDatabaseAutoPauseDelayMinutes": {
-              "type": "int",
-              "defaultValue": 60,
-              "minValue": -1,
-              "metadata": {
-                "description": "Idle minutes before a serverless database is paused."
-              }
-            },
-            "sqlDatabaseZoneRedundant": {
-              "type": "bool",
-              "defaultValue": false,
-              "metadata": {
-                "description": "Whether Azure SQL database zone redundancy is enabled."
-              }
-            },
-            "sqlBackupRetentionDays": {
-              "type": "int",
-              "defaultValue": 7,
-              "minValue": 1,
-              "maxValue": 35,
-              "metadata": {
-                "description": "Point-in-time restore retention in days for Azure SQL."
-              }
-            },
             "sqlDifferentialBackupIntervalHours": {
               "type": "int",
               "defaultValue": 12,
@@ -1632,18 +1339,6 @@
               ],
               "metadata": {
                 "description": "Differential backup interval in hours for Azure SQL."
-              }
-            },
-            "sqlBackupStorageRedundancy": {
-              "type": "string",
-              "defaultValue": "Local",
-              "allowedValues": [
-                "Local",
-                "Zone",
-                "Geo"
-              ],
-              "metadata": {
-                "description": "Requested Azure SQL backup storage redundancy."
               }
             },
             "allowedLocations": {
@@ -1741,41 +1436,11 @@
                 "description": "Azure OpenAI deployment SKU."
               }
             },
-            "azureOpenAIDeploymentCapacity": {
-              "type": "int",
-              "defaultValue": 1,
-              "metadata": {
-                "description": "Azure OpenAI deployment capacity in thousands of tokens per minute."
-              }
-            },
             "azureAISearchName": {
               "type": "string",
               "defaultValue": "",
               "metadata": {
                 "description": "Optional Azure AI Search service name. Defaults to the enterprise naming module output."
-              }
-            },
-            "azureAISearchSkuName": {
-              "type": "string",
-              "defaultValue": "standard",
-              "metadata": {
-                "description": "Azure AI Search service SKU."
-              }
-            },
-            "azureAISearchReplicaCount": {
-              "type": "int",
-              "defaultValue": 1,
-              "minValue": 1,
-              "metadata": {
-                "description": "Azure AI Search replica count."
-              }
-            },
-            "azureAISearchPartitionCount": {
-              "type": "int",
-              "defaultValue": 1,
-              "minValue": 1,
-              "metadata": {
-                "description": "Azure AI Search partition count."
               }
             },
             "azureAISearchPublicNetworkAccess": {
@@ -1787,18 +1452,6 @@
               ],
               "metadata": {
                 "description": "Azure AI Search public network access mode."
-              }
-            },
-            "azureAISearchSemanticSearch": {
-              "type": "string",
-              "defaultValue": "free",
-              "allowedValues": [
-                "disabled",
-                "free",
-                "standard"
-              ],
-              "metadata": {
-                "description": "Azure AI Search semantic ranking capability. Availability depends on SKU and region."
               }
             },
             "azureAISearchAuthOptions": {
@@ -1822,15 +1475,21 @@
           },
           "variables": {
             "environmentConfiguration": {
-              "enabled": "[parameters('environmentSkuStrategyEnabled')]",
-              "appServicePlanSkuName": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').appServicePlanSkuName, '')]",
-              "appServicePlanInstanceCount": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').appServicePlanInstanceCount, 0)]",
-              "appServicePlanZoneRedundant": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').appServicePlanZoneRedundant, false())]",
+              "enabled": true,
+              "appServicePlanSkuName": "[parameters('environmentSettings').appServicePlanSkuName]",
+              "appServicePlanSkuTier": "[parameters('environmentSettings').appServicePlanSkuTier]",
+              "appServicePlanInstanceCount": "[parameters('environmentSettings').appServicePlanInstanceCount]",
+              "appServicePlanZoneRedundant": "[parameters('environmentSettings').appServicePlanZoneRedundant]",
               "storageSku": "[variables('effectiveStorageSku')]",
               "sqlDatabaseSkuName": "[variables('effectiveSqlDatabaseSkuName')]",
               "azureAISearchSkuName": "[variables('effectiveSearchSkuName')]",
               "azureOpenAIDeploymentCapacity": "[variables('effectiveOpenAIDeploymentCapacity')]",
-              "logAnalyticsRetentionInDays": "[variables('effectiveLogAnalyticsRetentionInDays')]"
+              "logAnalyticsRetentionInDays": "[variables('effectiveLogAnalyticsRetentionInDays')]",
+              "applicationInsightsRetentionInDays": "[variables('effectiveApplicationInsightsRetentionInDays')]",
+              "applicationInsightsSamplingPercentage": "[variables('effectiveApplicationInsightsSamplingPercentage')]",
+              "diagnosticSettingsEnabled": "[variables('effectiveDiagnosticSettingsEnabled')]",
+              "diagnosticVerbosity": "[parameters('environmentSettings').diagnosticVerbosity]",
+              "future": "[parameters('environmentSettings').future]"
             },
             "sqlConfiguration": {
               "publicNetworkAccess": "[parameters('sqlPublicNetworkAccess')]",
@@ -1849,22 +1508,25 @@
             },
             "effectiveProjectName": "[if(empty(parameters('project')), parameters('applicationName'), parameters('project'))]",
             "effectiveAllowedLocations": "[if(empty(parameters('allowedLocations')), createArray(parameters('location')), parameters('allowedLocations'))]",
-            "effectiveStorageSku": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').storageSku, parameters('storageSku'))]",
-            "effectiveSqlDatabaseSkuName": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').sqlDatabaseSkuName, parameters('sqlDatabaseSkuName'))]",
-            "effectiveSqlDatabaseSkuTier": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').sqlDatabaseSkuTier, parameters('sqlDatabaseSkuTier'))]",
-            "effectiveSqlDatabaseSkuFamily": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').sqlDatabaseSkuFamily, parameters('sqlDatabaseSkuFamily'))]",
-            "effectiveSqlDatabaseSkuCapacity": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').sqlDatabaseSkuCapacity, parameters('sqlDatabaseSkuCapacity'))]",
-            "effectiveSqlDatabaseComputeModel": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').sqlDatabaseComputeModel, parameters('sqlDatabaseComputeModel'))]",
-            "effectiveSqlDatabaseAutoPauseDelayMinutes": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').sqlDatabaseAutoPauseDelayMinutes, parameters('sqlDatabaseAutoPauseDelayMinutes'))]",
-            "effectiveSqlDatabaseZoneRedundant": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').sqlDatabaseZoneRedundant, parameters('sqlDatabaseZoneRedundant'))]",
-            "effectiveSqlBackupRetentionDays": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').sqlBackupRetentionDays, parameters('sqlBackupRetentionDays'))]",
-            "effectiveSqlBackupStorageRedundancy": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').sqlBackupStorageRedundancy, parameters('sqlBackupStorageRedundancy'))]",
-            "effectiveSearchSkuName": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').azureAISearchSkuName, parameters('azureAISearchSkuName'))]",
-            "effectiveSearchReplicaCount": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').azureAISearchReplicaCount, parameters('azureAISearchReplicaCount'))]",
-            "effectiveSearchPartitionCount": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').azureAISearchPartitionCount, parameters('azureAISearchPartitionCount'))]",
-            "effectiveSearchSemanticSearch": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').azureAISearchSemanticSearch, parameters('azureAISearchSemanticSearch'))]",
-            "effectiveOpenAIDeploymentCapacity": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').azureOpenAIDeploymentCapacity, parameters('azureOpenAIDeploymentCapacity'))]",
-            "effectiveLogAnalyticsRetentionInDays": "[if(parameters('environmentSkuStrategyEnabled'), parameters('environmentSettings').logAnalyticsRetentionInDays, parameters('logAnalyticsRetentionInDays'))]",
+            "effectiveStorageSku": "[parameters('environmentSettings').storageSku]",
+            "effectiveSqlDatabaseSkuName": "[parameters('environmentSettings').sqlDatabaseSkuName]",
+            "effectiveSqlDatabaseSkuTier": "[parameters('environmentSettings').sqlDatabaseSkuTier]",
+            "effectiveSqlDatabaseSkuFamily": "[parameters('environmentSettings').sqlDatabaseSkuFamily]",
+            "effectiveSqlDatabaseSkuCapacity": "[parameters('environmentSettings').sqlDatabaseSkuCapacity]",
+            "effectiveSqlDatabaseComputeModel": "[parameters('environmentSettings').sqlDatabaseComputeModel]",
+            "effectiveSqlDatabaseAutoPauseDelayMinutes": "[parameters('environmentSettings').sqlDatabaseAutoPauseDelayMinutes]",
+            "effectiveSqlDatabaseZoneRedundant": "[parameters('environmentSettings').sqlDatabaseZoneRedundant]",
+            "effectiveSqlBackupRetentionDays": "[parameters('environmentSettings').sqlBackupRetentionDays]",
+            "effectiveSqlBackupStorageRedundancy": "[parameters('environmentSettings').sqlBackupStorageRedundancy]",
+            "effectiveSearchSkuName": "[parameters('environmentSettings').azureAISearchSkuName]",
+            "effectiveSearchReplicaCount": "[parameters('environmentSettings').azureAISearchReplicaCount]",
+            "effectiveSearchPartitionCount": "[parameters('environmentSettings').azureAISearchPartitionCount]",
+            "effectiveSearchSemanticSearch": "[parameters('environmentSettings').azureAISearchSemanticSearch]",
+            "effectiveOpenAIDeploymentCapacity": "[parameters('environmentSettings').azureOpenAIDeploymentCapacity]",
+            "effectiveLogAnalyticsRetentionInDays": "[parameters('environmentSettings').logAnalyticsRetentionInDays]",
+            "effectiveApplicationInsightsSamplingPercentage": "[parameters('environmentSettings').applicationInsightsSamplingPercentage]",
+            "effectiveApplicationInsightsRetentionInDays": "[parameters('environmentSettings').applicationInsightsRetentionInDays]",
+            "effectiveDiagnosticSettingsEnabled": "[parameters('environmentSettings').diagnosticSettingsEnabled]",
             "defaultSkus": {
               "logAnalytics": "[parameters('logAnalyticsSku')]",
               "keyVault": "standard",
@@ -1875,10 +1537,12 @@
               "logAnalyticsPublicNetworkAccessForIngestion": "[parameters('logAnalyticsPublicNetworkAccessForIngestion')]",
               "logAnalyticsPublicNetworkAccessForQuery": "[parameters('logAnalyticsPublicNetworkAccessForQuery')]",
               "applicationInsightsKind": "[parameters('applicationInsightsKind')]",
-              "applicationInsightsType": "[parameters('applicationInsightsType')]"
+              "applicationInsightsType": "[parameters('applicationInsightsType')]",
+              "applicationInsightsSamplingPercentage": "[variables('effectiveApplicationInsightsSamplingPercentage')]",
+              "applicationInsightsRetentionInDays": "[variables('effectiveApplicationInsightsRetentionInDays')]"
             },
             "diagnosticSettings": {
-              "enabled": "[parameters('diagnosticSettingsEnabled')]",
+              "enabled": "[variables('effectiveDiagnosticSettingsEnabled')]",
               "keyVaultLogCategories": [
                 "AuditEvent"
               ],
@@ -2580,41 +2244,25 @@
           "appConfigurationPrivateEndpointSubnetResourceId": {
             "value": "[parameters('appConfigurationPrivateEndpointSubnetResourceId')]"
           },
-          "appServicePlanSkuName": {
-            "value": "[parameters('appServicePlanSkuName')]"
-          },
-          "appServicePlanSkuTier": {
-            "value": "[parameters('appServicePlanSkuTier')]"
-          },
-          "appServicePlanInstanceCount": {
-            "value": "[parameters('appServicePlanInstanceCount')]"
-          },
-          "appServicePlanZoneRedundant": {
-            "value": "[parameters('appServicePlanZoneRedundant')]"
-          },
-          "appServicePlanPerSiteScaling": {
-            "value": "[parameters('appServicePlanPerSiteScaling')]"
-          },
-          "appServiceRuntimeVersion": {
-            "value": "[parameters('appServiceRuntimeVersion')]"
-          },
-          "appServiceAlwaysOn": {
-            "value": "[parameters('appServiceAlwaysOn')]"
-          },
-          "appServiceHealthCheckPath": {
-            "value": "[parameters('appServiceHealthCheckPath')]"
-          },
-          "appServiceHttp20Enabled": {
-            "value": "[parameters('appServiceHttp20Enabled')]"
-          },
-          "appServiceWebSocketsEnabled": {
-            "value": "[parameters('appServiceWebSocketsEnabled')]"
-          },
-          "appServicePublicNetworkAccess": {
-            "value": "[parameters('appServicePublicNetworkAccess')]"
-          },
-          "appServiceAdditionalAppSettings": {
-            "value": "[parameters('appServiceAdditionalAppSettings')]"
+          "appServiceConfiguration": {
+            "value": {
+              "planName": "[reference('globals').outputs.namingOutputs.value.appServicePlanName]",
+              "appName": "[reference('globals').outputs.namingOutputs.value.appServiceName]",
+              "skuName": "[reference('globals').outputs.environmentConfiguration.value.appServicePlanSkuName]",
+              "skuTier": "[reference('globals').outputs.environmentConfiguration.value.appServicePlanSkuTier]",
+              "instanceCount": "[reference('globals').outputs.environmentConfiguration.value.appServicePlanInstanceCount]",
+              "zoneRedundant": "[reference('globals').outputs.environmentConfiguration.value.appServicePlanZoneRedundant]",
+              "perSiteScaling": "[parameters('appServicePlanPerSiteScaling')]",
+              "linuxFxVersion": "[format('DOTNETCORE|{0}', parameters('appServiceRuntimeVersion'))]",
+              "alwaysOn": "[parameters('appServiceAlwaysOn')]",
+              "healthCheckPath": "[parameters('appServiceHealthCheckPath')]",
+              "http20Enabled": "[parameters('appServiceHttp20Enabled')]",
+              "webSocketsEnabled": "[parameters('appServiceWebSocketsEnabled')]",
+              "minimumTlsVersion": "1.2",
+              "publicNetworkAccess": "[parameters('appServicePublicNetworkAccess')]",
+              "additionalAppSettings": "[parameters('appServiceAdditionalAppSettings')]",
+              "sqlDatabaseName": "[reference('globals').outputs.namingOutputs.value.sqlDatabaseName]"
+            }
           }
         },
         "template": {
@@ -2625,7 +2273,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "8476789844934878466"
+              "templateHash": "446559119413976498"
             }
           },
           "parameters": {
@@ -2649,95 +2297,12 @@
                 "description": "Optional subnet resource ID for an App Configuration private endpoint."
               }
             },
-            "appServicePlanSkuName": {
-              "type": "string",
-              "defaultValue": "P1v3",
-              "metadata": {
-                "description": "App Service Plan SKU name."
-              }
-            },
-            "appServicePlanSkuTier": {
-              "type": "string",
-              "defaultValue": "PremiumV3",
-              "metadata": {
-                "description": "App Service Plan SKU tier."
-              }
-            },
-            "appServicePlanInstanceCount": {
-              "type": "int",
-              "defaultValue": 1,
-              "metadata": {
-                "description": "App Service Plan instance count."
-              }
-            },
-            "appServicePlanZoneRedundant": {
-              "type": "bool",
-              "defaultValue": false,
-              "metadata": {
-                "description": "Whether the App Service Plan is zone redundant."
-              }
-            },
-            "appServicePlanPerSiteScaling": {
-              "type": "bool",
-              "defaultValue": false,
-              "metadata": {
-                "description": "Whether per-site scaling is enabled."
-              }
-            },
-            "appServiceRuntimeVersion": {
-              "type": "string",
-              "defaultValue": "10.0",
-              "metadata": {
-                "description": "App Service .NET runtime version."
-              }
-            },
-            "appServiceAlwaysOn": {
-              "type": "bool",
-              "defaultValue": true,
-              "metadata": {
-                "description": "Whether the App Service is always on."
-              }
-            },
-            "appServiceHealthCheckPath": {
-              "type": "string",
-              "defaultValue": "/health",
-              "metadata": {
-                "description": "App Service health check path."
-              }
-            },
-            "appServiceHttp20Enabled": {
-              "type": "bool",
-              "defaultValue": true,
-              "metadata": {
-                "description": "Whether HTTP/2 is enabled."
-              }
-            },
-            "appServiceWebSocketsEnabled": {
-              "type": "bool",
-              "defaultValue": false,
-              "metadata": {
-                "description": "Whether WebSockets are enabled."
-              }
-            },
-            "appServicePublicNetworkAccess": {
-              "type": "string",
-              "defaultValue": "Enabled",
-              "metadata": {
-                "description": "Whether public network access is enabled."
-              }
-            },
-            "appServiceAdditionalAppSettings": {
+            "appServiceConfiguration": {
               "type": "object",
-              "defaultValue": {},
               "metadata": {
-                "description": "Additional non-secret App Service application settings."
+                "description": "Centralized App Service configuration inherited from the selected environment profile."
               }
             }
-          },
-          "variables": {
-            "effectiveAppServicePlanSkuName": "[if(parameters('globals').environmentConfiguration.enabled, parameters('globals').environmentConfiguration.appServicePlanSkuName, parameters('appServicePlanSkuName'))]",
-            "effectiveAppServicePlanInstanceCount": "[if(parameters('globals').environmentConfiguration.enabled, parameters('globals').environmentConfiguration.appServicePlanInstanceCount, parameters('appServicePlanInstanceCount'))]",
-            "effectiveAppServicePlanZoneRedundant": "[if(parameters('globals').environmentConfiguration.enabled, parameters('globals').environmentConfiguration.appServicePlanZoneRedundant, parameters('appServicePlanZoneRedundant'))]"
           },
           "resources": {
             "appServiceSettings": {
@@ -2789,7 +2354,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.35.1.17967",
-                      "templateHash": "4760587372481205083"
+                      "templateHash": "14228502052131039969"
                     }
                   },
                   "parameters": {
@@ -2964,6 +2529,9 @@
                           "applicationType": {
                             "value": "[parameters('globals').monitoringConfiguration.applicationInsightsType]"
                           },
+                          "samplingPercentage": {
+                            "value": "[parameters('globals').monitoringConfiguration.applicationInsightsSamplingPercentage]"
+                          },
                           "tags": {
                             "value": "[parameters('globals').standardTags]"
                           }
@@ -2975,7 +2543,7 @@
                             "_generator": {
                               "name": "bicep",
                               "version": "0.35.1.17967",
-                              "templateHash": "3620760794891090260"
+                              "templateHash": "1006282401822887599"
                             }
                           },
                           "parameters": {
@@ -3024,6 +2592,15 @@
                               "metadata": {
                                 "description": "Standard ECAP resource tags."
                               }
+                            },
+                            "samplingPercentage": {
+                              "type": "int",
+                              "defaultValue": 100,
+                              "minValue": 0,
+                              "maxValue": 100,
+                              "metadata": {
+                                "description": "Percentage of telemetry retained by adaptive sampling."
+                              }
                             }
                           },
                           "resources": [
@@ -3036,6 +2613,7 @@
                               "tags": "[parameters('tags')]",
                               "properties": {
                                 "Application_Type": "[parameters('applicationType')]",
+                                "SamplingPercentage": "[parameters('samplingPercentage')]",
                                 "WorkspaceResourceId": "[parameters('workspaceResourceId')]"
                               }
                             }
@@ -3102,22 +2680,22 @@
                 "parameters": {
                   "configuration": {
                     "value": {
-                      "planName": "[parameters('globals').namingOutputs.appServicePlanName]",
-                      "appName": "[parameters('globals').namingOutputs.appServiceName]",
-                      "skuName": "[variables('effectiveAppServicePlanSkuName')]",
-                      "skuTier": "[parameters('appServicePlanSkuTier')]",
-                      "instanceCount": "[variables('effectiveAppServicePlanInstanceCount')]",
-                      "zoneRedundant": "[variables('effectiveAppServicePlanZoneRedundant')]",
-                      "perSiteScaling": "[parameters('appServicePlanPerSiteScaling')]",
-                      "linuxFxVersion": "[format('DOTNETCORE|{0}', parameters('appServiceRuntimeVersion'))]",
-                      "alwaysOn": "[parameters('appServiceAlwaysOn')]",
-                      "healthCheckPath": "[parameters('appServiceHealthCheckPath')]",
-                      "http20Enabled": "[parameters('appServiceHttp20Enabled')]",
-                      "webSocketsEnabled": "[parameters('appServiceWebSocketsEnabled')]",
-                      "minimumTlsVersion": "1.2",
-                      "publicNetworkAccess": "[parameters('appServicePublicNetworkAccess')]",
-                      "additionalAppSettings": "[parameters('appServiceAdditionalAppSettings')]",
-                      "sqlDatabaseName": "[parameters('globals').namingOutputs.sqlDatabaseName]"
+                      "planName": "[parameters('appServiceConfiguration').planName]",
+                      "appName": "[parameters('appServiceConfiguration').appName]",
+                      "skuName": "[parameters('appServiceConfiguration').skuName]",
+                      "skuTier": "[parameters('appServiceConfiguration').skuTier]",
+                      "instanceCount": "[parameters('appServiceConfiguration').instanceCount]",
+                      "zoneRedundant": "[parameters('appServiceConfiguration').zoneRedundant]",
+                      "perSiteScaling": "[parameters('appServiceConfiguration').perSiteScaling]",
+                      "linuxFxVersion": "[parameters('appServiceConfiguration').linuxFxVersion]",
+                      "alwaysOn": "[parameters('appServiceConfiguration').alwaysOn]",
+                      "healthCheckPath": "[parameters('appServiceConfiguration').healthCheckPath]",
+                      "http20Enabled": "[parameters('appServiceConfiguration').http20Enabled]",
+                      "webSocketsEnabled": "[parameters('appServiceConfiguration').webSocketsEnabled]",
+                      "minimumTlsVersion": "[parameters('appServiceConfiguration').minimumTlsVersion]",
+                      "publicNetworkAccess": "[parameters('appServiceConfiguration').publicNetworkAccess]",
+                      "additionalAppSettings": "[parameters('appServiceConfiguration').additionalAppSettings]",
+                      "sqlDatabaseName": "[parameters('appServiceConfiguration').sqlDatabaseName]"
                     }
                   },
                   "location": {
@@ -6126,6 +5704,50 @@
     "environmentConfiguration": {
       "type": "object",
       "value": "[reference('globals').outputs.environmentConfiguration.value]"
+    },
+    "selectedEnvironment": {
+      "type": "string",
+      "value": "[reference('globals').outputs.environment.value]"
+    },
+    "selectedAppServicePlanSku": {
+      "type": "string",
+      "value": "[reference('globals').outputs.environmentConfiguration.value.appServicePlanSkuName]"
+    },
+    "selectedAppServicePlanSkuTier": {
+      "type": "string",
+      "value": "[reference('globals').outputs.environmentConfiguration.value.appServicePlanSkuTier]"
+    },
+    "selectedSqlDatabaseSku": {
+      "type": "string",
+      "value": "[reference('globals').outputs.environmentConfiguration.value.sqlDatabaseSkuName]"
+    },
+    "selectedStorageRedundancy": {
+      "type": "string",
+      "value": "[reference('globals').outputs.environmentConfiguration.value.storageSku]"
+    },
+    "selectedAzureAISearchSku": {
+      "type": "string",
+      "value": "[reference('globals').outputs.environmentConfiguration.value.azureAISearchSkuName]"
+    },
+    "selectedAzureOpenAIDeploymentCapacity": {
+      "type": "int",
+      "value": "[reference('globals').outputs.environmentConfiguration.value.azureOpenAIDeploymentCapacity]"
+    },
+    "selectedLogAnalyticsRetentionInDays": {
+      "type": "int",
+      "value": "[reference('globals').outputs.environmentConfiguration.value.logAnalyticsRetentionInDays]"
+    },
+    "selectedApplicationInsightsRetentionInDays": {
+      "type": "int",
+      "value": "[reference('globals').outputs.environmentConfiguration.value.applicationInsightsRetentionInDays]"
+    },
+    "selectedApplicationInsightsSamplingPercentage": {
+      "type": "int",
+      "value": "[reference('globals').outputs.environmentConfiguration.value.applicationInsightsSamplingPercentage]"
+    },
+    "selectedDiagnosticVerbosity": {
+      "type": "string",
+      "value": "[reference('globals').outputs.environmentConfiguration.value.diagnosticVerbosity]"
     },
     "appServicePlanName": {
       "type": "string",

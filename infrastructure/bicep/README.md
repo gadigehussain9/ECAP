@@ -6,6 +6,34 @@ The original subscription-scoped main.bicep created the environment Resource Gro
 
 The requested docs/handbook/epic-0-enterprise-foundation/ and docs/standards/ paths are absent. The authoritative sources used are docs/EPICs/epic-0-enterprise-foundation/ and docs/architecture/adr/.
 
+## Environment configuration and SKU strategy
+
+`main.bicep` accepts the environment once. The subscription-scoped
+`modules/environment-settings.bicep` module selects the complete profile for
+`dev`, `qa`, `stage`, or `prod`; `modules/globals.bicep` publishes that profile
+as the shared configuration contract. Platform orchestrators and resource
+modules consume the resulting objects rather than defining environment-specific
+SKUs locally. The profile includes App Service, Storage, SQL, AI Search, Azure
+OpenAI capacity, monitoring retention and sampling, diagnostic verbosity, and
+future capability placeholders.
+
+Parameter files contain deployment context and workload-specific values only;
+they do not repeat profile SKUs or retention settings. Promotion uses the same
+Bicep graph and changes only the selected parameter file:
+
+```powershell
+az bicep build --file infrastructure/bicep/main.bicep
+az deployment sub validate --location eastus --template-file infrastructure/bicep/main.bicep --parameters infrastructure/bicep/environments/dev.parameters.json
+az deployment sub what-if --location eastus --template-file infrastructure/bicep/main.bicep --parameters infrastructure/bicep/environments/qa.parameters.json
+New-AzSubscriptionDeployment -Location eastus -TemplateFile infrastructure/bicep/main.bicep -TemplateParameterFile infrastructure/bicep/environments/prod.parameters.json
+```
+
+Use the root outputs `environmentConfiguration` and the `selected*` outputs to
+compare the effective profile before promotion. Development minimizes
+consumption with LRS storage, serverless SQL, and reduced telemetry sampling;
+production increases resilience, capacity, and retention without resource-code
+changes.
+
 ## US-014 storage architecture review
 
 The Storage Account remains a `StorageV2` resource with HTTPS-only access,
@@ -18,12 +46,12 @@ identity by the consuming workload deployment.
 
 ### Storage configuration
 
-The root deployment retains the existing storage parameters and exposes the
-following settings through the shared `storageConfiguration` object:
+The root deployment exposes workload-specific storage settings through the
+shared `storageConfiguration` object. Storage redundancy is selected centrally
+by `environment-settings.bicep`:
 
 | Parameter | Default | Purpose |
 |-----------|---------|---------|
-| `storageSku` | `Standard_LRS` | Selects the allowed replication SKU: `Standard_LRS`, `Standard_GRS`, or `Standard_RAGRS`. |
 | `storageMinimumTlsVersion` | `TLS1_2` | Explicitly enforces the enterprise minimum TLS version. Only `TLS1_2` is currently permitted. |
 | `storageNetworkAcls` | Azure Services / Allow | Configures bypass, default action, IP rules, and virtual network rules for future network restriction. |
 | `storageBlobVersioningEnabled` | `true` | Keeps prior blob versions available after overwrite. |

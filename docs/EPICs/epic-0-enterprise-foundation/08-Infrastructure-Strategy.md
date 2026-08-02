@@ -618,3 +618,44 @@ Future infrastructure improvements include.
 - Kubernetes (AKS)
 - Azure Container Apps
 - Terraform interoperability
+
+---
+
+# 20. Environment Configuration and Promotion Strategy
+
+ECAP supports four deployment environments: `dev`, `qa`, `stage`, and `prod`.
+The root deployment accepts `environment` once. The reusable
+`infrastructure/bicep/modules/environment-settings.bicep` module selects the
+corresponding profile and publishes it through `globals.bicep` as the shared
+configuration contract. Resource modules do not select SKUs or retention
+values independently.
+
+The profile controls App Service sizing, Storage redundancy, SQL compute and
+backup sizing, AI Search capacity, Azure OpenAI deployment capacity, Log
+Analytics retention, Application Insights sampling and retention, and
+diagnostic verbosity. Future settings such as private endpoints, network
+isolation, zone redundancy, geo-replication, backup policies, and autoscaling
+are represented as extensible configuration placeholders only; they are not
+deployed by this strategy.
+
+Promotion uses the same Bicep source and changes only the parameter file and
+deployment target. Each promotion must pass build, parameter validation,
+what-if review, deployment, and resource verification gates. Effective values
+can be reviewed through the root `environmentConfiguration` and `selected*`
+outputs before approval.
+
+Development uses lower-cost capacity, local storage redundancy, serverless
+SQL, shorter supported monitoring retention, and higher telemetry sampling
+reduction. Production uses resilient storage, provisioned SQL, larger service
+capacity, longer retention, and production-grade availability settings. This
+reduces cost without requiring environment-specific resource code.
+
+## 20.1 Validation and Deployment Commands
+
+```powershell
+az bicep build --file infrastructure/bicep/main.bicep
+az deployment sub validate --location eastus --template-file infrastructure/bicep/main.bicep --parameters infrastructure/bicep/environments/dev.parameters.json
+az deployment sub what-if --location eastus --template-file infrastructure/bicep/main.bicep --parameters infrastructure/bicep/environments/qa.parameters.json
+az deployment sub create --location eastus --template-file infrastructure/bicep/main.bicep --parameters infrastructure/bicep/environments/prod.parameters.json
+New-AzSubscriptionDeployment -Location eastus -TemplateFile infrastructure/bicep/main.bicep -TemplateParameterFile infrastructure/bicep/environments/prod.parameters.json
+```

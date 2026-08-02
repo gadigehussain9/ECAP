@@ -43,9 +43,6 @@
     "logAnalyticsSku": {
       "value": "PerGB2018"
     },
-    "logAnalyticsRetentionInDays": {
-      "value": 30
-    },
     "logAnalyticsPublicNetworkAccessForIngestion": {
       "value": "Enabled"
     },
@@ -57,15 +54,6 @@
     },
     "applicationInsightsType": {
       "value": "web"
-    },
-    "appServicePlanSkuName": {
-      "value": "P2v3"
-    },
-    "appServicePlanInstanceCount": {
-      "value": 2
-    },
-    "appServicePlanZoneRedundant": {
-      "value": true
     },
     "appServicePlanPerSiteScaling": {
       "value": false
@@ -85,9 +73,6 @@
     "keyVaultEnablePurgeProtection": {
       "value": true
     },
-    "storageSku": {
-      "value": "Standard_GRS"
-    },
     "storageBlobVersioningEnabled": {
       "value": true
     },
@@ -103,21 +88,6 @@
     "sqlAdministratorObjectId": {
       "value": ""
     },
-    "sqlDatabaseSkuName": {
-      "value": "GP_Gen5_2"
-    },
-    "sqlDatabaseComputeModel": {
-      "value": "Provisioned"
-    },
-    "sqlDatabaseZoneRedundant": {
-      "value": true
-    },
-    "sqlBackupRetentionDays": {
-      "value": 30
-    },
-    "sqlBackupStorageRedundancy": {
-      "value": "Geo"
-    },
     "azureOpenAIChatModelName": {
       "value": "gpt-4o-mini"
     },
@@ -130,20 +100,8 @@
     "azureOpenAIEmbeddingModelVersion": {
       "value": "1"
     },
-    "azureAISearchSkuName": {
-      "value": "standard"
-    },
-    "azureAISearchReplicaCount": {
-      "value": 2
-    },
-    "azureAISearchPartitionCount": {
-      "value": 1
-    },
     "azureAISearchPublicNetworkAccess": {
       "value": "enabled"
-    },
-    "azureAISearchSemanticSearch": {
-      "value": "standard"
     },
     "azureAISearchAuthOptions": {
       "value": "aad"

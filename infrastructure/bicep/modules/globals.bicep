@@ -9,9 +9,6 @@ targetScope = 'subscription'
 ])
 param environment string
 
-@description('Whether centralized environment sizing is enabled.')
-param environmentSkuStrategyEnabled bool = true
-
 @description('Centralized environment-specific sizing settings.')
 param environmentSettings object = {}
 
@@ -90,9 +87,6 @@ param deploymentDate string = utcNow('yyyy-MM-dd')
 @description('Log Analytics workspace SKU.')
 param logAnalyticsSku string = 'PerGB2018'
 
-@description('Number of days to retain Log Analytics data.')
-param logAnalyticsRetentionInDays int = 30
-
 @description('Whether public Log Analytics ingestion is enabled.')
 param logAnalyticsPublicNetworkAccessForIngestion string = 'Enabled'
 
@@ -104,14 +98,6 @@ param applicationInsightsKind string = 'web'
 
 @description('Application Insights application type.')
 param applicationInsightsType string = 'web'
-
-@description('Application Insights telemetry sampling percentage.')
-@minValue(0)
-@maxValue(100)
-param applicationInsightsSamplingPercentage int = 100
-
-@description('Whether standard diagnostic settings are enabled.')
-param diagnosticSettingsEnabled bool = true
 
 @description('Whether Azure Files large file shares are enabled.')
 @allowed([
@@ -144,14 +130,6 @@ param storageNetworkAcls object = {
   virtualNetworkRules: []
 }
 
-@description('Storage Account replication SKU.')
-@allowed([
-  'Standard_LRS'
-  'Standard_GRS'
-  'Standard_RAGRS'
-])
-param storageSku string = 'Standard_LRS'
-
 @description('Whether Blob Service versioning is enabled.')
 param storageBlobVersioningEnabled bool = true
 
@@ -178,51 +156,12 @@ param sqlAdministratorLogin string = ''
 @description('Microsoft Entra administrator object ID for Azure SQL.')
 param sqlAdministratorObjectId string = ''
 
-@description('Azure SQL database SKU name.')
-param sqlDatabaseSkuName string = 'GP_Gen5_2'
-
-@description('Azure SQL database service tier.')
-param sqlDatabaseSkuTier string = 'GeneralPurpose'
-
-@description('Azure SQL database SKU family.')
-param sqlDatabaseSkuFamily string = 'Gen5'
-
-@description('Azure SQL database vCore capacity.')
-param sqlDatabaseSkuCapacity int = 2
-
-@description('Azure SQL database compute model.')
-@allowed([
-  'Provisioned'
-  'Serverless'
-])
-param sqlDatabaseComputeModel string = 'Provisioned'
-
-@description('Idle minutes before a serverless database is paused.')
-@minValue(-1)
-param sqlDatabaseAutoPauseDelayMinutes int = 60
-
-@description('Whether Azure SQL database zone redundancy is enabled.')
-param sqlDatabaseZoneRedundant bool = false
-
-@description('Point-in-time restore retention in days for Azure SQL.')
-@minValue(1)
-@maxValue(35)
-param sqlBackupRetentionDays int = 7
-
 @description('Differential backup interval in hours for Azure SQL.')
 @allowed([
   12
   24
 ])
 param sqlDifferentialBackupIntervalHours int = 12
-
-@description('Requested Azure SQL backup storage redundancy.')
-@allowed([
-  'Local'
-  'Zone'
-  'Geo'
-])
-param sqlBackupStorageRedundancy string = 'Local'
 
 @description('Locations approved by the platform policy. Defaults to the deployment location.')
 param allowedLocations array = []
@@ -271,22 +210,8 @@ param azureOpenAISkuName string = 'S0'
 ])
 param azureOpenAIDeploymentSkuName string = 'GlobalStandard'
 
-@description('Azure OpenAI deployment capacity in thousands of tokens per minute.')
-param azureOpenAIDeploymentCapacity int = 1
-
 @description('Optional Azure AI Search service name. Defaults to the enterprise naming module output.')
 param azureAISearchName string = ''
-
-@description('Azure AI Search service SKU.')
-param azureAISearchSkuName string = 'standard'
-
-@description('Azure AI Search replica count.')
-@minValue(1)
-param azureAISearchReplicaCount int = 1
-
-@description('Azure AI Search partition count.')
-@minValue(1)
-param azureAISearchPartitionCount int = 1
 
 @description('Azure AI Search public network access mode.')
 @allowed([
@@ -294,14 +219,6 @@ param azureAISearchPartitionCount int = 1
   'disabled'
 ])
 param azureAISearchPublicNetworkAccess string = 'enabled'
-
-@description('Azure AI Search semantic ranking capability. Availability depends on SKU and region.')
-@allowed([
-  'disabled'
-  'free'
-  'standard'
-])
-param azureAISearchSemanticSearch string = 'free'
 
 @description('Azure AI Search authentication mode.')
 @allowed([
@@ -351,15 +268,21 @@ var azureOpenAIConfiguration = {
 }
 
 var environmentConfiguration = {
-  enabled: environmentSkuStrategyEnabled
-  appServicePlanSkuName: environmentSkuStrategyEnabled ? environmentSettings.appServicePlanSkuName : ''
-  appServicePlanInstanceCount: environmentSkuStrategyEnabled ? environmentSettings.appServicePlanInstanceCount : 0
-  appServicePlanZoneRedundant: environmentSkuStrategyEnabled ? environmentSettings.appServicePlanZoneRedundant : false
+  enabled: true
+  appServicePlanSkuName: environmentSettings.appServicePlanSkuName
+  appServicePlanSkuTier: environmentSettings.appServicePlanSkuTier
+  appServicePlanInstanceCount: environmentSettings.appServicePlanInstanceCount
+  appServicePlanZoneRedundant: environmentSettings.appServicePlanZoneRedundant
   storageSku: effectiveStorageSku
   sqlDatabaseSkuName: effectiveSqlDatabaseSkuName
   azureAISearchSkuName: effectiveSearchSkuName
   azureOpenAIDeploymentCapacity: effectiveOpenAIDeploymentCapacity
   logAnalyticsRetentionInDays: effectiveLogAnalyticsRetentionInDays
+  applicationInsightsRetentionInDays: effectiveApplicationInsightsRetentionInDays
+  applicationInsightsSamplingPercentage: effectiveApplicationInsightsSamplingPercentage
+  diagnosticSettingsEnabled: effectiveDiagnosticSettingsEnabled
+  diagnosticVerbosity: environmentSettings.diagnosticVerbosity
+  future: environmentSettings.future
 }
 
 var sqlConfiguration = {
@@ -407,23 +330,25 @@ module tagging './shared/tags.bicep' = {
 
 var effectiveProjectName = empty(project) ? applicationName : project
 var effectiveAllowedLocations = empty(allowedLocations) ? [location] : allowedLocations
-var effectiveStorageSku = environmentSkuStrategyEnabled ? environmentSettings.storageSku : storageSku
-var effectiveSqlDatabaseSkuName = environmentSkuStrategyEnabled ? environmentSettings.sqlDatabaseSkuName : sqlDatabaseSkuName
-var effectiveSqlDatabaseSkuTier = environmentSkuStrategyEnabled ? environmentSettings.sqlDatabaseSkuTier : sqlDatabaseSkuTier
-var effectiveSqlDatabaseSkuFamily = environmentSkuStrategyEnabled ? environmentSettings.sqlDatabaseSkuFamily : sqlDatabaseSkuFamily
-var effectiveSqlDatabaseSkuCapacity = environmentSkuStrategyEnabled ? environmentSettings.sqlDatabaseSkuCapacity : sqlDatabaseSkuCapacity
-var effectiveSqlDatabaseComputeModel = environmentSkuStrategyEnabled ? environmentSettings.sqlDatabaseComputeModel : sqlDatabaseComputeModel
-var effectiveSqlDatabaseAutoPauseDelayMinutes = environmentSkuStrategyEnabled ? environmentSettings.sqlDatabaseAutoPauseDelayMinutes : sqlDatabaseAutoPauseDelayMinutes
-var effectiveSqlDatabaseZoneRedundant = environmentSkuStrategyEnabled ? environmentSettings.sqlDatabaseZoneRedundant : sqlDatabaseZoneRedundant
-var effectiveSqlBackupRetentionDays = environmentSkuStrategyEnabled ? environmentSettings.sqlBackupRetentionDays : sqlBackupRetentionDays
-var effectiveSqlBackupStorageRedundancy = environmentSkuStrategyEnabled ? environmentSettings.sqlBackupStorageRedundancy : sqlBackupStorageRedundancy
-var effectiveSearchSkuName = environmentSkuStrategyEnabled ? environmentSettings.azureAISearchSkuName : azureAISearchSkuName
-var effectiveSearchReplicaCount = environmentSkuStrategyEnabled ? environmentSettings.azureAISearchReplicaCount : azureAISearchReplicaCount
-var effectiveSearchPartitionCount = environmentSkuStrategyEnabled ? environmentSettings.azureAISearchPartitionCount : azureAISearchPartitionCount
-var effectiveSearchSemanticSearch = environmentSkuStrategyEnabled ? environmentSettings.azureAISearchSemanticSearch : azureAISearchSemanticSearch
-var effectiveOpenAIDeploymentCapacity = environmentSkuStrategyEnabled ? environmentSettings.azureOpenAIDeploymentCapacity : azureOpenAIDeploymentCapacity
-var effectiveLogAnalyticsRetentionInDays = environmentSkuStrategyEnabled ? environmentSettings.logAnalyticsRetentionInDays : logAnalyticsRetentionInDays
-var effectiveApplicationInsightsSamplingPercentage = environmentSkuStrategyEnabled ? environmentSettings.applicationInsightsSamplingPercentage : applicationInsightsSamplingPercentage
+var effectiveStorageSku = environmentSettings.storageSku
+var effectiveSqlDatabaseSkuName = environmentSettings.sqlDatabaseSkuName
+var effectiveSqlDatabaseSkuTier = environmentSettings.sqlDatabaseSkuTier
+var effectiveSqlDatabaseSkuFamily = environmentSettings.sqlDatabaseSkuFamily
+var effectiveSqlDatabaseSkuCapacity = environmentSettings.sqlDatabaseSkuCapacity
+var effectiveSqlDatabaseComputeModel = environmentSettings.sqlDatabaseComputeModel
+var effectiveSqlDatabaseAutoPauseDelayMinutes = environmentSettings.sqlDatabaseAutoPauseDelayMinutes
+var effectiveSqlDatabaseZoneRedundant = environmentSettings.sqlDatabaseZoneRedundant
+var effectiveSqlBackupRetentionDays = environmentSettings.sqlBackupRetentionDays
+var effectiveSqlBackupStorageRedundancy = environmentSettings.sqlBackupStorageRedundancy
+var effectiveSearchSkuName = environmentSettings.azureAISearchSkuName
+var effectiveSearchReplicaCount = environmentSettings.azureAISearchReplicaCount
+var effectiveSearchPartitionCount = environmentSettings.azureAISearchPartitionCount
+var effectiveSearchSemanticSearch = environmentSettings.azureAISearchSemanticSearch
+var effectiveOpenAIDeploymentCapacity = environmentSettings.azureOpenAIDeploymentCapacity
+var effectiveLogAnalyticsRetentionInDays = environmentSettings.logAnalyticsRetentionInDays
+var effectiveApplicationInsightsSamplingPercentage = environmentSettings.applicationInsightsSamplingPercentage
+var effectiveApplicationInsightsRetentionInDays = environmentSettings.applicationInsightsRetentionInDays
+var effectiveDiagnosticSettingsEnabled = environmentSettings.diagnosticSettingsEnabled
 
 var defaultSkus = {
   logAnalytics: logAnalyticsSku
@@ -437,9 +362,10 @@ var monitoringConfiguration = {
   applicationInsightsKind: applicationInsightsKind
   applicationInsightsType: applicationInsightsType
   applicationInsightsSamplingPercentage: effectiveApplicationInsightsSamplingPercentage
+  applicationInsightsRetentionInDays: effectiveApplicationInsightsRetentionInDays
 }
 var diagnosticSettings = {
-  enabled: diagnosticSettingsEnabled
+  enabled: effectiveDiagnosticSettingsEnabled
   keyVaultLogCategories: [
     'AuditEvent'
   ]

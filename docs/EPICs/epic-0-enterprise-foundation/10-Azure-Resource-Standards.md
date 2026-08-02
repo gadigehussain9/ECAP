@@ -461,3 +461,30 @@ Future governance improvements may include:
 - Cost anomaly detection
 - Policy as Code
 - Resource compliance dashboards
+
+---
+
+# 25. Environment SKU and Monitoring Standards
+
+Environment profiles shall use the following strategy without changing
+resource modules:
+
+| Environment | Compute and data | Storage | AI and monitoring |
+|-------------|------------------|---------|------------------|
+| Dev | Lowest supported App Service and serverless SQL | Standard LRS | Basic Search, low OpenAI capacity, supported short retention, reduced sampling |
+| QA | Moderate validation capacity | Standard LRS | Standard Search, moderate OpenAI capacity, standard retention |
+| Stage | Production-like App Service and provisioned SQL | Standard GRS | Increased Search replicas and OpenAI capacity, verbose diagnostics |
+| Prod | Enterprise production capacity and zone redundancy | Standard RAGRS or approved GRS | Highest approved capacity, long retention, verbose diagnostics |
+
+The authoritative values are selected by
+`infrastructure/bicep/modules/environment-settings.bicep`. Log Analytics
+retention must comply with the Azure minimum supported value; Application
+Insights sampling and retention follow the selected profile and its
+workspace-backed retention policy. Diagnostic settings are enabled through
+the shared configuration contract and sent to Log Analytics where supported.
+
+This strategy optimizes cost in non-production environments while preserving
+availability, performance, reliability, and scalability in production. SKU
+changes are promoted through parameter-file selection and reviewed through
+deployment outputs and Azure What-If; resource code must not be edited for an
+environment promotion.

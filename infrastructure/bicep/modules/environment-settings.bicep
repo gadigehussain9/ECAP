@@ -12,6 +12,7 @@ param environment string
 var settings = {
   dev: {
     appServicePlanSkuName: 'P1v3'
+    appServicePlanSkuTier: 'PremiumV3'
     appServicePlanInstanceCount: 1
     appServicePlanZoneRedundant: false
     storageSku: 'Standard_LRS'
@@ -29,11 +30,21 @@ var settings = {
     azureAISearchPartitionCount: 1
     azureAISearchSemanticSearch: 'free'
     azureOpenAIDeploymentCapacity: 1
-    logAnalyticsRetentionInDays: 7
+    logAnalyticsRetentionInDays: 30
     applicationInsightsSamplingPercentage: 50
+    applicationInsightsRetentionInDays: 30
+    diagnosticSettingsEnabled: true
+    diagnosticVerbosity: 'minimal'
+    future: {
+      privateEndpoints: false
+      networkIsolation: false
+      autoscaling: false
+      geoReplication: false
+    }
   }
   qa: {
     appServicePlanSkuName: 'P1v3'
+    appServicePlanSkuTier: 'PremiumV3'
     appServicePlanInstanceCount: 1
     appServicePlanZoneRedundant: false
     storageSku: 'Standard_LRS'
@@ -51,11 +62,21 @@ var settings = {
     azureAISearchPartitionCount: 1
     azureAISearchSemanticSearch: 'free'
     azureOpenAIDeploymentCapacity: 2
-    logAnalyticsRetentionInDays: 14
+    logAnalyticsRetentionInDays: 30
     applicationInsightsSamplingPercentage: 25
+    applicationInsightsRetentionInDays: 30
+    diagnosticSettingsEnabled: true
+    diagnosticVerbosity: 'standard'
+    future: {
+      privateEndpoints: false
+      networkIsolation: false
+      autoscaling: false
+      geoReplication: false
+    }
   }
   stage: {
     appServicePlanSkuName: 'P2v3'
+    appServicePlanSkuTier: 'PremiumV3'
     appServicePlanInstanceCount: 2
     appServicePlanZoneRedundant: true
     storageSku: 'Standard_GRS'
@@ -75,9 +96,19 @@ var settings = {
     azureOpenAIDeploymentCapacity: 5
     logAnalyticsRetentionInDays: 30
     applicationInsightsSamplingPercentage: 15
+    applicationInsightsRetentionInDays: 30
+    diagnosticSettingsEnabled: true
+    diagnosticVerbosity: 'verbose'
+    future: {
+      privateEndpoints: false
+      networkIsolation: false
+      autoscaling: false
+      geoReplication: false
+    }
   }
   prod: {
     appServicePlanSkuName: 'P3v3'
+    appServicePlanSkuTier: 'PremiumV3'
     appServicePlanInstanceCount: 3
     appServicePlanZoneRedundant: true
     storageSku: 'Standard_RAGRS'
@@ -97,6 +128,15 @@ var settings = {
     azureOpenAIDeploymentCapacity: 10
     logAnalyticsRetentionInDays: 90
     applicationInsightsSamplingPercentage: 10
+    applicationInsightsRetentionInDays: 90
+    diagnosticSettingsEnabled: true
+    diagnosticVerbosity: 'verbose'
+    future: {
+      privateEndpoints: false
+      networkIsolation: false
+      autoscaling: false
+      geoReplication: false
+    }
   }
 }
 

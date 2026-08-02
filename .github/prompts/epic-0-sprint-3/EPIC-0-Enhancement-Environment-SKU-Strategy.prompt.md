@@ -1,109 +1,120 @@
-# ECAP Enhancement - Environment-Based SKU Strategy
+# ECAP Enhancement – Centralized Environment Configuration & SKU Strategy
 
 ## Role
 
-You are a Principal Azure Cloud Architect and Enterprise Platform Architect.
+You are a Principal Azure Cloud Architect, Enterprise Platform Architect, and DevSecOps Lead.
 
-Review the existing ECAP Bicep implementation.
+Review the existing ECAP infrastructure implementation.
 
-Implement an enterprise-grade environment-specific SKU strategy.
+Enhance the Bicep architecture by introducing a centralized Environment Configuration Strategy.
 
-Do NOT rewrite working infrastructure.
+Do NOT redesign working infrastructure.
 
-Enhance the existing architecture.
+Do NOT duplicate logic.
 
-Maintain backward compatibility.
+The solution must remain modular, maintainable, reusable, and production-ready.
 
 ---
 
 # Objective
 
-Currently the infrastructure uses enterprise default SKUs.
+Currently, Azure resources define their own SKUs and configuration independently.
 
-Enhance the implementation so that infrastructure automatically selects appropriate SKUs based on the deployment environment.
+Refactor the infrastructure so that every environment-specific setting is managed from a single location.
 
-Supported environments:
+The root deployment should define the environment once.
+
+All child modules must inherit their configuration.
+
+This should include (but not be limited to):
+
+- Resource SKUs
+- Storage redundancy
+- SQL sizing
+- App Service sizing
+- Azure AI Search sizing
+- Azure OpenAI deployment capacity
+- Log Analytics retention
+- Application Insights retention
+- Diagnostic Settings
+- Future scaling configuration
+
+The design should follow the DRY principle.
+
+---
+
+# Existing Architecture
+
+Review the repository.
+
+Reuse existing modules.
+
+Examples:
+
+main.bicep
+
+platform.bicep
+
+globals.bicep
+
+naming.bicep
+
+tags.bicep
+
+Do not change orchestration.
+
+---
+
+# Environment Configuration Module
+
+Create a reusable module.
+
+Recommended name:
+
+environment-settings.bicep
+
+or
+
+environment-config.bicep
+
+This module becomes the single source of truth.
+
+Every infrastructure module must consume values from it.
+
+No module should hardcode environment-specific SKUs.
+
+---
+
+# Supported Environments
+
+Support:
 
 - dev
 - qa
 - stage
 - prod
 
-The goal is:
+Environment is specified only once in the root deployment.
 
-- Reduce Azure costs during development
-- Maintain production-ready architecture
-- Avoid changing resource modules when promoting environments
-
-Environment should drive sizing.
+Every module inherits the environment.
 
 ---
 
-# Current Architecture
+# Environment Configuration
 
-Review existing modules.
-
-Reuse:
-
-- globals.bicep
-- naming.bicep
-- tags.bicep
-- main.bicep
-- platform.bicep
-
-Do not redesign orchestration.
-
----
-
-# Environment Strategy
-
-Support:
-
-dev
-
-qa
-
-stage
-
-prod
-
-Environment should be passed once from the root deployment.
-
-Child modules should inherit configuration.
-
-Avoid duplicate parameters.
-
----
-
-# Environment Configuration Module
-
-If appropriate, create a reusable module:
-
-environment-config.bicep
-
-or
-
-environment-settings.bicep
-
-This module should centralize environment-specific configuration.
-
-Avoid scattering SKU logic throughout resource modules.
-
----
-
-# Resource Sizing Strategy
-
-Implement sensible defaults.
+Centralize the following settings.
 
 ## Azure SQL
 
-Dev
+Configure environment-specific sizing.
 
-- Small development SKU
+Development
+
+- Lowest supported development SKU
 
 QA
 
-- Medium SKU
+- Moderate SKU
 
 Stage
 
@@ -117,13 +128,13 @@ Production
 
 ## App Service Plan
 
-Dev
+Development
 
-- Low-cost development SKU
+- Lowest supported development SKU
 
 QA
 
-- Medium SKU
+- Moderate SKU
 
 Stage
 
@@ -137,13 +148,13 @@ Production
 
 ## Azure AI Search
 
-Dev
+Development
 
 - Lowest practical SKU
 
 QA
 
-- Medium SKU
+- Moderate SKU
 
 Stage
 
@@ -157,19 +168,18 @@ Production
 
 ## Azure OpenAI
 
-Do not hardcode model capacity.
+Parameterize:
 
-Parameterize deployment capacity where supported.
+- Model deployment capacity
+- Deployment scale (where supported)
 
-Support future production scaling.
+Do not hardcode capacity.
 
 ---
 
 ## Storage
 
-Parameterize redundancy.
-
-Example:
+Configure redundancy.
 
 Development
 
@@ -177,15 +187,13 @@ Development
 
 Production
 
-- ZRS or GRS depending on requirements.
+- ZRS or GRS
 
 ---
 
 ## Log Analytics
 
-Support configurable retention.
-
-Example:
+Configure retention.
 
 Development
 
@@ -193,36 +201,60 @@ Development
 
 Production
 
-- Longer retention
+- Long retention
 
 ---
 
 ## Application Insights
 
-Support configurable sampling and retention.
+Configure:
+
+- Sampling
+- Retention
 
 ---
 
-# Cost Optimization
+## Diagnostics
 
-Development deployments should prioritize:
+Allow environment-specific diagnostic verbosity.
 
-- Lowest supported SKUs
-- Lower storage redundancy where appropriate
-- Smaller SQL compute
-- Lower App Service compute
-- Reduced retention
+Development
 
-Production should prioritize:
+- Lower retention
 
-- High availability
-- Performance
-- Scalability
-- Reliability
+Production
+
+- Long retention
 
 ---
 
-# Parameters
+# Future Environment Settings
+
+Prepare the module for future settings.
+
+Examples:
+
+Private Endpoints
+
+Network Isolation
+
+Zone Redundancy
+
+Backup Policies
+
+Geo Replication
+
+Availability Zones
+
+Autoscaling
+
+Do not implement these features.
+
+Only design for future extensibility.
+
+---
+
+# Parameter Files
 
 Review parameter files.
 
@@ -236,55 +268,117 @@ stage.parameters.json
 
 prod.parameters.json
 
-Each parameter file should override only environment-specific values.
+Parameter files should contain only values that differ by environment.
 
 Avoid duplication.
 
 ---
 
+# Root Deployment
+
+main.bicep
+
+Should only define:
+
+Environment
+
+Location
+
+Application Name
+
+Resource Group
+
+Everything else should come from environment configuration.
+
+---
+
+# Child Modules
+
+Every child module should receive:
+
+Environment Configuration Object
+
+rather than many individual parameters.
+
+Reduce parameter count.
+
+Improve readability.
+
+---
+
 # Outputs
 
-Expose selected SKUs.
+Expose the selected configuration.
 
 Example:
 
-App Service SKU
+Environment
 
 SQL SKU
 
-Search SKU
+App Service SKU
 
 Storage Redundancy
 
+AI Search SKU
+
+Azure OpenAI Capacity
+
 Log Retention
+
+Application Insights Retention
 
 This simplifies validation.
 
 ---
 
-# Validation
+# Cost Optimization
 
-Generate:
+Development should minimize Azure consumption.
 
-Bicep validation
+Production should maximize:
 
-What-If examples
+Availability
 
-Sample deployment commands for:
+Performance
 
-Development
+Reliability
 
-QA
+Scalability
 
-Stage
+Avoid changing resource code between environments.
 
-Production
+Only parameter files should differ.
+
+---
+
+# CI/CD Integration
+
+Ensure the design works with:
+
+GitHub Actions
+
+Azure DevOps
+
+Future deployment pipelines
+
+Deployment pipelines should simply select:
+
+dev
+
+qa
+
+stage
+
+prod
+
+No code changes required.
 
 ---
 
 # Documentation
 
-Update:
+Update where appropriate.
 
 08-Infrastructure-Strategy.md
 
@@ -294,17 +388,57 @@ Update:
 
 Document:
 
-Environment Strategy
-
-SKU Strategy
-
-Cost Optimization Strategy
+Environment Configuration
 
 Promotion Strategy
 
-Environment Configuration
+SKU Strategy
 
-Do not duplicate existing documentation.
+Cost Optimization
+
+Deployment Strategy
+
+Do not duplicate documentation.
+
+---
+
+# Validation
+
+Generate:
+
+Azure CLI deployment examples
+
+PowerShell deployment examples
+
+Bicep validation commands
+
+What-If examples
+
+Environment comparison examples
+
+---
+
+# Deliverables
+
+Generate:
+
+environment-settings.bicep
+
+Required updates to:
+
+main.bicep
+
+platform.bicep
+
+parameter files
+
+resource modules
+
+documentation
+
+Reuse existing modules.
+
+Do not introduce breaking changes.
 
 ---
 
@@ -314,36 +448,43 @@ Verify:
 
 ✓ Azure Well-Architected Framework
 
-✓ Azure Cloud Adoption Framework
+✓ Cloud Adoption Framework
 
-✓ Cost Optimization Pillar
+✓ Cost Optimization
 
-✓ Reliability Pillar
+✓ Operational Excellence
+
+✓ Reliability
 
 ✓ Performance Efficiency
 
 ✓ Security
 
-✓ Operational Excellence
+✓ Maintainability
 
-✓ ECAP Standards
+✓ DRY Principle
 
 ✓ Environment Independence
 
-✓ Reusable Modules
+✓ Layered Architecture
 
-✓ No Breaking Changes
+✓ Modular Bicep Design
 
-✓ Production Ready
+✓ GitHub Actions Ready
+
+✓ Azure DevOps Ready
+
+✓ Future Production Ready
 
 Before generating code:
 
-1. Review the existing implementation.
+1. Review the current ECAP infrastructure.
 2. Explain the proposed environment configuration architecture.
-3. Explain how child modules inherit environment settings.
-4. Explain how the solution minimizes Azure costs during development.
-5. Explain how the solution supports seamless promotion from Dev to Production.
+3. Explain how child modules inherit configuration.
+4. Explain how this reduces Azure costs.
+5. Explain how this simplifies Dev → QA → Stage → Production promotion.
+6. Explain why this design is preferable to hardcoded SKUs.
 
-Generate production-quality enterprise infrastructure enhancements only.
+Generate enterprise-grade production-quality infrastructure only.
 
-Do not generate tutorial examples.
+Do not generate tutorial code.

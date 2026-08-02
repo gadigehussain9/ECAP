@@ -9,45 +9,8 @@ param keyVaultEnablePurgeProtection bool = false
 @description('Optional subnet resource ID for an App Configuration private endpoint.')
 param appConfigurationPrivateEndpointSubnetResourceId string = ''
 
-@description('App Service Plan SKU name.')
-param appServicePlanSkuName string = 'P1v3'
-
-@description('App Service Plan SKU tier.')
-param appServicePlanSkuTier string = 'PremiumV3'
-
-@description('App Service Plan instance count.')
-param appServicePlanInstanceCount int = 1
-
-@description('Whether the App Service Plan is zone redundant.')
-param appServicePlanZoneRedundant bool = false
-
-@description('Whether per-site scaling is enabled.')
-param appServicePlanPerSiteScaling bool = false
-
-@description('App Service .NET runtime version.')
-param appServiceRuntimeVersion string = '10.0'
-
-@description('Whether the App Service is always on.')
-param appServiceAlwaysOn bool = true
-
-@description('App Service health check path.')
-param appServiceHealthCheckPath string = '/health'
-
-@description('Whether HTTP/2 is enabled.')
-param appServiceHttp20Enabled bool = true
-
-@description('Whether WebSockets are enabled.')
-param appServiceWebSocketsEnabled bool = false
-
-@description('Whether public network access is enabled.')
-param appServicePublicNetworkAccess string = 'Enabled'
-
-@description('Additional non-secret App Service application settings.')
-param appServiceAdditionalAppSettings object = {}
-
-var effectiveAppServicePlanSkuName = globals.environmentConfiguration.enabled ? globals.environmentConfiguration.appServicePlanSkuName : appServicePlanSkuName
-var effectiveAppServicePlanInstanceCount = globals.environmentConfiguration.enabled ? globals.environmentConfiguration.appServicePlanInstanceCount : appServicePlanInstanceCount
-var effectiveAppServicePlanZoneRedundant = globals.environmentConfiguration.enabled ? globals.environmentConfiguration.appServicePlanZoneRedundant : appServicePlanZoneRedundant
+@description('Centralized App Service configuration inherited from the selected environment profile.')
+param appServiceConfiguration object
 
 module monitoring './monitoring.bicep' = {
   name: 'ecap-monitoring-${globals.environment}'
@@ -60,22 +23,22 @@ module app './app.bicep' = {
   name: 'ecap-app-service-${globals.environment}'
   params: {
     configuration: {
-      planName: globals.namingOutputs.appServicePlanName
-      appName: globals.namingOutputs.appServiceName
-      skuName: effectiveAppServicePlanSkuName
-      skuTier: appServicePlanSkuTier
-      instanceCount: effectiveAppServicePlanInstanceCount
-      zoneRedundant: effectiveAppServicePlanZoneRedundant
-      perSiteScaling: appServicePlanPerSiteScaling
-      linuxFxVersion: 'DOTNETCORE|${appServiceRuntimeVersion}'
-      alwaysOn: appServiceAlwaysOn
-      healthCheckPath: appServiceHealthCheckPath
-      http20Enabled: appServiceHttp20Enabled
-      webSocketsEnabled: appServiceWebSocketsEnabled
-      minimumTlsVersion: '1.2'
-      publicNetworkAccess: appServicePublicNetworkAccess
-      additionalAppSettings: appServiceAdditionalAppSettings
-      sqlDatabaseName: globals.namingOutputs.sqlDatabaseName
+      planName: appServiceConfiguration.planName
+      appName: appServiceConfiguration.appName
+      skuName: appServiceConfiguration.skuName
+      skuTier: appServiceConfiguration.skuTier
+      instanceCount: appServiceConfiguration.instanceCount
+      zoneRedundant: appServiceConfiguration.zoneRedundant
+      perSiteScaling: appServiceConfiguration.perSiteScaling
+      linuxFxVersion: appServiceConfiguration.linuxFxVersion
+      alwaysOn: appServiceConfiguration.alwaysOn
+      healthCheckPath: appServiceConfiguration.healthCheckPath
+      http20Enabled: appServiceConfiguration.http20Enabled
+      webSocketsEnabled: appServiceConfiguration.webSocketsEnabled
+      minimumTlsVersion: appServiceConfiguration.minimumTlsVersion
+      publicNetworkAccess: appServiceConfiguration.publicNetworkAccess
+      additionalAppSettings: appServiceConfiguration.additionalAppSettings
+      sqlDatabaseName: appServiceConfiguration.sqlDatabaseName
     }
     location: globals.location
     tags: globals.standardTags

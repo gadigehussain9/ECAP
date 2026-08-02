@@ -492,3 +492,28 @@ Future improvements may include:
 - Policy as Code
 - Drift detection
 - Automated compliance validation
+
+---
+
+# 25. Centralized Environment Configuration
+
+Environment-specific values shall be defined in
+`infrastructure/bicep/modules/environment-settings.bicep`. The module must
+support `dev`, `qa`, `stage`, and `prod`, and the root `main.bicep` must pass
+the environment only once. `globals.bicep` publishes the selected profile as
+the shared configuration object consumed by orchestration and resource
+modules.
+
+The configuration contract includes resource SKUs, Storage redundancy, SQL
+sizing and backup settings, App Service sizing, AI Search sizing, Azure
+OpenAI deployment capacity, Log Analytics retention, Application Insights
+sampling and retention, diagnostic verbosity, and future capability
+placeholders. Child modules should receive a configuration object instead of
+separate environment-specific parameters. Resource modules must not contain
+environment conditionals or hardcoded environment SKUs.
+
+Environment parameter files contain only deployment context and values that
+are genuinely workload- or deployment-specific. Promotion from Dev to QA,
+Stage, and Production uses the same Bicep modules and changes only the
+selected parameter file. The effective selection must be exposed through
+deployment outputs for validation and what-if review.

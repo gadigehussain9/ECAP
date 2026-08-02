@@ -15,9 +15,6 @@ param companyName string = 'ECAP'
 ])
 param environment string
 
-@description('Whether the centralized environment SKU strategy supplies resource sizing defaults. Set false to retain legacy parameter-driven sizing.')
-param environmentSkuStrategyEnabled bool = true
-
 @description('Azure region for the environment resources.')
 param location string
 
@@ -95,9 +92,6 @@ param deploymentDate string = utcNow('yyyy-MM-dd')
 @description('Log Analytics workspace SKU.')
 param logAnalyticsSku string = 'PerGB2018'
 
-@description('Number of days to retain Log Analytics data.')
-param logAnalyticsRetentionInDays int = 30
-
 @description('Whether public Log Analytics ingestion is enabled.')
 param logAnalyticsPublicNetworkAccessForIngestion string = 'Enabled'
 
@@ -110,40 +104,11 @@ param applicationInsightsKind string = 'web'
 @description('Application Insights application type.')
 param applicationInsightsType string = 'web'
 
-@description('Application Insights telemetry sampling percentage. Environment profiles may reduce this for cost control.')
-@minValue(0)
-@maxValue(100)
-param applicationInsightsSamplingPercentage int = 100
-
 @description('Whether Key Vault purge protection is enabled. This cannot be disabled after it is enabled.')
 param keyVaultEnablePurgeProtection bool = false
 
 @description('Optional subnet resource ID for an App Configuration private endpoint.')
 param appConfigurationPrivateEndpointSubnetResourceId string = ''
-
-@description('Whether standard diagnostic settings are enabled.')
-param diagnosticSettingsEnabled bool = true
-
-@description('App Service Plan SKU name. Premium v3 is the enterprise default.')
-@allowed([
-  'P1v3'
-  'P2v3'
-  'P3v3'
-])
-param appServicePlanSkuName string = 'P1v3'
-
-@description('App Service Plan SKU tier.')
-@allowed([
-  'PremiumV3'
-])
-param appServicePlanSkuTier string = 'PremiumV3'
-
-@description('Initial App Service Plan instance count.')
-@minValue(1)
-param appServicePlanInstanceCount int = 1
-
-@description('Whether the App Service Plan uses availability zones.')
-param appServicePlanZoneRedundant bool = false
 
 @description('Whether per-site scaling is enabled on the App Service Plan.')
 param appServicePlanPerSiteScaling bool = false
@@ -221,14 +186,6 @@ module environmentSettings './modules/environment-settings.bicep' = {
   }
 }
 
-@description('Storage Account replication SKU.')
-@allowed([
-  'Standard_LRS'
-  'Standard_GRS'
-  'Standard_RAGRS'
-])
-param storageSku string = 'Standard_LRS'
-
 @description('Whether Blob Service versioning is enabled.')
 param storageBlobVersioningEnabled bool = true
 
@@ -255,51 +212,12 @@ param sqlAdministratorLogin string = ''
 @description('Microsoft Entra administrator object ID for Azure SQL.')
 param sqlAdministratorObjectId string = ''
 
-@description('Azure SQL database SKU name, such as GP_Gen5_2 or GP_S_Gen5_1.')
-param sqlDatabaseSkuName string = 'GP_Gen5_2'
-
-@description('Azure SQL database service tier.')
-param sqlDatabaseSkuTier string = 'GeneralPurpose'
-
-@description('Azure SQL database SKU family.')
-param sqlDatabaseSkuFamily string = 'Gen5'
-
-@description('Azure SQL database vCore capacity.')
-param sqlDatabaseSkuCapacity int = 2
-
-@description('Azure SQL database compute model.')
-@allowed([
-  'Provisioned'
-  'Serverless'
-])
-param sqlDatabaseComputeModel string = 'Provisioned'
-
-@description('Idle minutes before a serverless database is paused.')
-@minValue(-1)
-param sqlDatabaseAutoPauseDelayMinutes int = 60
-
-@description('Whether Azure SQL database zone redundancy is enabled.')
-param sqlDatabaseZoneRedundant bool = false
-
-@description('Point-in-time restore retention in days for Azure SQL.')
-@minValue(1)
-@maxValue(35)
-param sqlBackupRetentionDays int = 7
-
 @description('Differential backup interval in hours for Azure SQL.')
 @allowed([
   12
   24
 ])
 param sqlDifferentialBackupIntervalHours int = 12
-
-@description('Requested Azure SQL backup storage redundancy.')
-@allowed([
-  'Local'
-  'Zone'
-  'Geo'
-])
-param sqlBackupStorageRedundancy string = 'Local'
 
 @description('Locations approved by the platform policy. Defaults to the deployment location.')
 param allowedLocations array = []
@@ -348,22 +266,8 @@ param azureOpenAISkuName string = 'S0'
 ])
 param azureOpenAIDeploymentSkuName string = 'GlobalStandard'
 
-@description('Azure OpenAI deployment capacity in thousands of tokens per minute.')
-param azureOpenAIDeploymentCapacity int = 1
-
 @description('Optional Azure AI Search service name. Defaults to the enterprise naming module output.')
 param azureAISearchName string = ''
-
-@description('Azure AI Search service SKU.')
-param azureAISearchSkuName string = 'standard'
-
-@description('Azure AI Search replica count.')
-@minValue(1)
-param azureAISearchReplicaCount int = 1
-
-@description('Azure AI Search partition count.')
-@minValue(1)
-param azureAISearchPartitionCount int = 1
 
 @description('Azure AI Search public network access mode.')
 @allowed([
@@ -371,14 +275,6 @@ param azureAISearchPartitionCount int = 1
   'disabled'
 ])
 param azureAISearchPublicNetworkAccess string = 'enabled'
-
-@description('Azure AI Search semantic ranking capability.')
-@allowed([
-  'disabled'
-  'free'
-  'standard'
-])
-param azureAISearchSemanticSearch string = 'free'
 
 @description('Azure AI Search authentication mode.')
 @allowed([
@@ -429,7 +325,6 @@ module globals './modules/globals.bicep' = {
   scope: subscription()
   params: {
     environment: environment
-    environmentSkuStrategyEnabled: environmentSkuStrategyEnabled
     environmentSettings: environmentSettings.outputs.settings
     location: location
     applicationName: applicationName
@@ -456,35 +351,22 @@ module globals './modules/globals.bicep' = {
     workload: workload
     deploymentDate: deploymentDate
     logAnalyticsSku: logAnalyticsSku
-    logAnalyticsRetentionInDays: logAnalyticsRetentionInDays
     logAnalyticsPublicNetworkAccessForIngestion: logAnalyticsPublicNetworkAccessForIngestion
     logAnalyticsPublicNetworkAccessForQuery: logAnalyticsPublicNetworkAccessForQuery
     applicationInsightsKind: applicationInsightsKind
     applicationInsightsType: applicationInsightsType
-    applicationInsightsSamplingPercentage: applicationInsightsSamplingPercentage
-    diagnosticSettingsEnabled: diagnosticSettingsEnabled
     storageLargeFileSharesState: storageLargeFileSharesState
     storageAllowSharedKeyAccess: storageAllowSharedKeyAccess
     storagePublicNetworkAccess: storagePublicNetworkAccess
     storageMinimumTlsVersion: storageMinimumTlsVersion
     storageNetworkAcls: storageNetworkAcls
-    storageSku: storageSku
     storageBlobVersioningEnabled: storageBlobVersioningEnabled
     storageBlobSoftDeleteRetentionDays: storageBlobSoftDeleteRetentionDays
     storageContainerSoftDeleteRetentionDays: storageContainerSoftDeleteRetentionDays
     sqlPublicNetworkAccess: sqlPublicNetworkAccess
     sqlAdministratorLogin: sqlAdministratorLogin
     sqlAdministratorObjectId: sqlAdministratorObjectId
-    sqlDatabaseSkuName: sqlDatabaseSkuName
-    sqlDatabaseSkuTier: sqlDatabaseSkuTier
-    sqlDatabaseSkuFamily: sqlDatabaseSkuFamily
-    sqlDatabaseSkuCapacity: sqlDatabaseSkuCapacity
-    sqlDatabaseComputeModel: sqlDatabaseComputeModel
-    sqlDatabaseAutoPauseDelayMinutes: sqlDatabaseAutoPauseDelayMinutes
-    sqlDatabaseZoneRedundant: sqlDatabaseZoneRedundant
-    sqlBackupRetentionDays: sqlBackupRetentionDays
     sqlDifferentialBackupIntervalHours: sqlDifferentialBackupIntervalHours
-    sqlBackupStorageRedundancy: sqlBackupStorageRedundancy
     allowedLocations: allowedLocations
     featureFlags: featureFlags
     azureOpenAIName: azureOpenAIName
@@ -498,13 +380,8 @@ module globals './modules/globals.bicep' = {
     azureOpenAIEmbeddingModelVersion: azureOpenAIEmbeddingModelVersion
     azureOpenAISkuName: azureOpenAISkuName
     azureOpenAIDeploymentSkuName: azureOpenAIDeploymentSkuName
-    azureOpenAIDeploymentCapacity: azureOpenAIDeploymentCapacity
     azureAISearchName: azureAISearchName
-    azureAISearchSkuName: azureAISearchSkuName
-    azureAISearchReplicaCount: azureAISearchReplicaCount
-    azureAISearchPartitionCount: azureAISearchPartitionCount
     azureAISearchPublicNetworkAccess: azureAISearchPublicNetworkAccess
-    azureAISearchSemanticSearch: azureAISearchSemanticSearch
     azureAISearchAuthOptions: azureAISearchAuthOptions
     azureAISearchDisableLocalAuth: azureAISearchDisableLocalAuth
   }
@@ -523,18 +400,24 @@ module platform './modules/platform.bicep' = {
     globals: globals.outputs.globals
     keyVaultEnablePurgeProtection: keyVaultEnablePurgeProtection
     appConfigurationPrivateEndpointSubnetResourceId: appConfigurationPrivateEndpointSubnetResourceId
-    appServicePlanSkuName: appServicePlanSkuName
-    appServicePlanSkuTier: appServicePlanSkuTier
-    appServicePlanInstanceCount: appServicePlanInstanceCount
-    appServicePlanZoneRedundant: appServicePlanZoneRedundant
-    appServicePlanPerSiteScaling: appServicePlanPerSiteScaling
-    appServiceRuntimeVersion: appServiceRuntimeVersion
-    appServiceAlwaysOn: appServiceAlwaysOn
-    appServiceHealthCheckPath: appServiceHealthCheckPath
-    appServiceHttp20Enabled: appServiceHttp20Enabled
-    appServiceWebSocketsEnabled: appServiceWebSocketsEnabled
-    appServicePublicNetworkAccess: appServicePublicNetworkAccess
-    appServiceAdditionalAppSettings: appServiceAdditionalAppSettings
+    appServiceConfiguration: {
+      planName: globals.outputs.namingOutputs.appServicePlanName
+      appName: globals.outputs.namingOutputs.appServiceName
+      skuName: globals.outputs.environmentConfiguration.appServicePlanSkuName
+      skuTier: globals.outputs.environmentConfiguration.appServicePlanSkuTier
+      instanceCount: globals.outputs.environmentConfiguration.appServicePlanInstanceCount
+      zoneRedundant: globals.outputs.environmentConfiguration.appServicePlanZoneRedundant
+      perSiteScaling: appServicePlanPerSiteScaling
+      linuxFxVersion: 'DOTNETCORE|${appServiceRuntimeVersion}'
+      alwaysOn: appServiceAlwaysOn
+      healthCheckPath: appServiceHealthCheckPath
+      http20Enabled: appServiceHttp20Enabled
+      webSocketsEnabled: appServiceWebSocketsEnabled
+      minimumTlsVersion: '1.2'
+      publicNetworkAccess: appServicePublicNetworkAccess
+      additionalAppSettings: appServiceAdditionalAppSettings
+      sqlDatabaseName: globals.outputs.namingOutputs.sqlDatabaseName
+    }
   }
 }
 
@@ -575,6 +458,17 @@ output identityClientId string = platform.outputs.identityClientId
 output identityTenantId string = platform.outputs.identityTenantId
 output assignedRbacRoles array = platform.outputs.assignedRbacRoles
 output environmentConfiguration object = globals.outputs.environmentConfiguration
+output selectedEnvironment string = globals.outputs.environment
+output selectedAppServicePlanSku string = globals.outputs.environmentConfiguration.appServicePlanSkuName
+output selectedAppServicePlanSkuTier string = globals.outputs.environmentConfiguration.appServicePlanSkuTier
+output selectedSqlDatabaseSku string = globals.outputs.environmentConfiguration.sqlDatabaseSkuName
+output selectedStorageRedundancy string = globals.outputs.environmentConfiguration.storageSku
+output selectedAzureAISearchSku string = globals.outputs.environmentConfiguration.azureAISearchSkuName
+output selectedAzureOpenAIDeploymentCapacity int = globals.outputs.environmentConfiguration.azureOpenAIDeploymentCapacity
+output selectedLogAnalyticsRetentionInDays int = globals.outputs.environmentConfiguration.logAnalyticsRetentionInDays
+output selectedApplicationInsightsRetentionInDays int = globals.outputs.environmentConfiguration.applicationInsightsRetentionInDays
+output selectedApplicationInsightsSamplingPercentage int = globals.outputs.environmentConfiguration.applicationInsightsSamplingPercentage
+output selectedDiagnosticVerbosity string = globals.outputs.environmentConfiguration.diagnosticVerbosity
 output appServicePlanName string = platform.outputs.appServicePlanName
 output appServicePlanResourceId string = platform.outputs.appServicePlanResourceId
 output azureOpenAIResourceId string = platform.outputs.azureOpenAIResourceId
